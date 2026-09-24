@@ -1,30 +1,31 @@
 """Dashboard routes."""
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from app.core.authorization import require_permission
 from app.modules.payroll.dependencies import DashboardServiceDep
 
 router = APIRouter(prefix="/payroll", tags=["Payroll — Dashboard"])
 
 
-@router.get("/kpis")
+@router.get("/kpis", dependencies=[Depends(require_permission("payroll", "VIEW", "ORGANIZATION"))])
 async def payroll_kpis(
     service: DashboardServiceDep,
-    year: Optional[int] = Query(None),
-    month: Optional[int] = Query(None),
+    year: int | None = Query(None),
+    month: int | None = Query(None),
 ) -> dict[str, Any]:
     return await service.kpis(year=year, month=month)
 
 
-@router.get("/period")
+@router.get("/period", dependencies=[Depends(require_permission("payroll", "VIEW", "ORGANIZATION"))])
 async def payroll_period(service: DashboardServiceDep) -> dict[str, Any]:
-    return service.period()
+    return await service.period()
 
 
-@router.get("/activity")
+@router.get("/activity", dependencies=[Depends(require_permission("payroll", "VIEW", "ORGANIZATION"))])
 async def payroll_activity(
     service: DashboardServiceDep,
     limit: int = Query(20, ge=1, le=100),
@@ -32,10 +33,10 @@ async def payroll_activity(
     return await service.activity(limit=limit)
 
 
-@router.get("/monthly-summary")
+@router.get("/monthly-summary", dependencies=[Depends(require_permission("payroll", "VIEW", "ORGANIZATION"))])
 async def monthly_summary(
     service: DashboardServiceDep,
-    year: Optional[int] = Query(None),
-    month: Optional[int] = Query(None),
+    year: int | None = Query(None),
+    month: int | None = Query(None),
 ) -> dict[str, Any]:
     return await service.monthly_summary(year=year, month=month)

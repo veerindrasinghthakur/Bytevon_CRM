@@ -4,6 +4,7 @@ import { delay } from '@/shared/mock/db'
 import { salaryStructures, updateSalaryStructure } from '@/shared/mock/data/payroll'
 import type { SalaryItem, SalaryStructure, SaveSalaryStructureInput } from '../types'
 
+/** employment_id path param. */
 export async function getSalaryStructure(employeeId: string): Promise<SalaryStructure | null> {
   if (env.useMockApi) {
     await delay(200)
@@ -13,7 +14,7 @@ export async function getSalaryStructure(employeeId: string): Promise<SalaryStru
   }
   try {
     const { data } = await apiClient.get<SalaryStructure>(
-      `/payroll/employees/${encodeURIComponent(employeeId)}/salary`,
+      `/payroll/salaries/current/${encodeURIComponent(employeeId)}`,
     )
     return data
   } catch {
@@ -21,6 +22,7 @@ export async function getSalaryStructure(employeeId: string): Promise<SalaryStru
   }
 }
 
+/** Versioned close+insert via POST /payroll/salaries (not PUT). */
 export async function saveSalaryStructure(
   employeeId: string,
   input: SaveSalaryStructureInput | { effectiveFrom: string; items: SalaryItem[] },
@@ -29,9 +31,11 @@ export async function saveSalaryStructure(
     await delay(400)
     return updateSalaryStructure(employeeId, input)
   }
-  const { data } = await apiClient.put<SalaryStructure>(
-    `/payroll/employees/${encodeURIComponent(employeeId)}/salary`,
-    input,
-  )
+  const body = {
+    employment_id: Number(employeeId),
+    ...input,
+    effective_from: (input as { effectiveFrom?: string }).effectiveFrom,
+  }
+  const { data } = await apiClient.post<SalaryStructure>('/payroll/salaries', body)
   return data
 }

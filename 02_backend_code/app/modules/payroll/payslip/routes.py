@@ -1,10 +1,11 @@
 """Payslip routes — get + pay."""
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Depends
 
+from app.core.authorization import AuthContext, require_permission
 from app.modules.payroll.dependencies import PayslipServiceDep
 from app.modules.payroll.monthly_payroll.schemas import (
     MonthlyPayrollResponse,
@@ -12,7 +13,6 @@ from app.modules.payroll.monthly_payroll.schemas import (
 )
 
 router = APIRouter(prefix="/payroll", tags=["Payroll — Payslip"])
-ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
 
 @router.post("/{payroll_id}/pay", response_model=MonthlyPayrollResponse)
@@ -20,12 +20,12 @@ async def mark_paid(
     payroll_id: int,
     body: PayrollPaymentRequest,
     service: PayslipServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("payroll", "UPDATE", "ORGANIZATION"))],
 ) -> MonthlyPayrollResponse:
-    return await service.mark_paid(payroll_id, body, actor_employment_id=actor)
+    return await service.mark_paid(payroll_id, body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/{payroll_id}", response_model=MonthlyPayrollResponse)
+@router.get("/{payroll_id}", response_model=MonthlyPayrollResponse, dependencies=[Depends(require_permission("payroll", "VIEW", "ORGANIZATION"))])
 async def get_payroll(
     payroll_id: int, service: PayslipServiceDep
 ) -> MonthlyPayrollResponse:

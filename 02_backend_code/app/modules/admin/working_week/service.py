@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from datetime import date, timedelta
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -39,7 +39,7 @@ class WorkingWeekService(BasePublicService):
         return obj
 
     async def create(
-        self, data: WorkingWeekCreate, *, actor_employment_id: Optional[int] = None
+        self, data: WorkingWeekCreate, *, actor_employment_id: int | None = None
     ) -> WorkingWeekResponse:
         days = _normalize_days(list(data.working_days_of_week))
         # Close previous open version the day before the new one starts
@@ -68,7 +68,7 @@ class WorkingWeekService(BasePublicService):
             raise NotFoundError("Working week not found")
         return WorkingWeekResponse.model_validate(row)
 
-    async def get_current(self, on_date: Optional[date] = None) -> WorkingWeekResponse:
+    async def get_current(self, on_date: date | None = None) -> WorkingWeekResponse:
         row = await self._repo.get_current(as_of=on_date or date.today())
         if row is None:
             raise NotFoundError("No current working week")
@@ -81,7 +81,7 @@ class WorkingWeekService(BasePublicService):
         return [WorkingWeekResponse.model_validate(r) for r in rows]
 
     async def archive(
-        self, working_week_id: int, *, actor_employment_id: Optional[int] = None
+        self, working_week_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         """Close the version (set effective_to = today)."""
         row = await self._repo.get_by_id(working_week_id)

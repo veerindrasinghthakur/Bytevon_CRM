@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { myAdminRoutes } from '@/modules/admin/routes'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
@@ -11,34 +10,24 @@ import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { queryKeys } from '@/shared/lib/query-keys'
-import { getAttendanceSettings, updateAttendanceSettings } from '../../api/settings'
-import { getAttendanceAdminMetrics } from '../../api/metrics'
-import { getShifts, updateShift } from '../../api/organization'
 import { attendanceSettingsSchema, type AttendanceSettingsInput } from '../../schemas/settings'
 import { useShiftFormData } from '../../hooks/settings/use-attendance-settings'
+import { useAttendancePolicy } from '../../hooks/settings/use-attendance-policy'
 
 export function AttendanceSettingsPage() {
   const navigate = useNavigate()
-  const qc = useQueryClient()
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  const { data: policy, isLoading: policyLoading } = useQuery({
-    queryKey: queryKeys.admin.settings.attendance(),
-    queryFn: getAttendanceSettings,
-  })
+  const {
+    policy,
+    policyLoading,
+    metrics,
+    shifts,
+    shiftsLoading,
+    savePolicy,
+    isSaving,
+  } = useAttendancePolicy()
 
-  const { data: metrics } = useQuery({
-    queryKey: queryKeys.admin.metrics.attendance(),
-    queryFn: getAttendanceAdminMetrics,
-  })
-
-  const shiftsQuery = useQuery({
-    queryKey: queryKeys.organization.shifts.list({ includeArchived: false }),
-    queryFn: () => getShifts({ includeArchived: false }),
-  })
-
-  const shifts = shiftsQuery.data?.items ?? []
   const [selectedShiftId, setSelectedShiftId] = useState<string>('')
 
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
@@ -71,34 +60,19 @@ export function AttendanceSettingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: form identity is unstable
   }, [isEditing, selectedShiftId, shifts, policy])
 
-  const save = useMutation({
-    mutationFn: async () => {
+  const save = {
+    isPending: isSaving,
+    mutate: () => {
       setSaveError(null)
       const values = form.getValues()
-      await updateAttendanceSettings(values)
-      if (selectedShiftId && activeShift) {
-        const start =
-          values.shiftStart.length === 5 ? `${values.shiftStart}:00` : values.shiftStart
-        const end = values.shiftEnd.length === 5 ? `${values.shiftEnd}:00` : values.shiftEnd
-        await updateShift(Number(selectedShiftId), {
-          start_time: start,
-          end_time: end,
-          grace_late_minutes: values.graceMinutes,
-        } as never)
-      }
+      void savePolicy({ values, shiftId: selectedShiftId && activeShift ? selectedShiftId : undefined }).then(
+        () => finishEditing(),
+        (e: unknown) => setSaveError(getApiErrorMessage(e, 'Could not save attendance settings')),
+      )
     },
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.admin.settings.attendance() })
-      void qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all })
-      void qc.invalidateQueries({ queryKey: queryKeys.admin.metrics.attendance() })
-      finishEditing()
-    },
-    onError: (e: unknown) => {
-      setSaveError(getApiErrorMessage(e, 'Could not save attendance settings'))
-    },
-  })
+  }
 
-  if (shiftsQuery.isLoading || (policyLoading && !shiftsQuery.data)) {
+  if (shiftsLoading || policyLoading) {
     return (
       <div className="py-12 text-center text-on-surface-variant text-body-sm">
         Loading attendance settings…
@@ -323,7 +297,7 @@ export function AttendanceSettingsPage() {
             <div>
               <h3 className="text-title-lg font-semibold text-on-surface">Attendance policy</h3>
               <p className="text-body-sm text-on-surface-variant">
-                Saved via POST /attendance/policies (new effective version each save)
+                Saved via POST /workforce/attendance/policies (new effective version each save)
               </p>
             </div>
           </div>

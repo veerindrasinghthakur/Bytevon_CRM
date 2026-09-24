@@ -1,10 +1,10 @@
+import { useMemo } from 'react'
 import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { ResourceName } from '@/shared/schema'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
@@ -13,8 +13,11 @@ import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can, useRbac } from '@/shared/rbac'
 import { useProjectsList } from '../../hooks/project/use-projects'
+import { useTeams } from '../../hooks/team/use-teams'
 import { projectRoutes } from '../../routes'
 import type { ProjectStatus } from '../../schemas/project/project'
 import { cn } from '@/shared/lib/cn'
@@ -30,6 +33,8 @@ function statusTrackLabel(status: ProjectStatus) {
 export function ProjectsListPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
+  const { can } = useRbac()
+  const canCreateProject = can('CREATE', 'project')
   const {
     search,
     setSearch,
@@ -49,6 +54,7 @@ export function ProjectsListPage() {
     isLoading,
     isFetching,
     isError,
+    error,
     refetch,
     selection,
   } = useProjectsList()
@@ -62,6 +68,14 @@ export function ProjectsListPage() {
   }
 
   const goNew = () => safeNavigate(navigate, { to: projectRoutes.projectNew })
+
+  // Team id → name for the Team column (list endpoint carries ids only).
+  const { data: teamsData } = useTeams()
+  const teamNameById = useMemo(() => {
+    const map = new Map<number, string>()
+    for (const t of teamsData?.items ?? []) map.set(t.id, t.name)
+    return map
+  }, [teamsData])
 
   const openProjectOverview = (project: (typeof pageItems)[number]) => {
     const track = statusTrackLabel(project.status)
@@ -104,7 +118,7 @@ export function ProjectsListPage() {
             Import
           </Button>
           <ExportButton
-            resource={ResourceName.PROJECT}
+            resource={'project'}
             query={search}
             filters={{ status }}
             selectedIds={
@@ -112,15 +126,17 @@ export function ProjectsListPage() {
             }
             filenameStem="projects"
           />
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={goNew}
-          >
-            New Project
-          </Button>
+          <Can action="CREATE" resource="project">
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+              onClick={goNew}
+            >
+              New Project
+            </Button>
+          </Can>
         </div>
       </section>
 
@@ -137,10 +153,10 @@ export function ProjectsListPage() {
           onChange={setStatus}
           placeholder="Project Status"
           aria-label="Filter by project status"
-          options={[{ value: '', label: 'All statuses' }, ...ProjectStatusOptions.map((s) => ({ value: s, label: s }))]}
+          options={[{ value: '', label: 'All statuses' }, ...ProjectStatusOptions]}
         />
         <DateRangeFilter
-          value={{ from: dateFilter?.from, to: dateFilter?.to }}
+          value={{ from: dateFilter?.from ?? '', to: dateFilter?.to ?? '' }}
           onChange={setDateFilter}
           label="Date"
           placeholder="Date"
@@ -172,7 +188,7 @@ export function ProjectsListPage() {
           onCancel={selection.exitSelectionMode}
         >
           <ExportButton
-            resource={ResourceName.PROJECT}
+            resource={'project'}
             selectedIds={Array.from(selection.selectedIds ?? [])}
             filenameStem="projects-selected"
             label="Export selected"
@@ -184,7 +200,7 @@ export function ProjectsListPage() {
       {isError && (
         <ErrorState
           title="Failed to load projects"
-          description="We could not load the projects list. Check your connection and try again."
+          description={getApiErrorMessage(error, 'We could not load the projects list. Check your connection and try again.')}
           onRetry={() => void refetch()}
         />
       )}
@@ -194,8 +210,8 @@ export function ProjectsListPage() {
           icon="folder_off"
           title="No projects yet"
           description="Create your first project or clear filters."
-          actionLabel="New Project"
-          onAction={goNew}
+          actionLabel={canCreateProject ? 'New Project' : undefined}
+          onAction={canCreateProject ? goNew : undefined}
         />
       )}
 
@@ -207,7 +223,7 @@ export function ProjectsListPage() {
             </div>
           )}
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[1000px]">
+            <table className="w-full text-left border-collapse min-w-[1120px]">
               <thead>
                 <tr className="border-b border-outline-variant/30 bg-surface/50">
                   <th className="py-4 px-6 w-12">
@@ -226,9 +242,13 @@ export function ProjectsListPage() {
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Proj ID</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Project Name</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Client</th>
+                  <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Team</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Priority & Status</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Progress</th>
+                  {/* Actions column hidden — row click opens quick view → full record.
+                      Restore the block below when row actions return.
                   <th className="py-4 px-6 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider text-right">Action</th>
+                  */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
@@ -294,6 +314,14 @@ export function ProjectsListPage() {
                         <p className="text-body-md font-semibold text-on-background">{project.clientName ?? '—'}</p>
                       </td>
                       <td className="py-2 px-4">
+                        <p className="text-body-md text-on-background">
+                          {project.teamName ??
+                            (project.teamId != null
+                              ? (teamNameById.get(project.teamId) ?? `Team #${project.teamId}`)
+                              : '—')}
+                        </p>
+                      </td>
+                      <td className="py-2 px-4">
                         <div className="flex flex-col gap-1 items-start">
                           <span className="status-badge status-neutral text-[10px]">{project.status.replace('_', ' ')}</span>
                           <div className="flex items-center gap-1.5">
@@ -313,6 +341,8 @@ export function ProjectsListPage() {
                           <span className="text-body-sm text-on-surface-variant">{project.progress ?? 0}%</span>
                         </div>
                       </td>
+                      {/* Row actions hidden — quick view (row click) → full record.
+                          Restore with the Action <th> above when row actions return.
                       <td
                         className="py-2 px-6 text-right"
                         onMouseDown={(e) => e.stopPropagation()}
@@ -344,6 +374,7 @@ export function ProjectsListPage() {
                           />
                         </div>
                       </td>
+                      */}
                     </tr>
                   )
                 })}

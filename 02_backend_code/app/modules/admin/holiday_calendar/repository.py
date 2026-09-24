@@ -1,7 +1,7 @@
 """Holiday calendar / holiday repository."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +16,7 @@ class HolidayCalendarRepository(BaseRepository):
 
     async def get_calendar_by_id(
         self, calendar_id: int, *, include_archived: bool = False
-    ) -> Optional[HolidayCalendar]:
+    ) -> HolidayCalendar | None:
         stmt = select(HolidayCalendar).where(HolidayCalendar.id == calendar_id)
         if not include_archived:
             stmt = stmt.where(HolidayCalendar.is_archived.is_(False))
@@ -24,7 +24,7 @@ class HolidayCalendarRepository(BaseRepository):
 
     async def get_by_id(
         self, calendar_id: int, *, include_archived: bool = False
-    ) -> Optional[HolidayCalendar]:
+    ) -> HolidayCalendar | None:
         return await self.get_calendar_by_id(
             calendar_id, include_archived=include_archived
         )
@@ -40,19 +40,19 @@ class HolidayCalendarRepository(BaseRepository):
     async def list(self, *, include_archived: bool = False) -> Sequence[HolidayCalendar]:
         return await self.list_calendars(include_archived=include_archived)
 
-    async def get_by_name(self, name: str) -> Optional[HolidayCalendar]:
+    async def get_by_name(self, name: str) -> HolidayCalendar | None:
         stmt = select(HolidayCalendar).where(
             HolidayCalendar.name == name.strip(),
             HolidayCalendar.is_archived.is_(False),
         )
         return await self.scalar_one_or_none(stmt)
 
-    async def get_holiday_by_id(self, holiday_id: int) -> Optional[Holiday]:
+    async def get_holiday_by_id(self, holiday_id: int) -> Holiday | None:
         return await self.scalar_one_or_none(
             select(Holiday).where(Holiday.id == holiday_id)
         )
 
-    async def get_holiday(self, holiday_id: int) -> Optional[Holiday]:
+    async def get_holiday(self, holiday_id: int) -> Holiday | None:
         return await self.get_holiday_by_id(holiday_id)
 
     async def list_holidays_for_calendar(self, calendar_id: int) -> Sequence[Holiday]:

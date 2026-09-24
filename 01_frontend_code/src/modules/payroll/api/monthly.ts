@@ -39,6 +39,7 @@ export async function listPayrollEmployees(
   return { items, total, page, pageSize, metrics }
 }
 
+/** Resolve by employment_id via list query (no dedicated employees/:id). */
 export async function getPayrollEmployee(id: string): Promise<PayrollEmployeeRow | null> {
   if (env.useMockApi) {
     await delay(200)
@@ -46,10 +47,12 @@ export async function getPayrollEmployee(id: string): Promise<PayrollEmployeeRow
     return row ? { ...row } : null
   }
   try {
-    const { data } = await apiClient.get<Record<string, unknown>>(
-      `/payroll/employees/${encodeURIComponent(id)}`,
-    )
-    return normalizeEmployee(data)
+    const { data } = await apiClient.get<unknown[]>('/payroll', {
+      params: { employment_id: id, limit: 1 },
+    })
+    const rows = Array.isArray(data) ? data : []
+    if (!rows.length) return null
+    return normalizeEmployee(rows[0] as Record<string, unknown>)
   } catch {
     return null
   }

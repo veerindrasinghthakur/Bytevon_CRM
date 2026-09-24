@@ -12,14 +12,16 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from app.modules.my_work.approvals.routes import router as approvals_router
 from app.modules.my_work.attendance.routes import router as attendance_router
 from app.modules.my_work.leave.routes import router as leave_router
-from app.modules.my_work.tasks.routes import router as tasks_router
-from app.modules.my_work.requests.routes import router as requests_router
-from app.modules.my_work.approvals.routes import router as approvals_router
+from app.modules.my_work.overview.routes import router as overview_router
 from app.modules.my_work.profile.routes import router as profile_router
+from app.modules.my_work.requests.routes import router as requests_router
+from app.modules.my_work.tasks.routes import router as tasks_router
 
 router = APIRouter()
+router.include_router(overview_router)
 router.include_router(leave_router)
 router.include_router(tasks_router)
 router.include_router(requests_router)

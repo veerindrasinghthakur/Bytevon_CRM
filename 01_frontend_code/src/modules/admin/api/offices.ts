@@ -83,7 +83,7 @@ export async function getOffice(officeId: string): Promise<OfficeLocation | null
     await delay()
     return offices.find((o) => o.id === officeId) ?? null
   }
-  const { data } = await apiClient.get<Record<string, unknown>>(`/organization/locations/${officeId}`)
+  const { data } = await apiClient.get<Record<string, unknown>>(`/admin/locations/${officeId}`)
   const o = mapLocationToHeadOption(data)
   return {
     id: o.id,
@@ -121,7 +121,7 @@ export async function createOffice(input: OfficeWriteInput): Promise<OfficeLocat
     offices.push(row)
     return { ...row }
   }
-  const { data } = await apiClient.post<Record<string, unknown>>('/organization/locations', {
+  const { data } = await apiClient.post<Record<string, unknown>>('/admin/locations', {
     name: input.name,
     country: input.country,
     city: input.city,
@@ -158,7 +158,7 @@ export async function updateOffice(
     return { ...row }
   }
   const { data } = await apiClient.patch<Record<string, unknown>>(
-    `/organization/locations/${officeId}`,
+    `/admin/locations/${officeId}`,
     input,
   )
   const o = mapLocationToHeadOption(data)
@@ -177,7 +177,7 @@ export async function updateOffice(
 
 /**
  * All non-archived locations for the head-office picker.
- * Backend: GET /organization/locations (not /admin/offices/*).
+ * Backend: GET /admin/locations (not /admin/offices/*).
  */
 export async function listHeadOfficeOptions(): Promise<HeadOfficeOption[]> {
   if (env.useMockApi) {

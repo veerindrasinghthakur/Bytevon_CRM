@@ -1,0 +1,958 @@
+{
+ "POST /api/v1/workforce/persons": [
+  "test_person_lifecycle"
+ ],
+ "GET /api/v1/workforce/persons": [
+  "test_person_lifecycle"
+ ],
+ "GET /api/v1/workforce/persons/{person_id}": [
+  "test_person_lifecycle"
+ ],
+ "PATCH /api/v1/workforce/persons/{person_id}": [
+  "test_person_lifecycle"
+ ],
+ "POST /api/v1/workforce/positions": [
+  "test_position_lifecycle",
+  "test_attendance_ops_flow"
+ ],
+ "GET /api/v1/workforce/positions": [
+  "test_position_lifecycle",
+  "test_attendance_ops_flow"
+ ],
+ "GET /api/v1/workforce/positions/{position_id}": [
+  "test_position_lifecycle",
+  "test_attendance_ops_flow"
+ ],
+ "PATCH /api/v1/workforce/positions/{position_id}": [
+  "test_position_lifecycle",
+  "test_attendance_ops_flow"
+ ],
+ "POST /api/v1/workforce/positions/{position_id}/archive": [
+  "test_position_lifecycle"
+ ],
+ "POST /api/v1/workforce/employees": [
+  "test_employment_lifecycle"
+ ],
+ "POST /api/v1/workforce/employments": [
+  "test_employment_lifecycle"
+ ],
+ "GET /api/v1/workforce/employments": [
+  "test_employment_lifecycle"
+ ],
+ "GET /api/v1/workforce/employments/by-person/{person_id}": [
+  "test_employment_lifecycle"
+ ],
+ "GET /api/v1/workforce/employments/{employment_id}": [
+  "test_employment_lifecycle"
+ ],
+ "PATCH /api/v1/workforce/employments/{employment_id}": [
+  "test_employment_lifecycle"
+ ],
+ "POST /api/v1/workforce/departments": [
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
+ ],
+ "GET /api/v1/workforce/departments": [
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
+ ],
+ "GET /api/v1/workforce/departments/{department_id}": [
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
+ ],
+ "PATCH /api/v1/workforce/departments/{department_id}": [
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
+ ],
+ "POST /api/v1/workforce/departments/{department_id}/archive": [
+  "test_department_lifecycle"
+ ],
+ "GET /api/v1/workforce/departments/{department_id}/employees": [
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
+ ],
+ "GET /api/v1/workforce/departments/{department_id}/employees-available": [
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
+ ],
+ "POST /api/v1/workforce/departments/{department_id}/assign": [
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
+ ],
+ "POST /api/v1/workforce/departments/{department_id}/remove": [
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
+ ],
+ "POST /api/v1/workforce/employments/{employment_id}/state": [
+  "test_assignment_and_state_flow",
+  "test_position_lifecycle",
+  "test_q2_separation_cascade",
+  "test_position_department_link",
+  "test_employment_detail_and_list_enriched"
+ ],
+ "GET /api/v1/workforce/employments/{employment_id}/state-history": [
+  "test_assignment_and_state_flow",
+  "test_position_lifecycle",
+  "test_position_department_link",
+  "test_employment_detail_and_list_enriched"
+ ],
+ "POST /api/v1/workforce/employments/{employment_id}/assignments": [
+  "test_assignment_and_state_flow",
+  "test_q1_overlapping_assignment_rejected",
+  "test_position_lifecycle",
+  "test_position_department_link",
+  "test_employment_detail_and_list_enriched"
+ ],
+ "GET /api/v1/workforce/employments/{employment_id}/assignments/current": [
+  "test_assignment_and_state_flow",
+  "test_position_lifecycle",
+  "test_position_department_link",
+  "test_employment_detail_and_list_enriched"
+ ],
+ "GET /api/v1/workforce/employments/{employment_id}/assignments": [
+  "test_assignment_and_state_flow",
+  "test_position_lifecycle",
+  "test_position_department_link",
+  "test_employment_detail_and_list_enriched"
+ ],
+ "POST /api/v1/workforce/attendance/punch": [
+  "test_attendance_ops_flow"
+ ],
+ "GET /api/v1/workforce/attendance/days/{day_id}": [
+  "test_attendance_ops_flow"
+ ],
+ "GET /api/v1/workforce/attendance/days/by-employment/{employment_id}": [
+  "test_attendance_ops_flow"
+ ],
+ "POST /api/v1/workforce/attendance/corrections": [
+  "test_attendance_ops_flow",
+  "test_attendance_today_and_manual_correction"
+ ],
+ "GET /api/v1/workforce/attendance/corrections/{correction_id}": [
+  "test_attendance_ops_flow"
+ ],
+ "GET /api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}": [
+  "test_attendance_ops_flow"
+ ],
+ "POST /api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/rebuild": [
+  "test_attendance_ops_flow"
+ ],
+ "POST /api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/lock": [
+  "test_attendance_ops_flow"
+ ],
+ "POST /api/v1/workforce/attendance/breaks/start": [
+  "test_attendance_ops_flow"
+ ],
+ "POST /api/v1/workforce/attendance/breaks/{break_id}/end": [
+  "test_attendance_ops_flow"
+ ],
+ "POST /api/v1/leave/policies": [
+  "test_policy_lifecycle"
+ ],
+ "GET /api/v1/leave/policies": [
+  "test_policy_lifecycle"
+ ],
+ "GET /api/v1/leave/policies/current/{leave_type}": [
+  "test_policy_lifecycle"
+ ],
+ "POST /api/v1/leave/requests": [
+  "test_request_lifecycle_with_cancel"
+ ],
+ "GET /api/v1/leave/requests": [
+  "test_request_lifecycle_with_cancel"
+ ],
+ "GET /api/v1/leave/requests/{request_id}": [
+  "test_request_lifecycle_with_cancel"
+ ],
+ "POST /api/v1/leave/requests/{request_id}/cancel": [
+  "test_request_lifecycle_with_cancel"
+ ],
+ "POST /api/v1/leave/ledger": [
+  "test_ledger_balances_context_calculate"
+ ],
+ "GET /api/v1/leave/ledger/{employment_id}": [
+  "test_ledger_balances_context_calculate"
+ ],
+ "GET /api/v1/leave/balances/{employment_id}": [
+  "test_ledger_balances_context_calculate"
+ ],
+ "GET /api/v1/leave/apply-context/{employment_id}": [
+  "test_ledger_balances_context_calculate"
+ ],
+ "POST /api/v1/leave/calculate": [
+  "test_ledger_balances_context_calculate"
+ ],
+ "POST /api/v1/approvals/{request_id}/approve": [
+  "test_approval_decisions_and_cancel_comment"
+ ],
+ "POST /api/v1/approvals/{request_id}/reject": [
+  "test_approval_decisions_and_cancel_comment"
+ ],
+ "POST /api/v1/approvals/requests/{request_id}/approve": [
+  "test_approval_decisions_and_cancel_comment"
+ ],
+ "POST /api/v1/approvals/requests/{request_id}/reject": [
+  "test_approval_decisions_and_cancel_comment"
+ ],
+ "POST /api/v1/approvals/requests/{request_id}/cancel": [
+  "test_approval_decisions_and_cancel_comment"
+ ],
+ "POST /api/v1/approvals/requests/{request_id}/comment": [
+  "test_approval_decisions_and_cancel_comment"
+ ],
+ "GET /api/v1/approvals/kpis": [
+  "test_approval_request_views"
+ ],
+ "GET /api/v1/approvals/pending": [
+  "test_approval_request_views"
+ ],
+ "GET /api/v1/approvals/my-requests": [
+  "test_approval_request_views"
+ ],
+ "GET /api/v1/approvals/approvers": [
+  "test_approval_request_views"
+ ],
+ "POST /api/v1/approvals/requests": [
+  "test_approval_request_views"
+ ],
+ "GET /api/v1/approvals/requests": [
+  "test_approval_request_views"
+ ],
+ "GET /api/v1/approvals/requests/{request_id}": [
+  "test_approval_request_views"
+ ],
+ "GET /api/v1/approvals/requests/by-reference/{request_type}/{reference_id}": [
+  "test_approval_request_views"
+ ],
+ "GET /api/v1/approvals/{request_id}": [
+  "test_approval_request_views"
+ ],
+ "GET /api/v1/rbac/resources": [
+  "test_rbac_catalog_reads"
+ ],
+ "GET /api/v1/rbac/permissions": [
+  "test_rbac_catalog_reads"
+ ],
+ "GET /api/v1/rbac/scopes": [
+  "test_rbac_catalog_reads"
+ ],
+ "GET /api/v1/rbac/sensitive-fields": [
+  "test_rbac_catalog_reads"
+ ],
+ "POST /api/v1/rbac/roles": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "GET /api/v1/rbac/roles": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "GET /api/v1/rbac/roles/{role_id}": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "PATCH /api/v1/rbac/roles/{role_id}": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "DELETE /api/v1/rbac/roles/{role_id}": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "POST /api/v1/rbac/roles/{role_id}/permissions": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "DELETE /api/v1/rbac/roles/{role_id}/permissions/{permission_id}/scopes/{scope_id}": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "POST /api/v1/rbac/employments/{employment_id}/roles": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "DELETE /api/v1/rbac/employments/{employment_id}/roles/{role_id}": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "GET /api/v1/rbac/employments/{employment_id}/roles": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "GET /api/v1/rbac/employments/{employment_id}/effective-permissions": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "PUT /api/v1/rbac/roles/{role_id}/sensitive-fields": [
+  "test_role_lifecycle_with_grants"
+ ],
+ "POST /api/v1/admin/departments": [
+  "test_admin_department_lifecycle"
+ ],
+ "GET /api/v1/admin/departments": [
+  "test_admin_department_lifecycle"
+ ],
+ "GET /api/v1/admin/departments/{department_id}": [
+  "test_admin_department_lifecycle"
+ ],
+ "PATCH /api/v1/admin/departments/{department_id}": [
+  "test_admin_department_lifecycle"
+ ],
+ "POST /api/v1/admin/departments/{department_id}/archive": [
+  "test_admin_department_lifecycle"
+ ],
+ "GET /api/v1/admin/departments/{department_id}/employees": [
+  "test_admin_department_lifecycle"
+ ],
+ "GET /api/v1/admin/departments/{department_id}/employees-available": [
+  "test_admin_department_lifecycle"
+ ],
+ "POST /api/v1/admin/departments/{department_id}/assign": [
+  "test_admin_department_lifecycle"
+ ],
+ "POST /api/v1/admin/departments/{department_id}/remove": [
+  "test_admin_department_lifecycle"
+ ],
+ "POST /api/v1/admin/locations": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "GET /api/v1/admin/locations": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "GET /api/v1/admin/locations/{location_id}": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "PATCH /api/v1/admin/locations/{location_id}": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/admin/locations/{location_id}/archive": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/admin/shifts": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "GET /api/v1/admin/shifts": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "GET /api/v1/admin/shifts/{shift_id}": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "PATCH /api/v1/admin/shifts/{shift_id}": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/admin/shifts/{shift_id}/archive": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/admin/working-weeks": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "GET /api/v1/admin/working-weeks": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "GET /api/v1/admin/working-weeks/current": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "GET /api/v1/admin/working-weeks/{working_week_id}": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/admin/working-weeks/{working_week_id}/archive": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/admin/holiday-calendars": [
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "GET /api/v1/admin/holiday-calendars": [
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "GET /api/v1/admin/holiday-calendars/{calendar_id}": [
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "PATCH /api/v1/admin/holiday-calendars/{calendar_id}": [
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/admin/holiday-calendars/{calendar_id}/archive": [
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/admin/holiday-calendars/{calendar_id}/holidays": [
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "GET /api/v1/admin/holiday-calendars/{calendar_id}/holidays": [
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "PATCH /api/v1/admin/holiday-calendars/holidays/{holiday_id}": [
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "DELETE /api/v1/admin/holiday-calendars/holidays/{holiday_id}": [
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/admin/audit/logs": [
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
+ ],
+ "GET /api/v1/admin/audit/logs": [
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
+ ],
+ "GET /api/v1/admin/audit/logs/{log_id}": [
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
+ ],
+ "POST /api/v1/admin/audit/archive": [
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
+ ],
+ "POST /api/v1/audit/logs": [
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
+ ],
+ "GET /api/v1/audit/logs": [
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
+ ],
+ "GET /api/v1/audit/logs/{log_id}": [
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
+ ],
+ "POST /api/v1/audit/archive": [
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
+ ],
+ "GET /api/v1/admin/settings": [
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
+ ],
+ "PUT /api/v1/admin/settings": [
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
+ ],
+ "PATCH /api/v1/admin/settings": [
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
+ ],
+ "GET /api/v1/admin/users": [
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
+ ],
+ "GET /api/v1/admin/employments-without-login": [
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
+ ],
+ "GET /api/v1/admin/users/{login_id}": [
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
+ ],
+ "POST /api/v1/admin/users": [
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
+ ],
+ "PATCH /api/v1/admin/users/{login_id}": [
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
+ ],
+ "POST /api/v1/admin/users/{login_id}/deactivate": [
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
+ ],
+ "POST /api/v1/admin/users/{login_id}/activate": [
+  "test_admin_settings_and_users"
+ ],
+ "POST /api/v1/admin/users/{login_id}/lock": [
+  "test_admin_settings_and_users"
+ ],
+ "POST /api/v1/admin/users/{login_id}/unlock": [
+  "test_admin_settings_and_users"
+ ],
+ "POST /api/v1/admin/users/{login_id}/archive": [
+  "test_admin_settings_and_users"
+ ],
+ "DELETE /api/v1/admin/users/{login_id}": [
+  "test_admin_settings_and_users"
+ ],
+ "POST /api/v1/admin/positions": [
+  "test_admin_settings_and_users"
+ ],
+ "GET /api/v1/admin/positions": [
+  "test_admin_settings_and_users"
+ ],
+ "GET /api/v1/admin/positions/{position_id}": [
+  "test_admin_settings_and_users"
+ ],
+ "PATCH /api/v1/admin/positions/{position_id}": [
+  "test_admin_settings_and_users"
+ ],
+ "POST /api/v1/admin/positions/{position_id}/archive": [
+  "test_admin_settings_and_users"
+ ],
+ "POST /api/v1/notifications/templates": [
+  "test_template_lifecycle_and_triggers"
+ ],
+ "GET /api/v1/notifications/templates": [
+  "test_template_lifecycle_and_triggers"
+ ],
+ "GET /api/v1/notifications/templates/{template_id}": [
+  "test_template_lifecycle_and_triggers"
+ ],
+ "PATCH /api/v1/notifications/templates/{template_id}": [
+  "test_template_lifecycle_and_triggers"
+ ],
+ "GET /api/v1/notifications/triggers": [
+  "test_template_lifecycle_and_triggers"
+ ],
+ "POST /api/v1/notifications/notify": [
+  "test_notify_compose_drafts_channels"
+ ],
+ "POST /api/v1/notifications/notify/bulk": [
+  "test_notify_compose_drafts_channels"
+ ],
+ "POST /api/v1/notifications/compose": [
+  "test_notify_compose_drafts_channels"
+ ],
+ "POST /api/v1/notifications/drafts": [
+  "test_notify_compose_drafts_channels"
+ ],
+ "GET /api/v1/notifications/channels": [
+  "test_notify_compose_drafts_channels"
+ ],
+ "GET /api/v1/notifications/preferences": [
+  "test_preferences_and_sent"
+ ],
+ "PUT /api/v1/notifications/preferences": [
+  "test_preferences_and_sent"
+ ],
+ "GET /api/v1/notifications/sent": [
+  "test_preferences_and_sent"
+ ],
+ "GET /api/v1/notifications/inbox": [
+  "test_inbox_flows"
+ ],
+ "GET /api/v1/notifications/inbox/all": [
+  "test_inbox_flows"
+ ],
+ "GET /api/v1/notifications/inbox/unread-count": [
+  "test_inbox_flows"
+ ],
+ "POST /api/v1/notifications/inbox/{notification_id}/read": [
+  "test_inbox_flows"
+ ],
+ "POST /api/v1/notifications/{notification_id}/read": [
+  "test_inbox_flows"
+ ],
+ "POST /api/v1/notifications/read-all": [
+  "test_inbox_flows"
+ ],
+ "POST /api/v1/notifications/inbox/{notification_id}/archive": [
+  "test_inbox_flows"
+ ],
+ "POST /api/v1/notifications/{notification_id}/archive": [
+  "test_inbox_flows"
+ ],
+ "POST /api/v1/notifications/archive-read": [
+  "test_inbox_flows"
+ ],
+ "GET /api/v1/sales/leads/filter-options": [
+  "test_sales_filters_and_reps"
+ ],
+ "GET /api/v1/sales/meta/lead-filter-options": [
+  "test_sales_filters_and_reps"
+ ],
+ "GET /api/v1/sales/clients/filter-options": [
+  "test_sales_filters_and_reps"
+ ],
+ "GET /api/v1/sales/meta/client-filter-options": [
+  "test_sales_filters_and_reps"
+ ],
+ "GET /api/v1/sales/sales-representatives": [
+  "test_sales_filters_and_reps"
+ ],
+ "POST /api/v1/sales/clients": [
+  "test_client_lifecycle_with_contacts"
+ ],
+ "GET /api/v1/sales/clients": [
+  "test_client_lifecycle_with_contacts"
+ ],
+ "GET /api/v1/sales/clients/{client_id}": [
+  "test_client_lifecycle_with_contacts"
+ ],
+ "PATCH /api/v1/sales/clients/{client_id}": [
+  "test_client_lifecycle_with_contacts"
+ ],
+ "POST /api/v1/sales/clients/{client_id}/archive": [
+  "test_client_lifecycle_with_contacts"
+ ],
+ "GET /api/v1/sales/clients/{client_id}/contacts": [
+  "test_client_lifecycle_with_contacts"
+ ],
+ "POST /api/v1/sales/clients/{client_id}/contacts": [
+  "test_client_lifecycle_with_contacts",
+  "test_sources_platforms_analytics"
+ ],
+ "POST /api/v1/sales/sources": [
+  "test_sources_platforms_analytics"
+ ],
+ "GET /api/v1/sales/sources": [
+  "test_sources_platforms_analytics"
+ ],
+ "GET /api/v1/sales/sources/{source_id}": [
+  "test_sources_platforms_analytics"
+ ],
+ "PATCH /api/v1/sales/sources/{source_id}": [
+  "test_sources_platforms_analytics"
+ ],
+ "POST /api/v1/sales/sources/{source_id}/archive": [
+  "test_sources_platforms_analytics"
+ ],
+ "POST /api/v1/sales/platforms": [
+  "test_sources_platforms_analytics"
+ ],
+ "GET /api/v1/sales/platforms": [
+  "test_sources_platforms_analytics"
+ ],
+ "GET /api/v1/sales/activity": [
+  "test_sources_platforms_analytics",
+  "test_client_lifecycle_with_contacts"
+ ],
+ "GET /api/v1/sales/case-studies": [
+  "test_sources_platforms_analytics"
+ ],
+ "POST /api/v1/sales/case-studies": [
+  "test_sources_platforms_analytics"
+ ],
+ "GET /api/v1/sales/dashboard": [
+  "test_sources_platforms_analytics"
+ ],
+ "GET /api/v1/sales/analytics": [
+  "test_sources_platforms_analytics"
+ ],
+ "GET /api/v1/sales/metrics/dashboard": [
+  "test_sources_platforms_analytics"
+ ],
+ "POST /api/v1/sales/leads": [
+  "test_lead_lifecycle"
+ ],
+ "GET /api/v1/sales/leads": [
+  "test_lead_lifecycle"
+ ],
+ "GET /api/v1/sales/leads/{lead_id}": [
+  "test_lead_lifecycle"
+ ],
+ "PATCH /api/v1/sales/leads/{lead_id}": [
+  "test_lead_lifecycle"
+ ],
+ "POST /api/v1/sales/leads/{lead_id}/status": [
+  "test_lead_lifecycle",
+  "test_q12_lead_won_opt_in_project"
+ ],
+ "GET /api/v1/payroll/kpis": [
+  "test_payroll_reads_and_bank_accounts"
+ ],
+ "GET /api/v1/payroll/period": [
+  "test_payroll_reads_and_bank_accounts"
+ ],
+ "GET /api/v1/payroll/activity": [
+  "test_payroll_reads_and_bank_accounts"
+ ],
+ "GET /api/v1/payroll/monthly-summary": [
+  "test_payroll_reads_and_bank_accounts"
+ ],
+ "GET /api/v1/payroll/employees": [
+  "test_payroll_reads_and_bank_accounts"
+ ],
+ "POST /api/v1/payroll/bank-accounts": [
+  "test_payroll_reads_and_bank_accounts"
+ ],
+ "GET /api/v1/payroll/bank-accounts/{employment_id}": [
+  "test_payroll_reads_and_bank_accounts"
+ ],
+ "GET /api/v1/payroll/bank-accounts/{employment_id}/primary": [
+  "test_payroll_reads_and_bank_accounts"
+ ],
+ "GET /api/v1/payroll/history": [
+  "test_payroll_reads_and_bank_accounts"
+ ],
+ "GET /api/v1/payroll/run/checks": [
+  "test_payroll_calculate_approve_pay"
+ ],
+ "GET /api/v1/payroll/run/preview": [
+  "test_payroll_calculate_approve_pay"
+ ],
+ "POST /api/v1/payroll/run": [
+  "test_payroll_calculate_approve_pay",
+  "test_q11_bulk_run_does_real_work"
+ ],
+ "POST /api/v1/payroll/salaries": [
+  "test_payroll_calculate_approve_pay"
+ ],
+ "GET /api/v1/payroll/salaries/current/{employment_id}": [
+  "test_payroll_calculate_approve_pay"
+ ],
+ "GET /api/v1/payroll/salaries/{employment_id}": [
+  "test_payroll_calculate_approve_pay"
+ ],
+ "POST /api/v1/payroll/calculate": [
+  "test_payroll_calculate_approve_pay"
+ ],
+ "GET /api/v1/payroll": [
+  "test_payroll_calculate_approve_pay"
+ ],
+ "POST /api/v1/payroll/{payroll_id}/approve": [
+  "test_payroll_calculate_approve_pay"
+ ],
+ "POST /api/v1/payroll/{payroll_id}/pay": [
+  "test_payroll_calculate_approve_pay"
+ ],
+ "GET /api/v1/payroll/{payroll_id}": [
+  "test_payroll_calculate_approve_pay"
+ ],
+ "POST /api/v1/projects/teams": [
+  "test_teams_and_project"
+ ],
+ "GET /api/v1/projects/teams": [
+  "test_teams_and_project"
+ ],
+ "GET /api/v1/projects/teams/{team_id}": [
+  "test_teams_and_project"
+ ],
+ "PATCH /api/v1/projects/teams/{team_id}": [
+  "test_teams_and_project"
+ ],
+ "POST /api/v1/projects/teams/{team_id}/members": [
+  "test_teams_and_project"
+ ],
+ "DELETE /api/v1/projects/teams/{team_id}/members/{employment_id}": [
+  "test_teams_and_project"
+ ],
+ "GET /api/v1/projects/teams/{team_id}/members": [
+  "test_teams_and_project"
+ ],
+ "POST /api/v1/projects/": [
+  "test_teams_and_project"
+ ],
+ "GET /api/v1/projects/": [
+  "test_teams_and_project"
+ ],
+ "GET /api/v1/projects/{project_id}/teams": [
+  "test_teams_and_project"
+ ],
+ "GET /api/v1/projects/{project_id}": [
+  "test_teams_and_project"
+ ],
+ "PATCH /api/v1/projects/{project_id}": [
+  "test_teams_and_project"
+ ],
+ "POST /api/v1/projects/tasks": [
+  "test_tasks_and_time_entries"
+ ],
+ "GET /api/v1/projects/tasks": [
+  "test_tasks_and_time_entries"
+ ],
+ "GET /api/v1/projects/tasks/{task_id}": [
+  "test_tasks_and_time_entries"
+ ],
+ "PATCH /api/v1/projects/tasks/{task_id}": [
+  "test_tasks_and_time_entries"
+ ],
+ "POST /api/v1/projects/time-entries": [
+  "test_tasks_and_time_entries"
+ ],
+ "GET /api/v1/projects/tasks/{task_id}/time-entries": [
+  "test_tasks_and_time_entries"
+ ],
+ "GET /api/v1/projects/projects/{project_id}/tasks": [
+  "test_tasks_and_time_entries"
+ ],
+ "POST /api/v1/projects/notes": [
+  "test_notes_and_documents"
+ ],
+ "GET /api/v1/projects/notes": [
+  "test_notes_and_documents"
+ ],
+ "GET /api/v1/projects/notes/{note_id}": [
+  "test_notes_and_documents"
+ ],
+ "PATCH /api/v1/projects/notes/{note_id}": [
+  "test_notes_and_documents"
+ ],
+ "POST /api/v1/projects/document-types": [
+  "test_notes_and_documents"
+ ],
+ "GET /api/v1/projects/document-types": [
+  "test_notes_and_documents"
+ ],
+ "PATCH /api/v1/projects/document-types/{type_id}": [
+  "test_notes_and_documents"
+ ],
+ "POST /api/v1/projects/document-types/{type_id}/archive": [
+  "test_notes_and_documents"
+ ],
+ "POST /api/v1/projects/documents": [
+  "test_notes_and_documents"
+ ],
+ "GET /api/v1/projects/documents/{document_id}": [
+  "test_notes_and_documents"
+ ],
+ "POST /api/v1/projects/documents/{document_id}/versions": [
+  "test_notes_and_documents"
+ ],
+ "POST /api/v1/projects/documents/{document_id}/archive": [
+  "test_notes_and_documents"
+ ],
+ "POST /api/v1/projects/links": [
+  "test_notes_and_documents"
+ ],
+ "GET /api/v1/projects/links/by-entity": [
+  "test_notes_and_documents"
+ ],
+ "GET /api/v1/projects/documents/{document_id}/links": [
+  "test_notes_and_documents"
+ ],
+ "GET /api/v1/my-work/tasks": [
+  "test_my_work_tasks_requests_approvals"
+ ],
+ "GET /api/v1/my-work/requests": [
+  "test_my_work_tasks_requests_approvals"
+ ],
+ "GET /api/v1/my-work/approvals": [
+  "test_my_work_tasks_requests_approvals"
+ ],
+ "POST /api/v1/my-work/attendance/punch": [
+  "test_my_work_attendance"
+ ],
+ "POST /api/v1/my-work/attendance/breaks/start": [
+  "test_my_work_attendance"
+ ],
+ "POST /api/v1/my-work/attendance/breaks/{break_id}/end": [
+  "test_my_work_attendance"
+ ],
+ "GET /api/v1/my-work/attendance/days": [
+  "test_my_work_attendance"
+ ],
+ "GET /api/v1/my-work/attendance/today-info": [
+  "test_my_work_attendance"
+ ],
+ "GET /api/v1/my-work/attendance/week-hours": [
+  "test_my_work_attendance"
+ ],
+ "GET /api/v1/my-work/attendance/corrections": [
+  "test_my_work_attendance"
+ ],
+ "GET /api/v1/my-work/attendance/correction-candidates": [
+  "test_my_work_attendance"
+ ],
+ "GET /api/v1/my-work/approvers": [
+  "test_my_work_attendance"
+ ],
+ "GET /api/v1/profile/me": [
+  "test_profile_and_dashboard"
+ ],
+ "PATCH /api/v1/profile/me": [
+  "test_profile_and_dashboard"
+ ],
+ "GET /api/v1/profile/activity": [
+  "test_profile_and_dashboard"
+ ],
+ "GET /api/v1/profile/sessions": [
+  "test_profile_and_dashboard"
+ ],
+ "GET /api/v1/dashboard/executive": [
+  "test_profile_and_dashboard"
+ ],
+ "GET /api/v1/my-work/leave": [
+  "test_my_work_leave"
+ ],
+ "GET /api/v1/my-work/leave/balances": [
+  "test_my_work_leave"
+ ],
+ "GET /api/v1/my-work/leave/types": [
+  "test_my_work_leave"
+ ],
+ "GET /api/v1/my-work/leave/apply-context": [
+  "test_my_work_leave"
+ ],
+ "POST /api/v1/my-work/leave/calculate": [
+  "test_my_work_leave"
+ ],
+ "POST /api/v1/my-work/leave": [
+  "test_my_work_leave"
+ ],
+ "POST /api/v1/auth/login": [
+  "tests/authentication/test_auth.py::test_020_valid_login_and_jwt_employment_id"
+ ],
+ "POST /api/v1/auth/refresh": [
+  "tests/authentication/test_auth.py::test_025_refresh_valid_pair"
+ ],
+ "POST /api/v1/auth/logout": [
+  "tests/authentication/test_auth.py::test_028_logout_single_session"
+ ],
+ "POST /api/v1/auth/change-password": [
+  "tests/authentication/test_auth.py::test_030_change_password_valid"
+ ],
+ "POST /api/v1/auth/forgot-password": [
+  "tests/authentication/test_auth.py::test_032_forgot_reset_flow_and_reuse_rejected"
+ ],
+ "POST /api/v1/auth/reset-password": [
+  "tests/authentication/test_auth.py::test_032_forgot_reset_flow_and_reuse_rejected"
+ ],
+ "GET /api/v1/auth/sessions": [
+  "tests/authentication/test_auth.py::test_028_logout_single_session"
+ ],
+ "POST /api/v1/payroll/{payroll_id}/reject": [
+  "test_q4_payroll_reject_and_paid_terminal"
+ ],
+ "POST /api/v1/leave/requests/{request_id}/request-cancel": [
+  "test_q5_approved_leave_cancel_reversal"
+ ],
+ "POST /api/v1/rbac/roles/{role_id}/restore": [
+  "test_q6_role_name_reserved_after_archive"
+ ],
+ "POST /api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/unlock": [
+  "test_q8_attendance_unlock_and_paid_block"
+ ],
+ "POST /api/v1/workforce/departments/{department_id}/restore": [
+  "test_q16_department_restore_and_clash"
+ ],
+ "DELETE /api/v1/workforce/positions/{position_id}": [
+  "test_attendance_ops_flow"
+ ],
+ "POST /api/v1/workforce/employments/{employment_id}/rehire": [
+  "test_q7_rehire_and_single_active_guard"
+ ],
+ "DELETE /api/v1/workforce/departments/{department_id}": [
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
+ ],
+ "GET /api/v1/workforce/attendance/today": [
+  "test_attendance_ops_flow",
+  "test_attendance_today_and_manual_correction"
+ ],
+ "DELETE /api/v1/sales/leads/{lead_id}": [
+  "test_sources_platforms_analytics"
+ ],
+ "GET /api/v1/sales/sources/{source_id}/leads": [
+  "test_sources_platforms_analytics"
+ ],
+ "POST /api/v1/workforce/shifts/{shift_id}/archive": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/leave/types": [
+  "test_leave_type_lifecycle"
+ ],
+ "GET /api/v1/leave/types": [
+  "test_leave_type_lifecycle"
+ ],
+ "GET /api/v1/leave/types/{type_id}": [
+  "test_leave_type_lifecycle"
+ ],
+ "PATCH /api/v1/leave/types/{type_id}": [
+  "test_leave_type_lifecycle"
+ ],
+ "POST /api/v1/leave/types/{type_id}/soft-delete": [
+  "test_leave_type_lifecycle"
+ ],
+ "GET /api/v1/dashboard/employee": [
+  "test_profile_and_dashboard"
+ ],
+ "GET /api/v1/my-work/tasks/projects": [
+  "test_profile_and_dashboard"
+ ],
+ "POST /api/v1/my-work/tasks": [
+  "test_profile_and_dashboard"
+ ]
+}

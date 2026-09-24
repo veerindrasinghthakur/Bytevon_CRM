@@ -92,13 +92,13 @@ export function ForgotPasswordPage() {
               <div className="space-y-2">
                 <h2 className="text-headline-md text-on-background">Check your email</h2>
                 <p className="text-body-md text-on-surface-variant">
-                  We've sent a password reset link to{' '}
+                  We&apos;ve sent a password reset link to{' '}
                   <span className="font-bold text-on-background">{sentTo}</span>.
                 </p>
               </div>
               <div className="bg-surface-container-low p-4 rounded-lg text-left border border-outline-variant/30">
                 <p className="text-label-sm text-on-surface-variant">
-                  Didn't receive the email? Check spam, or open the browser console for the mock
+                  Didn&apos;t receive the email? Check spam, or open the browser console for the mock
                   reset token (dev only).
                 </p>
               </div>

@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
+import { Select } from '@/shared/components/ui/Select'
 import { EntitySearch } from '@/shared/components/forms/EntitySearch'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
@@ -10,13 +11,21 @@ export function TaskCreatePage() {
   const {
     form,
     project,
+    projectId,
+    lockedProject,
+    projectOptions,
+    projectsLoading,
+    projectsError,
     backTo,
     formError,
     employeeOptions,
-    employeesQuery,
+    teamId,
+    membersLoading,
+    membersError,
     createMutation,
     priority,
     assignee,
+    setProjectId,
     setAssignee,
     setPriority,
     onSubmit,
@@ -102,19 +111,55 @@ export function TaskCreatePage() {
                   Assignment
                 </h3>
               </div>
+              {!lockedProject ? (
+                <>
+                  <Select
+                    label="Project"
+                    value={projectId != null ? String(projectId) : ''}
+                    onChange={(v) => setProjectId(v ? Number(v) : null)}
+                    options={[
+                      { value: '', label: 'Select project…' },
+                      ...projectOptions,
+                    ]}
+                    disabled={projectsLoading}
+                    minWidthClass="w-full"
+                  />
+                  {projectsError && (
+                    <p className="text-body-sm text-error">
+                      {getApiErrorMessage(projectsError, 'Could not load projects')}
+                    </p>
+                  )}
+                </>
+              ) : (
+                project && (
+                  <p className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-body-sm text-on-surface-variant">
+                    For project: <strong className="text-on-surface">{project.name}</strong>
+                  </p>
+                )
+              )}
               <EntitySearch
-                label="Assign to"
+                label="Assign to (project team only)"
                 placeholder={
-                  employeesQuery.isLoading
-                    ? 'Loading employees…'
-                    : 'Search employees by name, code, or department…'
+                  projectId == null
+                    ? 'Select a project first…'
+                    : membersLoading
+                      ? 'Loading team members…'
+                      : teamId == null
+                        ? 'No team on this project…'
+                        : 'Search team members…'
                 }
                 options={employeeOptions}
                 value={assignee ?? null}
                 onChange={setAssignee}
-                disabled={employeesQuery.isLoading}
+                disabled={membersLoading || projectId == null || teamId == null}
                 emptyMessage={
-                  employeesQuery.isError ? 'Failed to load employees' : 'No employees match'
+                  projectId == null
+                    ? 'Select a project to see its team members'
+                    : membersError
+                      ? 'Failed to load team members'
+                      : teamId == null
+                        ? 'Assign a team to this project first'
+                        : 'No team members found'
                 }
               />
             </div>
@@ -129,7 +174,7 @@ export function TaskCreatePage() {
               <div>
                 <label className="block text-label-sm text-on-surface-variant mb-1">Priority</label>
                 <div className="flex bg-surface-container rounded-lg p-1">
-                  {(['LOW', 'MEDIUM', 'HIGH'] as const).map((p) => (
+                  {(['LOW', 'MEDIUM', 'HIGH', 'URGENT'] as const).map((p) => (
                     <button
                       key={p}
                       type="button"
@@ -143,10 +188,52 @@ export function TaskCreatePage() {
                       {p === 'LOW' && 'Low'}
                       {p === 'MEDIUM' && 'Medium'}
                       {p === 'HIGH' && 'High'}
+                      {p === 'URGENT' && 'Urgent'}
                     </button>
                   ))}
                 </div>
                 <input type="hidden" {...register('priority')} />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-label-sm text-on-surface-variant mb-1" htmlFor="startDate">
+                    Start date
+                  </label>
+                  <input
+                    id="startDate"
+                    type="date"
+                    {...register('startDate')}
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-label-sm text-on-surface-variant mb-1" htmlFor="dueDate">
+                    Due date
+                  </label>
+                  <input
+                    id="dueDate"
+                    type="date"
+                    {...register('dueDate')}
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-label-sm text-on-surface-variant mb-1" htmlFor="estimatedHours">
+                  Estimated hours
+                </label>
+                <input
+                  id="estimatedHours"
+                  type="number"
+                  min={0}
+                  step="0.5"
+                  {...register('estimatedHours', { valueAsNumber: true })}
+                  className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
+                  placeholder="e.g. 8"
+                />
+                {errors.estimatedHours && (
+                  <p className="mt-1 text-body-sm text-error">{String(errors.estimatedHours.message)}</p>
+                )}
               </div>
             </div>
 

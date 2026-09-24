@@ -74,8 +74,11 @@ function mapApiEmployment(row: Record<string, unknown>): EmploymentListItem {
   const first = String(row.firstName ?? row.first_name ?? person.first_name ?? '')
   const last = String(row.lastName ?? row.last_name ?? person.last_name ?? '')
   const code = String(row.employeeCode ?? row.employee_code ?? '')
-  const fullName = `${first} ${last}`.trim() || code || `Employment ${id}`
+  const personName = String(row.person_name ?? row.personName ?? '')
+  const fullName = `${first} ${last}`.trim() || personName || code || `Employment ${id}`
   const currentState = String(row.currentState ?? row.current_state ?? '')
+  const deptId = row.departmentId ?? row.department_id
+  const posId = row.positionId ?? row.position_id
   return {
     id,
     person_id: Number(row.personId ?? row.person_id ?? 0),
@@ -84,17 +87,18 @@ function mapApiEmployment(row: Record<string, unknown>): EmploymentListItem {
     current_state: currentState as EmploymentState,
     joining_date: String(row.joiningDate ?? row.joining_date ?? ''),
     created_at: String(row.createdAt ?? row.created_at ?? ''),
-    updated_at: String(row.updatedAt ?? row.updated_at ?? ''),
+    updated_at: String(row.updatedAt ?? row.updatedAt ?? ''),
     changed_by: Number(row.changedBy ?? row.changed_by ?? 0),
     fullName,
-    firstName: first,
-    lastName: last,
+    firstName: first || personName.split(' ')[0] || '',
+    lastName: last || personName.split(' ').slice(1).join(' ') || '',
     email: String(row.email ?? row.loginEmail ?? person.personal_email ?? ''),
     phone: String(row.phone ?? row.personalPhone ?? person.personal_phone ?? ''),
-    departmentName: String(row.departmentName ?? '—'),
-    departmentId: row.departmentId != null ? Number(row.departmentId) : null,
-    positionName: String(row.positionName ?? '—'),
-    locationName: String(row.locationName ?? '—'),
+    departmentName: String(row.departmentName ?? row.department_name ?? '—'),
+    departmentId: deptId != null ? Number(deptId) : null,
+    positionName: String(row.positionName ?? row.position_name ?? '—'),
+    positionId: posId != null ? Number(posId) : null,
+    locationName: String(row.locationName ?? row.location_name ?? '—'),
     hasLogin: Boolean(row.hasLogin),
     avatarInitials: fullName
       .split(' ')
@@ -264,14 +268,96 @@ function mapApiEmployeeDetail(raw: Record<string, unknown>): EmployeeDetailDto {
     changed_by: Number(h.changed_by ?? h.changedBy ?? 0),
   }))
 
+  // Joined display names (backend enriches detail/list rows; fall back to
+  // the nested objects when present, e.g. mock mode).
+  const deptId = Number(
+    raw.department_id ?? raw.departmentId ?? (raw.department as Record<string, unknown> | null)?.id ?? 0,
+  )
+  const deptName = String(
+    raw.department_name ?? raw.departmentName ?? (raw.department as Record<string, unknown> | null)?.name ?? '',
+  )
+  const posId = Number(
+    raw.position_id ?? raw.positionId ?? (raw.position as Record<string, unknown> | null)?.id ?? 0,
+  )
+  const posName = String(
+    raw.position_name ?? raw.positionName ?? (raw.position as Record<string, unknown> | null)?.name ?? '',
+  )
+  const locId = Number(
+    raw.location_id ?? raw.locationId ?? (raw.location as Record<string, unknown> | null)?.id ?? 0,
+  )
+  const locName = String(
+    raw.location_name ?? raw.locationName ?? (raw.location as Record<string, unknown> | null)?.name ?? '',
+  )
+  const shiftId = Number(
+    raw.shift_id ?? raw.shiftId ?? (raw.shift as Record<string, unknown> | null)?.id ?? 0,
+  )
+  const shiftName = String(
+    raw.shift_name ?? raw.shiftName ?? (raw.shift as Record<string, unknown> | null)?.name ?? '',
+  )
+  const department = deptId || deptName
+    ? {
+        id: deptId || 0,
+        name: deptName || '—',
+        department_head_employment_id: null,
+        is_archived: false,
+        created_at: '',
+        created_by: 0,
+      }
+    : null
+  const position = posId || posName
+    ? { id: posId || 0, name: posName || '—', is_archived: false, created_at: '', updated_at: '' }
+    : null
+  const location = locId || locName
+    ? {
+        id: locId || 0,
+        name: locName || '—',
+        timezone: '',
+        working_week_id: 0,
+        holiday_calendar_id: 0,
+        latitude: 0,
+        longitude: 0,
+        attendance_radius_meters: 0,
+        allowed_ip_cidrs: [],
+        country: '',
+        state: '',
+        city: '',
+        address: '',
+        payroll_region: null,
+        currency: '',
+        fiscal_year_start_month: 1,
+        is_archived: false,
+        archived_at: null,
+        archived_by: null,
+        created_at: '',
+        updated_at: '',
+        changed_by: 0,
+      }
+    : null
+  const shift = shiftId || shiftName
+    ? {
+        id: shiftId || 0,
+        name: shiftName || '—',
+        start_time: '',
+        end_time: '',
+        is_overnight: false,
+        grace_late_minutes: 0,
+        flexible_end: false,
+        break_duration_minutes: null,
+        is_archived: false,
+        created_at: '',
+        updated_at: '',
+        changed_by: 0,
+      }
+    : null
+
   return {
     employment,
     person,
     currentAssignment,
-    department: null,
-    position: null,
-    location: null,
-    shift: null,
+    department,
+    position,
+    location,
+    shift,
     stateHistory,
     assignmentHistory: currentAssignment ? [currentAssignment] : [],
     roleIds: [],
@@ -363,7 +449,10 @@ export async function getEmployeeDetail(employmentId: number): Promise<EmployeeD
 export async function createEmployment(input: CreateEmploymentSchemaInput) {
   if (!env.useMockApi) {
     const email = (input.personalEmail || '').trim() || null
-    const { data } = await apiClient.post<Record<string, unknown>>('/workforce/employments', {
+    // One-shot onboarding: Person + Employment in one TX (backend auto-generates
+    // employee_code). NOTE: /workforce/employments requires person_id + code
+    // (422 on person-shaped payloads) — the correct route is /workforce/employees.
+    const { data } = await apiClient.post<Record<string, unknown>>('/workforce/employees', {
       first_name: input.firstName.trim(),
       last_name: input.lastName.trim(),
       date_of_birth: input.dateOfBirth || null,
@@ -378,6 +467,10 @@ export async function createEmployment(input: CreateEmploymentSchemaInput) {
       shift_id: input.shiftId || null,
       work_mode: input.workMode || 'OFFICE',
       assignment_change_reason: 'Initial assignment',
+      create_login: input.create_login ?? false,
+      login_email: input.login_email || null,
+      login_temporary_password: input.login_temporary_password || null,
+      login_role_id: input.login_role_id ?? null,
     })
     return mapApiEmployeeDetail(data)
   }
@@ -475,6 +568,21 @@ export async function createEmployment(input: CreateEmploymentSchemaInput) {
     })
   }
 
+  if (input.create_login && input.login_email) {
+    ensureLoginUsers().push({
+      id: nextId(ensureLoginUsers() as unknown as { id: number }[]),
+      employment_id: empId,
+      email: String(input.login_email),
+      temporary_password: (input.login_temporary_password as string | null) ?? null,
+      status: 'ACTIVE',
+      failed_attempt_count: 0,
+      locked_until: null,
+      last_login_at: null,
+      created_at: now,
+      updated_at: now,
+    })
+  }
+
   return getEmployeeDetail(empId)
 }
 
@@ -531,38 +639,44 @@ export async function updateEmployment(
 export async function getOrgMastersForEmployeeForm() {
   if (!env.useMockApi) {
     const [depts, positions, locations, shifts] = await Promise.all([
-      apiClient.get<Array<{ id: number; name: string }>>('/organization/departments'),
-      apiClient.get<Array<{ id: number; name: string }>>('/workforce/positions'),
-      apiClient.get<Array<{ id: number; name: string }>>('/organization/locations'),
-      apiClient.get<Array<{ id: number; name: string }>>('/organization/shifts'),
+      apiClient.get<
+        | Array<{ id: number; name: string }>
+        | { items?: Array<{ id: number; name: string }> }
+      >('/workforce/departments'),
+      apiClient.get<
+        Array<{ id: number; name: string; department_id?: number | null }>
+      >('/workforce/positions'),
+      apiClient.get<Array<{ id: number; name: string }>>('/admin/locations'),
+      apiClient.get<Array<{ id: number; name: string }>>('/workforce/shifts'),
     ])
+    const asArray = (
+      data: Array<{ id: number; name: string }> | { items?: Array<{ id: number; name: string }> },
+    ) => (Array.isArray(data) ? data : (data.items ?? []))
+    const posRows = asArray(positions.data) as Array<{
+      id: number
+      name: string
+      department_id?: number | null
+    }>
     return {
-      departments: depts.data,
-      positions: positions.data,
-      locations: locations.data,
-      shifts: shifts.data,
+      departments: asArray(depts.data),
+      positions: posRows.map((p) => ({
+        id: p.id,
+        name: p.name,
+        departmentId: p.department_id ?? null,
+      })),
+      locations: asArray(locations.data),
+      shifts: asArray(shifts.data),
     }
   }
   await delay(200)
   const db = getDb()
   return {
     departments: db.schema_departments.filter((d) => !d.is_archived).map((d) => ({ ...d })),
-    positions: db.positions.filter((p) => !p.is_archived).map((p) => ({ ...p })),
+    positions: db.positions
+      .filter((p) => !p.is_archived)
+      .map((p) => ({ ...p, departmentId: (p as { department_id?: number }).department_id ?? null })),
     locations: db.locations.filter((l) => !l.is_archived).map((l) => ({ ...l })),
     shifts: db.shifts.filter((s) => !s.is_archived).map((s) => ({ ...s })),
-  }
-}
-
-export async function archivePosition(id: number): Promise<void> {
-  if (!env.useMockApi) {
-    await apiClient.post(`/workforce/positions/${id}/archive`)
-    return
-  }
-  await delay()
-  const db = getDb()
-  const position = db.positions.find((p) => p.id === id)
-  if (position) {
-    ;(position as { is_archived: boolean }).is_archived = true
   }
 }
 
@@ -624,9 +738,12 @@ export async function createEmploymentAssignment(
     locationId?: number
     shiftId?: number
     workMode?: string
+    effectiveFrom?: string
     changeReason?: string
   },
 ): Promise<void> {
+  const effectiveFrom =
+    assignmentData.effectiveFrom || new Date().toISOString().slice(0, 10)
   if (!env.useMockApi) {
     await apiClient.post(
       `/workforce/employments/${employmentId}/assignments`,
@@ -636,7 +753,7 @@ export async function createEmploymentAssignment(
         location_id: assignmentData.locationId,
         shift_id: assignmentData.shiftId,
         work_mode: assignmentData.workMode || 'OFFICE',
-        effective_from: new Date().toISOString().slice(0, 10),
+        effective_from: effectiveFrom,
         change_reason: assignmentData.changeReason || 'Assignment update',
       },
     )
@@ -654,7 +771,7 @@ export async function createEmploymentAssignment(
     location_id: assignmentData.locationId,
     shift_id: assignmentData.shiftId,
     work_mode: assignmentData.workMode ?? 'OFFICE',
-    effective_from: now.slice(0, 10),
+    effective_from: effectiveFrom,
     effective_to: null,
     change_reason: assignmentData.changeReason ?? 'New assignment',
     created_at: now,
@@ -693,4 +810,29 @@ export async function getEmploymentAssignmentHistory(
   return db.employment_assignments
     .filter((a) => a.employment_id === employmentId)
     .sort((a, b) => b.effective_from.localeCompare(a.effective_from))
+}
+
+export interface RehireEmploymentBody {
+  reason?: string
+  joining_date?: string | null
+}
+
+/** Rehire an archived employment — backend POST /workforce/employments/{id}/rehire. */
+export async function rehireEmployment(
+  employmentId: number,
+  body: RehireEmploymentBody = {},
+): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(`/workforce/employments/${employmentId}/rehire`, {
+      reason: body.reason ?? 'Rehired',
+      joining_date: body.joining_date ?? new Date().toISOString().slice(0, 10),
+    })
+    return
+  }
+  await delay()
+  const db = getDb()
+  const emp = db.employments.find((e) => e.id === employmentId)
+  if (emp) {
+    emp.current_state = EmploymentState.ONBOARDING
+  }
 }

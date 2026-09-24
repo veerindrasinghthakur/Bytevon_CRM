@@ -4,10 +4,11 @@ import { Button } from '@/shared/components/ui/Button'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { Can } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { Action } from '@/shared/schema'
 import { useEmployeesList } from '../../hooks/use-employees-list'
 import { workforceRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
@@ -35,6 +36,8 @@ export function EmployeesListPage() {
     pageItems,
     metrics,
     departments,
+    departmentCount,
+    positionCount,
     states,
     types,
     loading,
@@ -95,7 +98,7 @@ export function EmployeesListPage() {
     return (
       <ErrorState
         title="Could not load employees"
-        description="Employee directory failed to load. Retry or go back."
+        description={getApiErrorMessage(error, 'Employee directory failed to load. Retry or go back.')}
         onRetry={() => void reload()}
         onBack={() => safeNavigate(navigate, { to: workforceRoutes.employees })}
       />
@@ -110,13 +113,13 @@ export function EmployeesListPage() {
         actions={
           <div className="flex gap-2 flex-wrap">
             <ExportButton
-              resource={ResourceName.EMPLOYMENT}
+              resource={'employment'}
               query={search}
               filters={{ department: deptFilter, state: stateFilter, type: typeFilter }}
               selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
               filenameStem="employees"
             />
-            <Can action={Action.CREATE} resource={ResourceName.EMPLOYMENT}>
+            <Can action={Action.CREATE} resource={'employment'}>
               <Button variant="primary" leftIcon={<Icon name="add" />} onClick={goNew}>
                 Add Employee
               </Button>
@@ -129,6 +132,8 @@ export function EmployeesListPage() {
         total={metrics.total}
         active={metrics.active}
         archived={metrics.archived}
+        departments={departmentCount}
+        positions={positionCount}
       />
 
       {selection.selectionMode && (
@@ -138,7 +143,7 @@ export function EmployeesListPage() {
           onCancel={selection.exitSelectionMode}
         >
           <ExportButton
-            resource={ResourceName.EMPLOYMENT}
+            resource={'employment'}
             selectedIds={Array.from(selection.selectedIds)}
             filenameStem="employees-selected"
             label="Export selected"

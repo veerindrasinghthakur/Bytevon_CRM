@@ -10,6 +10,7 @@ export const projectListItemSchema = z.object({
   name: z.string(),
   code: z.string().optional().nullable(),
   status: projectStatusSchema,
+  clientId: z.number().nullable().optional(),
   clientName: z.string().optional().nullable(),
   startDate: z.string().nullable().optional(),
   endDate: z.string().nullable().optional(),

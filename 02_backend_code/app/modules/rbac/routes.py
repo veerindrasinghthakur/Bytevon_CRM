@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Header, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
+from app.core.authorization import AuthContext, enforce_owner_or_grant, require_permission
 from app.modules.rbac.dependencies import RBACServiceDep
 from app.modules.rbac.schemas import (
     AssignRoleRequest,
@@ -29,31 +30,29 @@ from app.modules.rbac.schemas import (
 
 router = APIRouter(prefix="/rbac", tags=["RBAC"])
 
-ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
-
-@router.get("/resources", response_model=list[ResourceResponse])
+@router.get("/resources", response_model=list[ResourceResponse], dependencies=[Depends(require_permission("role", "VIEW", "ORGANIZATION"))])
 async def list_resources(service: RBACServiceDep) -> list[ResourceResponse]:
     return await service.list_resources()
 
 
-@router.get("/permissions", response_model=list[PermissionResponse])
+@router.get("/permissions", response_model=list[PermissionResponse], dependencies=[Depends(require_permission("role", "VIEW", "ORGANIZATION"))])
 async def list_permissions(
     service: RBACServiceDep,
-    resource_id: Optional[int] = Query(None),
+    resource_id: int | None = Query(None),
 ) -> list[PermissionResponse]:
     return await service.list_permissions(resource_id=resource_id)
 
 
-@router.get("/scopes", response_model=list[ScopeResponse])
+@router.get("/scopes", response_model=list[ScopeResponse], dependencies=[Depends(require_permission("role", "VIEW", "ORGANIZATION"))])
 async def list_scopes(service: RBACServiceDep) -> list[ScopeResponse]:
     return await service.list_scopes()
 
 
-@router.get("/sensitive-fields", response_model=list[SensitiveFieldResponse])
+@router.get("/sensitive-fields", response_model=list[SensitiveFieldResponse], dependencies=[Depends(require_permission("role", "VIEW", "ORGANIZATION"))])
 async def list_sensitive_fields(
     service: RBACServiceDep,
-    resource_id: Optional[int] = Query(None),
+    resource_id: int | None = Query(None),
 ) -> list[SensitiveFieldResponse]:
     return await service.list_sensitive_fields(resource_id=resource_id)
 
@@ -66,16 +65,16 @@ async def list_sensitive_fields(
 async def create_role(
     body: RoleCreate,
     service: RBACServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "CREATE", "ORGANIZATION"))],
 ) -> RoleResponse:
-    return await service.create_role(body, actor_employment_id=actor)
+    return await service.create_role(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/roles", response_model=RoleListResponse)
+@router.get("/roles", response_model=RoleListResponse, dependencies=[Depends(require_permission("role", "VIEW", "ORGANIZATION"))])
 async def list_roles(
     service: RBACServiceDep,
-    search: Optional[str] = Query(None),
-    category: Optional[str] = Query(None, description="Core Role | Standard"),
+    search: str | None = Query(None),
+    category: str | None = Query(None, description="Core Role | Standard"),
     page: int = Query(1, ge=1),
     pageSize: int = Query(20, ge=1, le=200),
 ) -> RoleListResponse:
@@ -87,9 +86,9 @@ async def list_roles(
     )
 
 
-@router.get("/roles/{role_id}", response_model=RoleDetailResponse)
-async def get_role(role_id: int, service: RBACServiceDep) -> RoleDetailResponse:
-    return await service.get_role(role_id)
+@router.get("/roles/{role_id}", response_model=RoleDetailResponse, dependencies=[Depends(require_permission("role", "VIEW", "ORGANIZATION"))])
+async def get_role(role_id: int, service: RBACServiceDep, include_archived: bool = Query(False)) -> RoleDetailResponse:
+    return await service.get_role(role_id, include_archived=include_archived)
 
 
 @router.patch("/roles/{role_id}", response_model=RoleResponse)
@@ -97,18 +96,27 @@ async def update_role(
     role_id: int,
     body: RoleUpdate,
     service: RBACServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "UPDATE", "ORGANIZATION"))],
 ) -> RoleResponse:
-    return await service.update_role(role_id, body, actor_employment_id=actor)
+    return await service.update_role(role_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.delete("/roles/{role_id}", response_model=MessageResponse)
 async def delete_role(
     role_id: int,
     service: RBACServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "DELETE", "ORGANIZATION"))],
 ) -> MessageResponse:
-    return await service.delete_role(role_id, actor_employment_id=actor)
+    return await service.delete_role(role_id, actor_employment_id=auth.employment_id)
+
+
+@router.post("/roles/{role_id}/restore", response_model=RoleResponse)
+async def restore_role(
+    role_id: int,
+    service: RBACServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "UPDATE", "ORGANIZATION"))],
+) -> RoleResponse:
+    return await service.restore_role(role_id, actor_employment_id=auth.employment_id)
 
 
 @router.post(
@@ -120,9 +128,9 @@ async def grant_permission(
     role_id: int,
     body: RolePermissionGrant,
     service: RBACServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "CREATE", "ORGANIZATION"))],
 ) -> RolePermissionResponse:
-    return await service.grant_permission(role_id, body, actor_employment_id=actor)
+    return await service.grant_permission(role_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.delete(
@@ -134,10 +142,10 @@ async def revoke_permission(
     permission_id: int,
     scope_id: int,
     service: RBACServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "DELETE", "ORGANIZATION"))],
 ) -> MessageResponse:
     return await service.revoke_permission(
-        role_id, permission_id, scope_id, actor_employment_id=actor
+        role_id, permission_id, scope_id, actor_employment_id=auth.employment_id
     )
 
 
@@ -150,10 +158,10 @@ async def assign_role(
     employment_id: int,
     body: AssignRoleRequest,
     service: RBACServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "CREATE", "ORGANIZATION"))],
 ) -> EmployeeRoleResponse:
     return await service.assign_role(
-        employment_id, body, actor_employment_id=actor
+        employment_id, body, actor_employment_id=auth.employment_id
     )
 
 
@@ -165,16 +173,17 @@ async def unassign_role(
     employment_id: int,
     role_id: int,
     service: RBACServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "DELETE", "ORGANIZATION"))],
 ) -> MessageResponse:
     return await service.unassign_role(
-        employment_id, role_id, actor_employment_id=actor
+        employment_id, role_id, actor_employment_id=auth.employment_id
     )
 
 
 @router.get(
     "/employments/{employment_id}/roles",
     response_model=list[EmployeeRoleResponse],
+    dependencies=[Depends(require_permission("role", "VIEW", "ORGANIZATION"))],
 )
 async def list_roles_for_employment(
     employment_id: int,
@@ -190,7 +199,10 @@ async def list_roles_for_employment(
 async def get_effective_permissions(
     employment_id: int,
     service: RBACServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "VIEW", "SELF", union=True))],
 ) -> EffectivePermissionsResponse:
+    # Own permission set always readable; others need ≥ DEPARTMENT grant.
+    enforce_owner_or_grant(auth, "role", "VIEW", owner_employment_id=employment_id)
     return await service.get_effective_permissions(employment_id)
 
 
@@ -202,8 +214,8 @@ async def set_sensitive_field_permission(
     role_id: int,
     body: RoleSensitiveFieldPermissionSet,
     service: RBACServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "UPDATE", "ORGANIZATION"))],
 ) -> RoleSensitiveFieldPermissionResponse:
     return await service.set_sensitive_field_permission(
-        role_id, body, actor_employment_id=actor
+        role_id, body, actor_employment_id=auth.employment_id
     )

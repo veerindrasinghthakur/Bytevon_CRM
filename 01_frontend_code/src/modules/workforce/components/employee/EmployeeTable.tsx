@@ -24,7 +24,9 @@ export type EmployeeListRow = {
   employee_code: string
   email?: string
   departmentName: string
+  departmentId?: number | null
   positionName: string
+  positionId?: number | null
   employment_type: string
   current_state: string
   hasLogin?: boolean
@@ -133,15 +135,18 @@ export function EmployeeTable({
                 <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">
                   Login
                 </th>
+                {/* Actions column hidden — quick view → full record is the interaction path.
+                    Restore the block below when row actions return.
                 <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider text-right">
                   Actions
                 </th>
+                */}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/30">
               {paddingTop > 0 && (
                 <tr>
-                  <td colSpan={8} style={{ height: `${paddingTop}px` }} />
+                  <td colSpan={7} style={{ height: `${paddingTop}px` }} />
                 </tr>
               )}
               {virtualRows.map((virtualRow) => {
@@ -202,8 +207,18 @@ export function EmployeeTable({
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-body-md">{emp.departmentName}</td>
-                    <td className="px-4 py-4 text-body-md">{emp.positionName}</td>
+                    <td className="px-4 py-4 text-body-md">
+                      <p>{emp.departmentName}</p>
+                      {emp.departmentId != null && (
+                        <p className="text-label-sm text-on-surface-variant">Dept #{emp.departmentId}</p>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 text-body-md">
+                      <p>{emp.positionName}</p>
+                      {emp.positionId != null && (
+                        <p className="text-label-sm text-on-surface-variant">Pos #{emp.positionId}</p>
+                      )}
+                    </td>
                     <td className="px-4 py-4 text-body-md">
                       {emp.employment_type.replace(/_/g, ' ')}
                     </td>
@@ -223,6 +238,8 @@ export function EmployeeTable({
                         <span className={loginDisabledClass}>No login</span>
                       )}
                     </td>
+                    {/* Row actions hidden — quick view (row click) → full record.
+                        Restore with the Actions <th> above when row actions return.
                     <td
                       className="px-4 py-4 text-right"
                       onMouseDown={(e) => e.stopPropagation()}
@@ -248,12 +265,13 @@ export function EmployeeTable({
                         />
                       </div>
                     </td>
+                    */}
                   </tr>
                 )
               })}
               {paddingBottom > 0 && (
                 <tr>
-                  <td colSpan={8} style={{ height: `${paddingBottom}px` }} />
+                  <td colSpan={7} style={{ height: `${paddingBottom}px` }} />
                 </tr>
               )}
             </tbody>

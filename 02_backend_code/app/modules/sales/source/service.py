@@ -1,8 +1,7 @@
-"""SourceService — lead sources (platforms table)."""
+"""SourceService — lead sources (platforms table). Soft-delete via is_archived."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +13,9 @@ from app.modules.sales.source.repository import SourceRepository
 from app.modules.sales.source.schemas import (
     MessageResponse,
     SourceCreate,
+    SourceLeadRow,
+    SourceListResponse,
+    SourceMetrics,
     SourceResponse,
     SourceUpdate,
 )
@@ -24,7 +26,7 @@ class SourceService(BasePublicService):
         super().__init__(session)
         self._repo = SourceRepository(session)
 
-    async def create(self, data: SourceCreate, *, actor_employment_id: Optional[int] = None) -> SourceResponse:
+    async def create(self, data: SourceCreate, *, actor_employment_id: int | None = None) -> SourceResponse:
         existing = await self._repo.get_by_name(data.name.strip())
         if existing:
             raise ConflictError(f"Source '{data.name}' already exists")
@@ -39,24 +41,108 @@ class SourceService(BasePublicService):
         await self._session.refresh(row)
         return SourceResponse.model_validate(row)
 
-    async def get(self, source_id: int) -> SourceResponse:
+    async def get(self, source_id: int, *, include_archived: bool = False) -> SourceResponse:
+        """Q15: archived hidden by default; history views opt in."""
         row = await self._repo.get(source_id, include_archived=True)
         if row is None:
             raise NotFoundError("Source not found")
-        return SourceResponse.model_validate(row)
+        if bool(getattr(row, "is_archived", False)) and not include_archived:
+            raise NotFoundError("Source not found")
+        resp = SourceResponse.model_validate(row)
+        resp.created_by_name = await self._creator_name(row.changed_by)
+        resp.lead_count = (await self._lead_counts()).get(row.id, 0)
+        return resp
 
-    async def list(self, *, include_archived: bool = False) -> list[SourceResponse]:
-        rows = await self._repo.list_all(include_archived=include_archived)
-        return [SourceResponse.model_validate(r) for r in rows]
+    async def _creator_name(self, employment_id: int | None) -> str | None:
+        if not employment_id:
+            return None
+        from sqlalchemy import select
+
+        from app.modules.auth.models import Person
+        from app.modules.workforce.models import Employment
+
+        emp = await self._session.get(Employment, int(employment_id))
+        if emp is None:
+            return None
+        person = await self._session.get(Person, emp.person_id)
+        if person is None:
+            return emp.employee_code
+        return f"{person.first_name} {person.last_name}".strip() or emp.employee_code
+
+    async def list_source_leads(
+        self, source_id: int, *, limit: int = 8
+    ) -> list[SourceLeadRow]:
+        """Latest leads linked to this source (newest last in UI order)."""
+        from sqlalchemy import select
+
+        from app.modules.sales.models import Lead
+
+        row = await self._repo.get(source_id, include_archived=True)
+        if row is None:
+            raise NotFoundError("Source not found")
+        rows = (
+            await self._session.execute(
+                select(Lead)
+                .where(Lead.platform_id == source_id, Lead.is_archived.is_(False))
+                .order_by(Lead.id.desc())
+                .limit(max(limit, 1))
+            )
+        ).scalars()
+        out: list[SourceLeadRow] = []
+        for lead in rows:
+            st = lead.status.value if hasattr(lead.status, "value") else str(lead.status)
+            out.append(
+                SourceLeadRow(
+                    id=lead.id,
+                    title=lead.lead_title,
+                    status=st,
+                    contact_name=lead.contact_name,
+                    created_at=lead.created_at,
+                )
+            )
+        return out
+
+    async def list(
+        self, *, include_archived: bool = False, include_deleted: bool = False
+    ) -> SourceListResponse:
+        # include_deleted kept as compat alias
+        show = bool(include_archived or include_deleted)
+        rows = await self._repo.list_all(include_archived=show)
+        counts = await self._lead_counts()
+        items = []
+        for r in rows:
+            resp = SourceResponse.model_validate(r)
+            resp.lead_count = counts.get(r.id, 0)
+            items.append(resp)
+        active = sum(1 for i in items if not i.is_archived)
+        archived = sum(1 for i in items if i.is_archived)
+        metrics = SourceMetrics(total=len(items), active=active, archived=archived)
+        return SourceListResponse(items=items, total=len(items), metrics=metrics)
+
+    async def _lead_counts(self) -> dict[int, int]:
+        """Non-archived leads grouped by platform (single query)."""
+        from sqlalchemy import func, select
+
+        from app.modules.sales.models import Lead
+
+        res = await self._session.execute(
+            select(Lead.platform_id, func.count(Lead.id))
+            .where(Lead.platform_id.is_not(None), Lead.is_archived.is_(False))
+            .group_by(Lead.platform_id)
+        )
+        return {int(pid): int(n) for pid, n in res.all() if pid is not None}
+
+    # Back-compat: old callers expect list[...]
+    async def list_items(self, *, include_archived: bool = False) -> list[SourceResponse]:
+        res = await self.list(include_archived=include_archived)
+        return res.items
 
     async def update(
-        self, source_id: int, data: SourceUpdate, *, actor_employment_id: Optional[int] = None
+        self, source_id: int, data: SourceUpdate, *, actor_employment_id: int | None = None
     ) -> SourceResponse:
         row = await self._repo.get(source_id, include_archived=True)
-        if row is None:
+        if row is None or bool(getattr(row, "is_archived", False)):
             raise NotFoundError("Source not found")
-        if row.is_archived:
-            raise DomainError("Cannot update archived source")
         payload = data.model_dump(exclude_unset=True)
         if "name" in payload and payload["name"] is not None:
             name = payload["name"].strip()
@@ -72,18 +158,40 @@ class SourceService(BasePublicService):
         await self._session.refresh(row)
         return SourceResponse.model_validate(row)
 
-    async def archive(self, source_id: int, *, actor_employment_id: Optional[int] = None) -> MessageResponse:
+    async def delete(self, source_id: int, *, actor_employment_id: int | None = None) -> MessageResponse:
+        row = await self._repo.get(source_id, include_archived=True)
+        if row is None or bool(getattr(row, "is_archived", False)):
+            raise NotFoundError("Source not found")
+        row.is_archived = True
+        if hasattr(row, "archived_at"):
+            row.archived_at = datetime.now(UTC)
+        row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("platform.deleted", source_id, actor_employment_id)
+        return MessageResponse(message="Source deleted")
+
+    # Deprecated alias
+    async def archive(self, source_id: int, *, actor_employment_id: int | None = None) -> MessageResponse:
+        return await self.delete(source_id, actor_employment_id=actor_employment_id)
+
+    async def restore(self, source_id: int, *, actor_employment_id: int | None = None) -> SourceResponse:
+        """Q16: restore an archived source (409 on active name clash)."""
         row = await self._repo.get(source_id, include_archived=True)
         if row is None:
             raise NotFoundError("Source not found")
-        if row.is_archived:
-            return MessageResponse(message="Source already archived")
-        row.is_archived = True
-        row.archived_at = datetime.now(timezone.utc)
+        if not bool(getattr(row, "is_archived", False)):
+            raise DomainError("Source is not archived")
+        clash = await self._repo.get_by_name(row.name)
+        if clash is not None and clash.id != source_id:
+            raise ConflictError(f"Cannot restore: source '{row.name}' already exists")
+        row.is_archived = False
+        if hasattr(row, "archived_at"):
+            row.archived_at = None
         row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
-        await self._audit("platform.archived", source_id, actor_employment_id)
-        return MessageResponse(message="Source archived")
+        await self._audit("platform.restored", source_id, actor_employment_id)
+        await self._session.refresh(row)
+        return SourceResponse.model_validate(row)
 
 
 # Back-compat

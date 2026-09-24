@@ -16,11 +16,9 @@ export const leaveBalanceSchema = z.object({
 export type LeaveBalance = z.infer<typeof leaveBalanceSchema>
 
 export const leaveTypeOptionSchema = z.object({
-  id: z.string(),
-  name: z.union([leaveTypeSchema, z.string()]),
-  code: z.string(),
-  annualEntitlement: z.number(),
-  description: z.string().optional(),
+  value: z.string(),
+  label: z.string(),
+  requires_approval: z.boolean().optional(),
 })
 export type LeaveTypeOption = z.infer<typeof leaveTypeOptionSchema>
 
@@ -34,12 +32,15 @@ export const leaveRequestSchema = z.object({
   status: leaveStatusSchema,
   appliedOn: z.string(),
   approver: z.string().optional(),
+  approverRemarks: z.string().optional(),
+  decidedOn: z.string().optional(),
   halfDay: z.enum(['start', 'end', 'both']).nullable().optional(),
 })
 export type LeaveRequest = z.infer<typeof leaveRequestSchema>
 
 export const createLeaveRequestSchema = z.object({
-  type: leaveTypeSchema,
+  // Code or label from the live catalog; backend normalizes + validates.
+  type: z.string().min(1),
   from: z.string().min(1),
   to: z.string().min(1),
   reason: z.string().min(10).max(500),
@@ -67,7 +68,7 @@ export const applyLeaveContextSchema = z.object({
 export type ApplyLeaveContext = z.infer<typeof applyLeaveContextSchema>
 
 export const leaveCalculateInputSchema = z.object({
-  type: leaveTypeSchema,
+  type: z.string().min(1),
   from: z.string().min(1),
   to: z.string().min(1),
   halfDay: z.boolean().optional(),

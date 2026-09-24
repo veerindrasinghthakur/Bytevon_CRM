@@ -1,11 +1,14 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useMyLeave } from '../../hooks/use-my-leave'
 import { LeaveBalanceTab } from '../../components/leave/LeaveBalanceTab'
 import { LeaveHistoryTab } from '../../components/leave/LeaveHistoryTab'
 import { LeaveCalendarTab } from '../../components/leave/LeaveCalendarTab'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { myWorkRoutes } from '../../routes'
 import { useLeavePageState } from '../../hooks/use-leave-page-state'
 import type { LeavePageTab } from '../../types'
@@ -24,6 +27,9 @@ export function MyLeavePage() {
     typeFilter,
     setTypeFilter,
     isLoading,
+    isError,
+    error,
+    refetch,
   } = useMyLeave()
 
   const totalRemaining = balances.reduce((s, b) => s + b.remaining, 0)
@@ -45,13 +51,15 @@ export function MyLeavePage() {
         title="My Leave"
         description="Check balances, apply for leave, track requests and view the team calendar."
         actions={
-          <Button
-            variant="primary"
-            leftIcon={<span className="material-symbols-outlined text-lg">event_available</span>}
-            onClick={() => safeNavigate(navigate, { to: myWorkRoutes.leaveApply })}
-          >
-            Apply for Leave
-          </Button>
+          <Can action="CREATE" resource="leave_request" minScope="SELF">
+            <Button
+              variant="primary"
+              leftIcon={<span className="material-symbols-outlined text-lg">event_available</span>}
+              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.leaveApply })}
+            >
+              Apply for Leave
+            </Button>
+          </Can>
         }
       />
 
@@ -78,7 +86,14 @@ export function MyLeavePage() {
         ))}
       </div>
 
-      {tab === 'balance' && (
+      {isError && (
+        <ErrorState
+          title="Could not load leave data"
+          description={getApiErrorMessage(error, 'We could not load your leave requests and balances.')}
+          onRetry={() => refetch()}
+        />
+      )}
+      {!isError && tab === 'balance' && (
         <LeaveBalanceTab
           totalAllocated={totalAllocated}
           totalUsed={totalUsed}
@@ -87,7 +102,7 @@ export function MyLeavePage() {
           balances={balances}
         />
       )}
-      {tab === 'history' && (
+      {!isError && tab === 'history' && (
         <LeaveHistoryTab
           filtered={requests}
           loading={isLoading}
@@ -99,11 +114,12 @@ export function MyLeavePage() {
           setTypeFilter={setTypeFilter}
         />
       )}
-      {tab === 'calendar' && (
+      {!isError && tab === 'calendar' && (
         <LeaveCalendarTab
           calMonth={calMonth}
           setCalMonth={setCalMonth}
           totalRemaining={totalRemaining}
+          requests={requests}
         />
       )}
     </div>

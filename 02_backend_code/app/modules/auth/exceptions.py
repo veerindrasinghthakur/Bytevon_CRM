@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from app.core.exceptions.exception import AppException, UnauthorizedError, DomainError
+from app.core.exceptions.exception import DomainError, UnauthorizedError
 
 
 class InvalidCredentialsException(UnauthorizedError):

@@ -10,6 +10,7 @@ import type {
   PayrollActivity,
   PayrollEmployeeListResponse,
   PayrollEmployeeRow,
+  PayrollHistoryRow,
   PayrollKpis,
   PayrollPeriodMeta,
   PayrollEmployeeListParams,
@@ -118,6 +119,14 @@ export function normalizeEmployee(raw: Record<string, unknown>): PayrollEmployee
     'E'
   return {
     id: String(raw.id ?? raw.employmentId ?? ''),
+    payrollId:
+      raw.payrollId != null || raw.payroll_id != null
+        ? String(raw.payrollId ?? raw.payroll_id)
+        : String(raw.id ?? ''),
+    employmentId:
+      raw.employmentId != null || raw.employment_id != null
+        ? String(raw.employmentId ?? raw.employment_id)
+        : undefined,
     name,
     code: String(raw.code ?? `EMP-${raw.employmentId ?? raw.id ?? ''}`),
     role: String(raw.role ?? '—'),
@@ -158,6 +167,42 @@ export function normalizeEmployeeList(data: unknown): PayrollEmployeeListRespons
       pendingApproval: num(metricsRaw.pendingApproval),
       pendingPayment: num(metricsRaw.pendingPayment),
     },
+  }
+}
+
+function mapHistoryStatus(s: unknown): PayrollHistoryRow['status'] {
+  const v = String(s ?? 'CALCULATED').toUpperCase()
+  if (v === 'PAID') return 'PAID'
+  if (v === 'APPROVED') return 'APPROVED'
+  return 'CALCULATED'
+}
+
+/** Map a backend history dict (period "YYYY-MM", paidOn, payrollId) to PayrollHistoryRow. */
+export function normalizeHistoryRow(raw: Record<string, unknown>): PayrollHistoryRow {
+  const period = String(raw.period ?? '')
+  const m = period.match(/^(\d{4})-(\d{1,2})$/)
+  const year = num(raw.year, m ? Number(m[1]) : new Date().getFullYear())
+  const monthIndex = num(raw.monthIndex, m ? Number(m[2]) : 1)
+  const month =
+    typeof raw.month === 'string' && raw.month.trim() !== ''
+      ? String(raw.month)
+      : monthName(monthIndex)
+  const paidOn = raw.paymentDate ?? raw.paidOn
+  return {
+    id: String(raw.id ?? raw.payrollId ?? raw.payroll_id ?? ''),
+    payrollId:
+      raw.payrollId != null || raw.payroll_id != null
+        ? String(raw.payrollId ?? raw.payroll_id)
+        : String(raw.id ?? ''),
+    month,
+    year,
+    gross: num(raw.gross ?? raw.grossSalary),
+    earnings: num(raw.earnings ?? raw.totalEarnings),
+    deductions: num(raw.deductions ?? raw.totalDeductions),
+    adjustments: num(raw.adjustments ?? raw.netAdjustments),
+    net: num(raw.net ?? raw.netSalary),
+    paymentDate: paidOn != null && String(paidOn).trim() !== '' ? String(paidOn) : null,
+    status: mapHistoryStatus(raw.status),
   }
 }
 

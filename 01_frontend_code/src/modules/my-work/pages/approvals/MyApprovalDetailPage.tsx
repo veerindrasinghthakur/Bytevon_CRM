@@ -7,6 +7,7 @@ import { queryKeys } from '@/shared/lib/query-keys'
 import { listMyApprovals, getMyWorkOverview } from '../../api/my-work'
 import { statusStyles, approvalTypeIcon } from '../../schemas/enums'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { myWorkRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
 
@@ -22,6 +23,13 @@ export function MyApprovalDetailPage() {
   const overviewQuery = useQuery({
     queryKey: queryKeys.myWork.overview(),
     queryFn: getMyWorkOverview,
+  })
+
+  useDeletedRedirect({
+    ready: !listQuery.isLoading,
+    data: listQuery.data?.items.find((a) => a.id === requestId) ?? null,
+    error: listQuery.error,
+    listTo: myWorkRoutes.approvals,
   })
 
   if (listQuery.isLoading) return <PageLoadingSkeleton />

@@ -1,6 +1,6 @@
 /**
- * Department API — schema_departments in mock DB.
- * env.useMockApi → local mock; false → /admin/departments
+ * Department API — workforce canonical owner (/workforce/departments).
+ * env.useMockApi → local mock; false → real backend.
  */
 
 import { env } from '@/config/env'
@@ -13,7 +13,7 @@ import type { DepartmentListItem, DepartmentEmployee } from '../types'
 
 export type { DepartmentListItem, DepartmentEmployee }
 
-const DEPTS = '/admin/departments'
+const DEPTS = '/workforce/departments'
 
 function staffCountFor(departmentId: number): number {
   const db = getDb()
@@ -64,12 +64,12 @@ function mapApiDepartment(row: Record<string, unknown>): DepartmentListItem {
     id,
     name: String(row.name ?? 'Unnamed department'),
     code: String(row.code ?? `DEPT-${String(id).padStart(3, '0')}`),
-    headName: String(row.headName ?? '—'),
+    headName: String(row.headName ?? row.head_name ?? '—'),
     headEmploymentId:
       row.department_head_employment_id == null && row.departmentHeadEmploymentId == null
         ? null
         : Number(row.department_head_employment_id ?? row.departmentHeadEmploymentId),
-    staffCount: Number(row.staffCount ?? 0),
+    staffCount: Number(row.staffCount ?? row.staff_count ?? 0),
     isArchived,
     status: isArchived ? 'Inactive' : 'Active',
     createdAt: String(row.created_at ?? row.createdAt ?? ''),
@@ -99,13 +99,14 @@ export async function listDepartments(
       | {
           items?: Array<Record<string, unknown>>
           total?: number
-          metrics?: ReturnType<typeof buildDeptMetrics>
+          metrics?: { total: number; active: number; archived: number; staffing: number }
         }
     >(DEPTS, {
       params: {
         include_archived: params.includeArchived ?? false,
       },
     })
+    const payloadMetrics = !Array.isArray(data) ? data.metrics : undefined
     const rows = (Array.isArray(data) ? data : data.items ?? []).map(mapApiDepartment)
     const filteredRows = rows.filter((row) => {
       const matchesSearch =
@@ -118,10 +119,19 @@ export async function listDepartments(
     })
     const start = (Number(page) - 1) * Number(pageSize)
     const items = filteredRows.slice(start, start + Number(pageSize))
+    // Prefer backend-computed metrics when available; fall back to local build
+    const metrics = payloadMetrics
+      ? {
+          total: Number(payloadMetrics.total ?? filteredRows.length),
+          active: Number(payloadMetrics.active ?? 0),
+          inactive: Number(payloadMetrics.archived ?? 0),
+          staffing: Number(payloadMetrics.staffing ?? 0),
+        }
+      : buildDeptMetrics(filteredRows)
     return {
       items,
       total: filteredRows.length,
-      metrics: buildDeptMetrics(filteredRows),
+      metrics,
     }
   }
 
@@ -149,10 +159,22 @@ export async function listDepartments(
   return { items: rows, total: rows.length, metrics }
 }
 
-export async function getDepartment(id: number) {
+export async function getDepartment(id: number, opts?: { includeArchived?: boolean }) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<Record<string, unknown>>(`${DEPTS}/${id}`)
-    return mapApiDepartment(data ?? {})
+    const params = opts?.includeArchived ? { include_archived: true } : undefined
+    try {
+      const { data } = await apiClient.get<Record<string, unknown>>(`${DEPTS}/${id}`, { params })
+      return mapApiDepartment(data ?? {})
+    } catch (err) {
+      // Archived rows 404 by default — retry with include_archived before giving up.
+      if (!opts?.includeArchived && isNotFound(err)) {
+        const { data } = await apiClient.get<Record<string, unknown>>(`${DEPTS}/${id}`, {
+          params: { include_archived: true },
+        })
+        return mapApiDepartment(data ?? {})
+      }
+      throw err
+    }
   }
   await delay()
   const row = getDb().schema_departments.find((d) => d.id === id)
@@ -338,7 +360,7 @@ export async function createDepartment(input: {
     })
     const created = mapApiDepartment(data)
     if (input.isArchived && !created.isArchived) {
-      await apiClient.post(`${DEPTS}/${created.id}/archive`)
+      await apiClient.delete(`${DEPTS}/${created.id}`)
       return { ...created, isArchived: true, status: 'Inactive' as const }
     }
     return created
@@ -417,7 +439,7 @@ export async function listEmploymentOptionsForPicker() {
 export async function listEmployeesOnShift(shiftId: number) {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get(`/admin/shifts/${shiftId}/employees`)
+      const { data } = await apiClient.get(`/workforce/shifts/${shiftId}/employees`)
       if (Array.isArray(data)) {
         return data as {
           employmentId: number
@@ -464,9 +486,9 @@ export async function listEmployeesOnShift(shiftId: number) {
   })
 }
 
-export async function archiveDepartment(id: number): Promise<void> {
+export async function deleteDepartment(id: number): Promise<void> {
   if (!env.useMockApi) {
-    await apiClient.post(`${DEPTS}/${id}/archive`)
+    await apiClient.delete(`${DEPTS}/${id}`)
     return
   }
   await delay()
@@ -475,4 +497,32 @@ export async function archiveDepartment(id: number): Promise<void> {
   if (dept) {
     ;(dept as { is_archived: boolean }).is_archived = true
   }
+}
+
+/** Q16: restore an archived department (real backend only). */
+export async function restoreDepartment(id: number) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<Record<string, unknown>>(`${DEPTS}/${id}/restore`)
+    return mapApiDepartment(data ?? { id })
+  }
+  await delay()
+  const row = getDb().schema_departments.find((d) => d.id === id)
+  if (!row) throw new Error('Department not found')
+  ;(row as { is_archived: boolean }).is_archived = false
+  return toListItem(row as DepartmentRow)
+}
+
+/** @deprecated Use deleteDepartment (DELETE verb + soft-delete). Kept for transition. */
+export async function archiveDepartment(id: number): Promise<void> {
+  return deleteDepartment(id)
+}
+
+/** True when the backend answered 404 (archived rows 404 by default). */
+function isNotFound(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    (err as { response?: { status?: number } }).response?.status === 404
+  )
 }

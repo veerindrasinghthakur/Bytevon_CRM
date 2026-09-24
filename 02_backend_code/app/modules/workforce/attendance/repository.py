@@ -1,8 +1,8 @@
 """Attendance repository (workforce)."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +26,7 @@ class AttendanceRepository(BaseRepository):
 
     async def get_day_by_id(
         self, day_id: int, *, with_punches: bool = False
-    ) -> Optional[AttendanceDay]:
+    ) -> AttendanceDay | None:
         stmt = select(AttendanceDay).where(AttendanceDay.id == day_id)
         if with_punches:
             stmt = stmt.options(selectinload(AttendanceDay.punches))
@@ -34,19 +34,53 @@ class AttendanceRepository(BaseRepository):
 
     async def get_day_by_employment_date(
         self, employment_id: int, attendance_date: date
-    ) -> Optional[AttendanceDay]:
+    ) -> AttendanceDay | None:
         stmt = select(AttendanceDay).where(
             AttendanceDay.employment_id == employment_id,
             AttendanceDay.attendance_date == attendance_date,
         )
         return await self.scalar_one_or_none(stmt)
 
+    async def list_days_by_date(self, attendance_date: date) -> Sequence[AttendanceDay]:
+        stmt = (
+            select(AttendanceDay)
+            .where(AttendanceDay.attendance_date == attendance_date)
+            .options(selectinload(AttendanceDay.punches))
+            .order_by(AttendanceDay.id)
+        )
+        return await self.scalars(stmt)
+
+    async def list_days_in_range(
+        self, from_date: date, to_date: date
+    ) -> Sequence[AttendanceDay]:
+        """Org-wide day rows in [from_date, to_date] (dashboard graphs)."""
+        stmt = (
+            select(AttendanceDay)
+            .where(
+                AttendanceDay.attendance_date >= from_date,
+                AttendanceDay.attendance_date <= to_date,
+            )
+            .order_by(AttendanceDay.attendance_date, AttendanceDay.id)
+        )
+        return await self.scalars(stmt)
+
+    async def list_pending_corrections(
+        self, *, limit: int = 50
+    ) -> Sequence[AttendanceCorrection]:
+        stmt = (
+            select(AttendanceCorrection)
+            .where(AttendanceCorrection.status == AttendanceCorrectionStatus.PENDING)
+            .order_by(AttendanceCorrection.id.desc())
+            .limit(limit)
+        )
+        return await self.scalars(stmt)
+
     async def list_days(
         self,
         employment_id: int,
         *,
-        from_date: Optional[date] = None,
-        to_date: Optional[date] = None,
+        from_date: date | None = None,
+        to_date: date | None = None,
     ) -> Sequence[AttendanceDay]:
         stmt = (
             select(AttendanceDay)
@@ -81,7 +115,7 @@ class AttendanceRepository(BaseRepository):
 
     async def get_last_punch(
         self, attendance_day_id: int
-    ) -> Optional[AttendancePunch]:
+    ) -> AttendancePunch | None:
         stmt = (
             select(AttendancePunch)
             .where(AttendancePunch.attendance_day_id == attendance_day_id)
@@ -92,16 +126,33 @@ class AttendanceRepository(BaseRepository):
 
     async def get_correction_by_id(
         self, correction_id: int
-    ) -> Optional[AttendanceCorrection]:
+    ) -> AttendanceCorrection | None:
         stmt = select(AttendanceCorrection).where(
             AttendanceCorrection.id == correction_id
         )
         return await self.scalar_one_or_none(stmt)
 
+    async def list_corrections_by_employment(
+        self, employment_id: int, *, limit: int = 50
+    ) -> Sequence[AttendanceCorrection]:
+        """Q14: corrections for one employment (joins the day owner)."""
+        stmt = (
+            select(AttendanceCorrection)
+            .join(
+                AttendanceDay,
+                AttendanceDay.id == AttendanceCorrection.attendance_day_id,
+            )
+            .where(AttendanceDay.employment_id == employment_id)
+            .order_by(AttendanceCorrection.id.desc())
+            .limit(limit)
+        )
+        return await self.scalars(stmt)
+
     async def count_corrections_in_month(
         self, employment_id: int, year: int, month: int
     ) -> int:
         from calendar import monthrange
+
         from sqlalchemy import func
 
         last = monthrange(year, month)[1]
@@ -125,8 +176,8 @@ class AttendanceRepository(BaseRepository):
         return int(result.scalar() or 0)
 
     async def get_current_policy(
-        self, *, as_of: Optional[date] = None
-    ) -> Optional[AttendancePolicy]:
+        self, *, as_of: date | None = None
+    ) -> AttendancePolicy | None:
         as_of = as_of or date.today()
         stmt = (
             select(AttendancePolicy)
@@ -156,7 +207,7 @@ class AttendanceRepository(BaseRepository):
 
     async def get_monthly_summary(
         self, employment_id: int, year: int, month: int
-    ) -> Optional[MonthlyAttendanceSummary]:
+    ) -> MonthlyAttendanceSummary | None:
         stmt = select(MonthlyAttendanceSummary).where(
             MonthlyAttendanceSummary.employment_id == employment_id,
             MonthlyAttendanceSummary.year == year,
@@ -164,13 +215,13 @@ class AttendanceRepository(BaseRepository):
         )
         return await self.scalar_one_or_none(stmt)
 
-    async def get_break_by_id(self, break_id: int) -> Optional[AttendanceBreak]:
+    async def get_break_by_id(self, break_id: int) -> AttendanceBreak | None:
         stmt = select(AttendanceBreak).where(AttendanceBreak.id == break_id)
         return await self.scalar_one_or_none(stmt)
 
     async def get_open_break(
         self, attendance_day_id: int
-    ) -> Optional[AttendanceBreak]:
+    ) -> AttendanceBreak | None:
         stmt = (
             select(AttendanceBreak)
             .where(

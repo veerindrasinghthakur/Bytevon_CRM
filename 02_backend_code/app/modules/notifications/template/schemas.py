@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -15,15 +15,15 @@ class NotificationTemplateCreate(BaseModel):
     code: str = Field(..., min_length=1, max_length=100)
     title_template: str = Field(..., min_length=1)
     body_template: str = Field(..., min_length=1)
-    variables: Optional[Dict[str, Any]] = None
+    variables: dict[str, Any] | None = None
     is_active: bool = True
 
 
 class NotificationTemplateUpdate(BaseModel):
-    title_template: Optional[str] = None
-    body_template: Optional[str] = None
-    variables: Optional[Dict[str, Any]] = None
-    is_active: Optional[bool] = None
+    title_template: str | None = None
+    body_template: str | None = None
+    variables: dict[str, Any] | None = None
+    is_active: bool | None = None
 
 
 class NotificationTemplateResponse(BaseModel):
@@ -33,8 +33,8 @@ class NotificationTemplateResponse(BaseModel):
     code: str
     title_template: str
     body_template: str
-    variables: Optional[Dict[str, Any]]
+    variables: dict[str, Any] | None
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None

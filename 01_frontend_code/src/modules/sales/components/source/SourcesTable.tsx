@@ -8,10 +8,12 @@ type Props = {
   isLoading: boolean
   isFetching: boolean
   onEdit: (row: LeadSource) => void
-  onArchive: (row: LeadSource) => void
+  onDelete: (row: LeadSource) => void
+  onRestore: (row: LeadSource) => void
+  onOpen?: (row: LeadSource) => void
 }
 
-export function SourcesTable({ rows, isLoading, isFetching, onEdit, onArchive }: Props) {
+export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete, onRestore, onOpen }: Props) {
   return (
     <div className="bv-surface overflow-hidden relative">
       {(isLoading || isFetching) && (
@@ -32,19 +34,27 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onArchive }:
               <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
                 Leads
               </th>
-              <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
-                Actions
-              </th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                  Status
+                </th>
+                {/* Actions column hidden — restore the block below when row actions return.
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
+                  Actions
+                </th>
+                */}
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant">
             {rows.map((row) => (
-              <tr key={row.id} className="zebra-row group">
+              <tr
+                key={row.id}
+                className={onOpen ? 'zebra-row group cursor-pointer' : 'zebra-row group'}
+                onClick={onOpen ? () => onOpen(row) : undefined}
+              >
                 <td className="px-4 py-4">
-                  <p className="font-semibold text-on-surface">{row.name}</p>
+                  <p className="font-semibold text-on-surface hover:text-secondary">
+                    {row.name}
+                  </p>
                   <p className="text-xs text-on-surface-variant font-mono">#{row.id}</p>
                 </td>
                 <td className="px-4 py-4 text-body-sm text-on-surface-variant max-w-md">
@@ -63,6 +73,9 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onArchive }:
                     {row.status}
                   </span>
                 </td>
+                {/* Row actions hidden — restore with the Actions <th> above.
+                    NOTE: this removes the only edit/delete/restore entry points
+                    for sources until a detail/quick-view flow exists.
                 <td className="px-4 py-4 text-center">
                   <div className="flex justify-center">
                     <RowActions
@@ -76,16 +89,27 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onArchive }:
                           disabled: row.isArchived,
                         },
                         {
-                          id: 'archive',
-                          label: 'Archive',
-                          icon: 'inventory_2',
-                          onClick: () => onArchive(row),
+                          id: 'delete',
+                          label: 'Delete',
+                          icon: 'delete',
+                          onClick: () => onDelete(row),
                           disabled: row.isArchived,
                         },
+                        ...(row.isArchived
+                          ? [
+                              {
+                                id: 'restore',
+                                label: 'Restore',
+                                icon: 'restore_from_trash',
+                                onClick: () => onRestore(row),
+                              },
+                            ]
+                          : []),
                       ]}
                     />
                   </div>
                 </td>
+                */}
               </tr>
             ))}
             {rows.length === 0 && !isLoading && (

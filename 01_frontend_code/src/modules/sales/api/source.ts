@@ -15,6 +15,7 @@ export type LeadSource = {
   status: string
   createdAt?: string | null
   updatedAt?: string | null
+  createdByName?: string | null
 }
 
 export type SourceMetric = {
@@ -37,16 +38,55 @@ let mockSources: LeadSource[] = [
 ]
 
 function mapRow(r: Record<string, unknown>): LeadSource {
+  const isArchived = Boolean(r.is_archived ?? r.isArchived)
   return {
     id: Number(r.id),
     name: String(r.name ?? ''),
     description: (r.description as string | null) ?? null,
-    isArchived: Boolean(r.is_archived ?? r.isArchived),
+    isArchived,
     leadCount: Number(r.leadCount ?? r.lead_count ?? 0),
-    status: String(r.status ?? (r.is_archived || r.isArchived ? 'Archived' : 'Active')),
+    status: String(r.status ?? (isArchived ? 'Archived' : 'Active')),
     createdAt: (r.created_at as string) ?? null,
     updatedAt: (r.updated_at as string) ?? null,
+    createdByName: (r.created_by_name as string | undefined) ?? null,
   }
+}
+
+function toMetricCards(
+  items: LeadSource[],
+  backend?: { total?: number; active?: number; archived?: number },
+): SourceMetric[] {
+  const active = items.filter((s) => !s.isArchived)
+  const top = active.reduce<LeadSource | null>(
+    (best, s) => (!best || s.leadCount > best.leadCount ? s : best),
+    null,
+  )
+  return [
+    {
+      id: 'total',
+      label: 'Total sources',
+      value: String(backend?.active ?? active.length),
+      icon: 'hub',
+    },
+    {
+      id: 'top',
+      label: 'Source with highest leads',
+      value: top && top.leadCount > 0 ? `${top.name} (${top.leadCount})` : '—',
+      icon: 'emoji_events',
+    },
+    {
+      id: 'leads',
+      label: 'Leads with source',
+      value: String(items.reduce((a, s) => a + s.leadCount, 0)),
+      icon: 'person_search',
+    },
+    {
+      id: 'deleted',
+      label: 'Deleted sources',
+      value: String(backend?.archived ?? mockSources.filter((s) => s.isArchived).length),
+      icon: 'delete',
+    },
+  ]
 }
 
 export async function listSources(opts?: {
@@ -86,7 +126,7 @@ export async function listSources(opts?: {
     }
   }
 
-  const { data } = await apiClient.get<Record<string, unknown> | unknown[]>('/sales/platforms', {
+  const { data } = await apiClient.get<Record<string, unknown> | unknown[]>('/sales/sources', {
     params: {
       include_archived: opts?.includeArchived ?? false,
       with_stats: true,
@@ -95,19 +135,20 @@ export async function listSources(opts?: {
 
   if (Array.isArray(data)) {
     const items = data.map((r) => mapRow(r as Record<string, unknown>))
-    return { items, total: items.length, metrics: [] }
+    return { items, total: items.length, metrics: toMetricCards(items) }
   }
 
   const payload = data as {
     items?: Record<string, unknown>[]
     total?: number
-    metrics?: SourceMetric[]
+    metrics?: { total?: number; active?: number; archived?: number } | SourceMetric[]
   }
   const items = (payload.items ?? []).map(mapRow)
+  const backendMetrics = Array.isArray(payload.metrics) ? undefined : payload.metrics
   return {
     items,
     total: payload.total ?? items.length,
-    metrics: payload.metrics ?? [],
+    metrics: toMetricCards(items, backendMetrics),
   }
 }
 
@@ -128,7 +169,7 @@ export async function createSource(input: {
     mockSources = [row, ...mockSources]
     return row
   }
-  const { data } = await apiClient.post<Record<string, unknown>>('/sales/platforms', {
+  const { data } = await apiClient.post<Record<string, unknown>>('/sales/sources', {
     name: input.name,
     description: input.description ?? null,
   })
@@ -150,11 +191,69 @@ export async function updateSource(
     }
     return mockSources[idx]
   }
-  const { data } = await apiClient.patch<Record<string, unknown>>(`/sales/platforms/${id}`, input)
+  const { data } = await apiClient.patch<Record<string, unknown>>(`/sales/sources/${id}`, input)
   return mapRow(data)
 }
 
-export async function archiveSource(id: number): Promise<void> {
+export async function getSource(
+  id: number,
+  opts?: { includeArchived?: boolean },
+): Promise<LeadSource | null> {
+  if (env.useMockApi) {
+    await delay()
+    const row = mockSources.find((s) => s.id === id)
+    if (!row) return null
+    if (row.isArchived && !opts?.includeArchived) return null
+    return { ...row }
+  }
+  try {
+    const { data } = await apiClient.get<Record<string, unknown>>(`/sales/sources/${id}`, {
+      params: opts?.includeArchived ? { include_archived: true } : undefined,
+    })
+    return mapRow(data ?? {})
+  } catch (err) {
+    // Archived rows 404 by default — retry with include_archived before giving up.
+    if (!opts?.includeArchived && isNotFound(err)) {
+      const { data } = await apiClient.get<Record<string, unknown>>(`/sales/sources/${id}`, {
+        params: { include_archived: true },
+      })
+      return mapRow(data ?? {})
+    }
+    throw err
+  }
+}
+
+export type SourceLead = {
+  id: number
+  title: string
+  status: string
+  contactName?: string
+  createdAt?: string | null
+}
+
+export async function getSourceLeads(id: number, limit = 8): Promise<SourceLead[]> {
+  if (env.useMockApi) {
+    await delay()
+    return []
+  }
+  const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+    `/sales/sources/${id}/leads`,
+    { params: { limit } },
+  )
+  const rows = Array.isArray(data) ? data : []
+  // Newest last in display order (latest lead at the bottom).
+  return rows
+    .map((r) => ({
+      id: Number(r.id),
+      title: String(r.title ?? ''),
+      status: String(r.status ?? ''),
+      contactName: (r.contact_name as string | undefined) ?? undefined,
+      createdAt: (r.created_at as string | undefined) ?? null,
+    }))
+    .reverse()
+}
+
+export async function deleteSource(id: number): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
     const idx = mockSources.findIndex((s) => s.id === id)
@@ -162,5 +261,32 @@ export async function archiveSource(id: number): Promise<void> {
     mockSources[idx] = { ...mockSources[idx], isArchived: true, status: 'Archived' }
     return
   }
-  await apiClient.post(`/sales/platforms/${id}/archive`)
+  await apiClient.delete(`/sales/sources/${id}`)
+}
+
+/** Q16: restore an archived source (real backend only). */
+export async function restoreSource(id: number): Promise<LeadSource> {
+  if (env.useMockApi) {
+    await delay(300)
+    const idx = mockSources.findIndex((s) => s.id === id)
+    if (idx < 0) throw new Error('Source not found')
+    mockSources[idx] = { ...mockSources[idx], isArchived: false, status: 'Active' }
+    return mockSources[idx]
+  }
+  const { data } = await apiClient.post<Record<string, unknown>>(`/sales/sources/${id}/restore`)
+  return mapRow(data ?? {})
+}
+
+function isNotFound(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    (err as { response?: { status?: number } }).response?.status === 404
+  )
+}
+
+/** @deprecated Use deleteSource (DELETE verb + soft-delete). */
+export async function archiveSource(id: number): Promise<void> {
+  return deleteSource(id)
 }

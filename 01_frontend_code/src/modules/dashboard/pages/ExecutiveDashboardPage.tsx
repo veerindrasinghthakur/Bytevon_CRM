@@ -1,20 +1,27 @@
 import { useNavigate } from '@tanstack/react-router'
+import { useMemo, useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { cn } from '@/shared/lib/cn'
+import {
+  CALENDAR_DAY_LABELS,
+  buildMonthGrid,
+} from '../calendar'
 import { ActivityFeed } from '@/shared/components/ui/ActivityFeed'
 import { Can } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { Action } from '@/shared/schema'
 import { useHomeDashboard } from '../hooks/use-home-dashboard'
+import { decideApproval } from '@/modules/approvals/api/approval_action'
+import { invalidate, queryKeys } from '@/shared/lib/query-keys'
 
 const card = 'bv-surface card-hover'
 
-const ATTENDANCE_TREND_PERIODS = ['Last 30 Days', 'Last Quarter', 'Year to Date'] as const
-
-const CALENDAR_DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const
-
-const CALENDAR_DAYS = [
-  ...Array.from({ length: 4 }, (_, i) => 28 + i),
-  ...Array.from({ length: 27 }, (_, i) => i + 1),
+const ATTENDANCE_PERIODS = [
+  { label: 'Last 7 Days', days: 7 },
+  { label: 'Last 14 Days', days: 14 },
+  { label: 'Last 30 Days', days: 30 },
 ] as const
 
 export function ExecutiveDashboardPage() {
@@ -28,7 +35,46 @@ export function ExecutiveDashboardPage() {
     sections,
     canApprove,
     isLoading,
+    isError,
+    error,
+    refetch,
   } = useHomeDashboard()
+
+  const showTrendRow = sections.attendance_trend || sections.pipeline_trend
+  const showBottomRow =
+    sections.pending_approvals || sections.activity_feed || sections.calendar
+  // Live calendar: current month grid, today highlighted. Deadlines below come
+  // from live pending approvals — never hardcoded events.
+  const calendarCells = useMemo(() => buildMonthGrid(new Date()), [])
+  const upcomingDeadlines = useMemo(() => pending.slice(0, 2), [pending])
+
+  const [attendanceDays, setAttendanceDays] = useState<number>(30)
+  const attendanceBars = useMemo(
+    () => meta?.attendanceBars.slice(-attendanceDays) ?? [],
+    [meta, attendanceDays],
+  )
+
+  const qc = useQueryClient()
+  const decideMut = useMutation({
+    mutationFn: ({ id, decision }: { id: string | number; decision: 'approve' | 'reject' }) =>
+      decideApproval(String(id), decision),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.dashboard.executive() })
+      void invalidate.adminLeave(qc)
+    },
+  })
+
+  if (isError) {
+    return (
+      <div className="py-16">
+        <ErrorState
+          title="Could not load dashboard"
+          description={getApiErrorMessage(error, 'We could not load the dashboard data.')}
+          onRetry={() => void refetch?.()}
+        />
+      </div>
+    )
+  }
 
   if (isLoading || !meta) {
     return (
@@ -37,10 +83,6 @@ export function ExecutiveDashboardPage() {
       </div>
     )
   }
-
-  const showTrendRow = sections.attendance_trend || sections.pipeline_trend
-  const showBottomRow =
-    sections.pending_approvals || sections.activity_feed || sections.calendar
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -55,12 +97,12 @@ export function ExecutiveDashboardPage() {
           </div>
           <div className="flex gap-4">
             <div className="bg-white/10 border border-white/20 p-4 rounded-lg backdrop-blur-sm min-w-[140px]">
-              <p className="text-label-sm uppercase tracking-wider opacity-70">Uptime</p>
-              <p className="text-headline-md font-bold">{meta.uptime}</p>
-            </div>
-            <div className="bg-white/10 border border-white/20 p-4 rounded-lg backdrop-blur-sm min-w-[140px]">
               <p className="text-label-sm uppercase tracking-wider opacity-70">Active Users</p>
               <p className="text-headline-md font-bold">{meta.activeUsers}</p>
+            </div>
+            <div className="bg-white/10 border border-white/20 p-4 rounded-lg backdrop-blur-sm min-w-[140px]">
+              <p className="text-label-sm uppercase tracking-wider opacity-70">Present Today</p>
+              <p className="text-headline-md font-bold">{meta.presentToday ?? '—'}</p>
             </div>
           </div>
         </div>
@@ -97,8 +139,8 @@ export function ExecutiveDashboardPage() {
             kpis.length === 2 && 'md:grid-cols-2',
           )}
         >
-          {kpis.map((k) => (
-            <div key={k.label} className={`${card} p-5`}>
+          {kpis.map((k, i) => (
+            <div key={`${k.label}-${i}`} className={`${card} p-5`}>
               <div className="flex justify-between items-start mb-2">
                 <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">
                   {k.label}
@@ -133,14 +175,21 @@ export function ExecutiveDashboardPage() {
             <div className={`${card} p-6`}>
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-title-lg font-semibold text-on-surface">Attendance trend</h2>
-                <select className="bg-surface border border-outline-variant text-label-sm rounded-lg px-3 py-1.5 outline-none focus:border-secondary transition-colors duration-200 cursor-pointer">
-                  {ATTENDANCE_TREND_PERIODS.map((p) => (
-                    <option key={p}>{p}</option>
+                <select
+                  value={attendanceDays}
+                  onChange={(e) => setAttendanceDays(Number(e.target.value))}
+                  className="bg-surface border border-outline-variant text-label-sm rounded-lg px-3 py-1.5 outline-none focus:border-secondary transition-colors duration-200 cursor-pointer"
+                  aria-label="Attendance trend period"
+                >
+                  {ATTENDANCE_PERIODS.map((p) => (
+                    <option key={p.label} value={p.days}>
+                      {p.label}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="min-h-[240px] flex items-end justify-between gap-2 px-2 pb-2">
-                {meta.attendanceBars.map((h, i) => (
+                {attendanceBars.map((h, i) => (
                   <div
                     key={i}
                     className="flex-1 bg-secondary/20 hover:bg-secondary rounded-t transition-colors duration-200 cursor-pointer"
@@ -179,8 +228,8 @@ export function ExecutiveDashboardPage() {
                 ))}
               </div>
               <div className="flex justify-between px-4 border-t border-outline-variant pt-3 mt-2 text-label-sm text-on-surface-variant">
-                {meta.months.map((m) => (
-                  <span key={m}>{m}</span>
+                {meta.months.map((m, i) => (
+                  <span key={`${m}-${i}`}>{m}</span>
                 ))}
               </div>
             </div>
@@ -212,9 +261,9 @@ export function ExecutiveDashboardPage() {
                 </span>
               </div>
               <div className="space-y-3">
-                {pending.map((p) => (
+                {pending.map((p, i) => (
                   <div
-                    key={p.name}
+                    key={`${p.name}-${i}`}
                     className="flex items-center gap-3 p-3 rounded-lg border-l-4 border-secondary bv-row-hover cursor-pointer"
                   >
                     <div className="w-10 h-10 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-sm font-bold">
@@ -224,19 +273,23 @@ export function ExecutiveDashboardPage() {
                       <p className="text-label-md text-on-surface leading-tight">{p.name}</p>
                       <p className="text-label-sm text-on-surface-variant">{p.detail}</p>
                     </div>
-                    {canApprove && (
+                    {canApprove && p.id != null && (
                       <div className="flex gap-1">
-                        <Can action={Action.APPROVE} resource={ResourceName.APPROVAL}>
+                        <Can action={Action.APPROVE} resource={'approval'}>
                           <button
                             type="button"
-                            className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center bv-pressable cursor-pointer"
+                            disabled={decideMut.isPending}
+                            onClick={() => decideMut.mutate({ id: p.id, decision: 'approve' })}
+                            className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center bv-pressable cursor-pointer disabled:opacity-50"
                             aria-label="Approve"
                           >
                             <span className="material-symbols-outlined text-[18px]">check</span>
                           </button>
                           <button
                             type="button"
-                            className="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error transition-colors duration-200 cursor-pointer"
+                            disabled={decideMut.isPending}
+                            onClick={() => decideMut.mutate({ id: p.id, decision: 'reject' })}
+                            className="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error transition-colors duration-200 cursor-pointer disabled:opacity-50"
                             aria-label="Reject"
                           >
                             <span className="material-symbols-outlined text-[18px]">close</span>
@@ -247,7 +300,7 @@ export function ExecutiveDashboardPage() {
                   </div>
                 ))}
               </div>
-              <Can action={Action.VIEW} resource={ResourceName.APPROVAL}>
+              <Can action={Action.VIEW} resource={'approval'}>
                 <button
                   type="button"
                   onClick={() =>
@@ -279,7 +332,7 @@ export function ExecutiveDashboardPage() {
                 <button
                   type="button"
                   className="text-label-sm text-secondary hover:underline cursor-pointer"
-                  onClick={() => safeNavigate(navigate, { to: '/dashboard', search: {} })}
+                  onClick={() => safeNavigate(navigate, { to: '/approvals/pending', search: {} })}
                 >
                   View all
                 </button>
@@ -299,53 +352,48 @@ export function ExecutiveDashboardPage() {
                 </button>
               </div>
               <div className="grid grid-cols-7 gap-2 text-center text-label-sm text-on-surface-variant mb-2">
-                {CALENDAR_DAY_LABELS.map((d) => (
-                  <span key={d}>{d}</span>
+                {CALENDAR_DAY_LABELS.map((d, i) => (
+                  <span key={`${d}-${i}`}>{d}</span>
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-2 text-center text-label-md mb-6">
-                {CALENDAR_DAYS.map((d) => (
-                  <span
-                    key={d}
-                    className={cn(
-                      'py-2 rounded-lg transition-colors duration-200 cursor-pointer',
-                      d === 24 && 'bg-secondary text-on-secondary font-bold',
-                      d === 26 && 'border border-secondary text-secondary',
-                      d !== 24 && d !== 26 && 'hover:bg-surface-container-low',
-                    )}
-                  >
-                    {d}
-                  </span>
-                ))}
+                {calendarCells.map((c) =>
+                  c.day === null ? (
+                    <span key={c.key} />
+                  ) : (
+                    <span
+                      key={c.key}
+                      className={cn(
+                        'py-2 rounded-lg transition-colors duration-200 cursor-pointer',
+                        c.isToday && 'bg-secondary text-on-secondary font-bold',
+                        !c.isToday && 'hover:bg-surface-container-low',
+                      )}
+                    >
+                      {c.day}
+                    </span>
+                  ),
+                )}
               </div>
               <p className="text-label-sm text-on-surface-variant uppercase tracking-widest mb-3">
                 Upcoming deadlines
               </p>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-error group cursor-pointer">
-                  <div className="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] executive-shadow group-hover:bg-error group-hover:text-white transition-colors duration-200">
-                    <span className="text-label-sm font-bold text-error group-hover:text-white">
-                      OCT
-                    </span>
-                    <span className="text-title-lg font-bold">26</span>
+                {upcomingDeadlines.length === 0 && (
+                  <p className="text-body-sm text-on-surface-variant">
+                    No upcoming deadlines.
+                  </p>
+                )}
+                {upcomingDeadlines.map((p, i) => (
+                  <div
+                    key={`${p.name}-${i}`}
+                    className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-secondary group cursor-pointer"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-label-md text-on-surface truncate">{p.name}</p>
+                      <p className="text-label-sm text-on-surface-variant truncate">{p.detail}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-label-md text-on-surface">Q3 Tax Filing</p>
-                    <p className="text-label-sm text-on-surface-variant">Due at 5:00 PM EST</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-secondary group cursor-pointer">
-                  <div className="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] executive-shadow group-hover:bg-secondary group-hover:text-white transition-colors duration-200">
-                    <span className="text-label-sm font-bold text-secondary group-hover:text-white">
-                      OCT
-                    </span>
-                    <span className="text-title-lg font-bold">28</span>
-                  </div>
-                  <div>
-                    <p className="text-label-md text-on-surface">Strategy Meet</p>
-                    <p className="text-label-sm text-on-surface-variant">Boardroom A</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           )}

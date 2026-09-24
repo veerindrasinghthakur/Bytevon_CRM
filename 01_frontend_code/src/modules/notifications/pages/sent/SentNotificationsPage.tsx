@@ -2,7 +2,6 @@ import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { ResourceName } from '@/shared/schema'
 import { useSentNotifications } from '../../hooks/sent/use-sent-notifications'
 import { notificationRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
@@ -29,7 +28,7 @@ export function SentNotificationsPage() {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <ExportButton
-            resource={ResourceName.NOTIFICATION}
+            resource={'notification'}
             query={s.search}
             filters={{ type: s.typeFilter, status: s.statusFilter }}
             selectedIds={s.selectionMode ? Array.from(s.selectedIds) : undefined}
@@ -59,7 +58,7 @@ export function SentNotificationsPage() {
             Cancel
           </Button>
           <ExportButton
-            resource={ResourceName.NOTIFICATION}
+            resource={'notification'}
             selectedIds={Array.from(s.selectedIds)}
             filenameStem="notifications-sent-selected"
             label="Export selected"

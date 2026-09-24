@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -24,31 +24,31 @@ class ComposeBody(BaseModel):
     body: str = ""
     employment_ids: list[int] = Field(default_factory=list)
     broadcastAll: bool = False
-    template_code: Optional[str] = None
+    template_code: str | None = None
     channels: dict[str, bool] = Field(default_factory=dict)
 
 
 class NotifyRequest(BaseModel):
     recipient_type: NotificationRecipientType
     recipient_id: int
-    template_code: Optional[str] = None
-    title: Optional[str] = None
-    body: Optional[str] = None
-    payload: Dict[str, Any] = Field(default_factory=dict)
+    template_code: str | None = None
+    title: str | None = None
+    body: str | None = None
+    payload: dict[str, Any] = Field(default_factory=dict)
     channel: NotificationChannel = NotificationChannel.IN_APP
     action: NotificationAction = NotificationAction.OPEN
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
 
 class NotifyBulkRequest(BaseModel):
-    employment_ids: List[int]
-    template_code: Optional[str] = None
-    title: Optional[str] = None
-    body: Optional[str] = None
-    payload: Dict[str, Any] = Field(default_factory=dict)
+    employment_ids: list[int]
+    template_code: str | None = None
+    title: str | None = None
+    body: str | None = None
+    payload: dict[str, Any] = Field(default_factory=dict)
     channel: NotificationChannel = NotificationChannel.IN_APP
     action: NotificationAction = NotificationAction.OPEN
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
 
 class NotificationResponse(BaseModel):
@@ -57,14 +57,14 @@ class NotificationResponse(BaseModel):
     id: int
     recipient_type: NotificationRecipientType
     recipient_id: int
-    template_id: Optional[int]
+    template_id: int | None
     title: str
     body: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     channel: NotificationChannel
     action: NotificationAction
     status: NotificationStatus
-    read_at: Optional[datetime]
-    archived_at: Optional[datetime]
-    expires_at: Optional[datetime]
+    read_at: datetime | None
+    archived_at: datetime | None
+    expires_at: datetime | None
     created_at: datetime

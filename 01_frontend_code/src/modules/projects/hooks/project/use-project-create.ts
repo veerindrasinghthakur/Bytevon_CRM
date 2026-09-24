@@ -46,11 +46,16 @@ export function useProjectCreate() {
     const items = clientsQuery.data?.items ?? []
     return items
       .filter((c) => (c.status ?? 'Active') !== 'Inactive')
-      .map((c) => ({
-        id: Number.isFinite(Number(c.id)) ? Number(c.id) : c.id,
-        label: c.name,
-        sublabel: [c.industry, c.country, c.type].filter(Boolean).join(' -+ '),
-      }))
+      .map((c) => {
+        // Sales ids are c-prefixed ("c1"); backend needs the raw numeric id.
+        const raw = String(c.id ?? '').replace(/^c/i, '')
+        const numeric = Number(raw)
+        return {
+          id: Number.isFinite(numeric) && raw !== '' ? numeric : c.id,
+          label: c.name,
+          sublabel: [c.industry, c.country, c.type].filter(Boolean).join(' -+ '),
+        }
+      })
   }, [clientsQuery.data])
 
   const teamOptions: EntityOption[] = useMemo(
@@ -85,6 +90,8 @@ export function useProjectCreate() {
       code: '',
       description: '',
       clientName: '',
+      startDate: '',
+      endDate: '',
       repositoryUrl: '',
     },
   })

@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Header, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
+from app.core.authorization import AuthContext, enforce_owner_or_grant, require_permission
 from app.modules.workforce.assignment.schemas import (
     EmploymentAssignmentCreate,
     EmploymentAssignmentResponse,
@@ -15,7 +16,6 @@ from app.modules.workforce.assignment.schemas import (
 from app.modules.workforce.dependencies import AssignmentServiceDep
 
 router = APIRouter(tags=["Workforce Assignments"])
-ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
 
 @router.post(
@@ -27,9 +27,9 @@ async def change_state(
     employment_id: int,
     body: EmploymentStateChangeRequest,
     service: AssignmentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "ORGANIZATION"))],
 ) -> EmploymentStateHistoryResponse:
-    return await service.change_state(employment_id, body, actor_employment_id=actor)
+    return await service.change_state(employment_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.get(
@@ -39,8 +39,10 @@ async def change_state(
 async def list_state_history(
     employment_id: int,
     service: AssignmentServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF", union=True))],
     limit: int = Query(50, ge=1, le=200),
 ) -> list[EmploymentStateHistoryResponse]:
+    enforce_owner_or_grant(auth, "employment", "VIEW", owner_employment_id=employment_id)
     return await service.list_state_history(employment_id, limit=limit)
 
 
@@ -53,9 +55,9 @@ async def create_assignment(
     employment_id: int,
     body: EmploymentAssignmentCreate,
     service: AssignmentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "CREATE", "ORGANIZATION"))],
 ) -> EmploymentAssignmentResponse:
-    return await service.create_assignment(employment_id, body, actor_employment_id=actor)
+    return await service.create_assignment(employment_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.get(
@@ -65,8 +67,10 @@ async def create_assignment(
 async def get_current_assignment(
     employment_id: int,
     service: AssignmentServiceDep,
-    as_of: Optional[date] = Query(None),
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF", union=True))],
+    as_of: date | None = Query(None),
 ) -> EmploymentAssignmentResponse:
+    enforce_owner_or_grant(auth, "employment", "VIEW", owner_employment_id=employment_id)
     return await service.get_current_assignment(employment_id, as_of=as_of)
 
 
@@ -75,6 +79,9 @@ async def get_current_assignment(
     response_model=list[EmploymentAssignmentResponse],
 )
 async def list_assignments(
-    employment_id: int, service: AssignmentServiceDep
+    employment_id: int,
+    service: AssignmentServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF", union=True))],
 ) -> list[EmploymentAssignmentResponse]:
+    enforce_owner_or_grant(auth, "employment", "VIEW", owner_employment_id=employment_id)
     return await service.list_assignments(employment_id)

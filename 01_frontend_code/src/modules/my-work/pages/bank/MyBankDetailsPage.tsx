@@ -1,23 +1,15 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
 import { maskAccount } from '../../lib/maskAccount'
-import { getEmployeeBankDetails } from '@/modules/workforce/api/bank'
-import { queryKeys } from '@/shared/lib/query-keys'
-import { useAuth } from '@/modules/auth/context/AuthContext'
+import { useMyBankDetails } from '../../hooks/use-my-bank-details'
 
 export function MyBankDetailsPage() {
   const navigate = useNavigate()
-  const { employmentId: employeeId } = useAuth()
 
-  const { data: saved, isLoading } = useQuery({
-    queryKey: queryKeys.workforce.employees.bankDetails(employeeId ?? 0),
-    queryFn: () => getEmployeeBankDetails(employeeId!),
-    enabled: Boolean(employeeId),
-  })
+  const { saved, isLoading } = useMyBankDetails()
 
   const statusLabel = saved ? 'On file' : 'Not set'
 

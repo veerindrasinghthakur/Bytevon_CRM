@@ -1,12 +1,56 @@
+import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
+import { EmploymentState } from '@/shared/schema'
 import type { EmployeeDetailDto } from '@/shared/schema'
 
 type Props = {
   data: EmployeeDetailDto
+  currentState: string
+  stateTarget: string
+  setStateTarget: (v: string) => void
+  saving: boolean
+  onApplyState: () => void
+  canChangeState: boolean
 }
 
-export function EmployeeHistoryTab({ data }: Props) {
+export function EmployeeHistoryTab({
+  data,
+  currentState,
+  stateTarget,
+  setStateTarget,
+  saving,
+  onApplyState,
+  canChangeState,
+}: Props) {
   return (
     <div className="space-y-4">
+      {canChangeState && (
+        <section className="p-4 rounded-xl border border-outline-variant bg-surface-container-low space-y-3">
+          <h4 className="font-semibold">Change state</h4>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={stateTarget}
+              onChange={setStateTarget}
+              options={Object.values(EmploymentState).map((s) => ({
+                value: s,
+                label: s.replace(/_/g, ' '),
+              }))}
+              placeholder="Change state…"
+              minWidthClass="min-w-[10rem]"
+              aria-label="Change employment state"
+            />
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!stateTarget || stateTarget === currentState || saving}
+              isLoading={saving}
+              onClick={onApplyState}
+            >
+              Apply
+            </Button>
+          </div>
+        </section>
+      )}
       <h4 className="font-semibold">State history</h4>
       {(data.stateHistory ?? []).length === 0 ? (
         <p className="text-body-sm text-on-surface-variant">No state changes recorded.</p>

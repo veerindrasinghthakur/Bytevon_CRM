@@ -1,7 +1,6 @@
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { ResourceName } from '@/shared/schema'
 import { useMyRequests } from '../../hooks/request/use-my-requests'
 import { cn } from '@/shared/lib/cn'
 import { approvalRequestFilters, approvalStatusDot, approvalStatusStyles } from '../../enums'
@@ -41,7 +40,7 @@ export function MyRequestsPage() {
         actions={
           <div className="flex flex-wrap gap-2">
             <ExportButton
-              resource={ResourceName.APPROVAL}
+              resource={'approval'}
               filters={{ status: filter }}
               filenameStem="my-requests"
             />

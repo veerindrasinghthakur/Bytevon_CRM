@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
@@ -16,6 +16,7 @@ import {
   useMyActivity,
   useMyProfile,
   useMySessions,
+  useUpdatePreferences,
   useUpdateProfile,
   useUploadAvatar,
 } from '../../hooks/use-profile'
@@ -36,6 +37,7 @@ export function ProfilePage() {
   const { data: sessions = [] } = useMySessions()
   const { data: activity = [] } = useMyActivity()
   const updateMut = useUpdateProfile()
+  const prefsMut = useUpdatePreferences()
   const avatarMut = useUploadAvatar()
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
   const { preference, setPreference } = useTheme()
@@ -74,7 +76,20 @@ export function ProfilePage() {
   const onSave = handleSubmit(async (values) => {
     try {
       const payload = toProfileUpdateInput(values)
-      await updateMut.mutateAsync(payload)
+      // Person fields → PATCH /profile/me; settings → PATCH /profile/preferences.
+      await updateMut.mutateAsync({
+        name: payload.name,
+        phone: payload.phone,
+        dateOfBirth: payload.dateOfBirth,
+      })
+      await prefsMut.mutateAsync({
+        location: values.location?.trim() || null,
+        timezone: values.timezone?.trim() || null,
+        language: values.preferences.language,
+        appearance: values.preferences.appearance,
+        emailNotifications: values.preferences.emailNotifications,
+        desktopPush: values.preferences.desktopPush,
+      })
       setPreference(values.preferences.appearance)
       finishEditing()
     } catch {
@@ -88,6 +103,22 @@ export function ProfilePage() {
     avatarMut.mutate(file)
     e.target.value = ''
   }
+
+  const tenure = useMemo(() => {
+    const joining = profile?.joiningDate
+    if (!joining) return '—'
+    const start = new Date(joining)
+    if (Number.isNaN(start.getTime())) return joining
+    const now = new Date()
+    let months =
+      (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth())
+    if (now.getDate() < start.getDate()) months -= 1
+    if (months < 0) return '—'
+    const years = Math.floor(months / 12)
+    const rem = months % 12
+    if (years === 0) return `${rem} mo`
+    return rem === 0 ? `${years} yr` : `${years} yr ${rem} mo`
+  }, [profile?.joiningDate])
 
   if (isError) {
     return (
@@ -111,8 +142,15 @@ export function ProfilePage() {
       .toUpperCase() || 'U'
 
   const activeSessions = sessions.filter((s) => s.status === 'ACTIVE')
-  const currentSession = activeSessions.find((s) => s.current)
-  const otherSession = activeSessions.find((s) => !s.current)
+  const recentActivity = activity.slice(0, 5)
+
+  const formatTime = (iso: string): string => {
+    if (!iso) return '—'
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return iso
+    const pad = (n: number): string => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
 
   const prefs = watch('preferences')
   // Backend profile may omit preferences until normalizeProfile runs; never read bare.
@@ -199,7 +237,7 @@ export function ProfilePage() {
               </span>
               <span className="inline-flex items-center gap-1.5 text-label-md">
                 <span className="material-symbols-outlined text-[20px]">badge</span>
-                Emp {profile.employmentId}
+                {profile.employeeCode || `Emp ${profile.employmentId}`}
               </span>
             </div>
           </div>
@@ -276,11 +314,13 @@ export function ProfilePage() {
             Employment Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+            <Info label="Employee Code" value={profile.employeeCode} />
             <Info label="Org mail" value={profile.orgMail} />
             <Info label="Department" value={profile.department} />
             <Info label="Job Title" value={profile.jobTitle} />
             <Info label="Reporting Manager" value={profile.reportingManager} />
             <Info label="Joining Date" value={profile.joiningDate} />
+            <Info label="Tenure" value={tenure} />
             <Info label="Work Type" value={profile.workType} />
           </div>
         </section>
@@ -304,40 +344,52 @@ export function ProfilePage() {
               <span className="text-label-md font-semibold">MFA — Not available</span>
             </div>
           </div>
-          <h4 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Active Sessions</h4>
-          <div className="space-y-3">
-            {currentSession && (
-              <div className="flex items-center justify-between p-4 bg-surface-container rounded-lg">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-on-surface-variant text-[28px]">laptop_mac</span>
-                  <div>
-                    <p className="font-semibold text-body-md">{currentSession.device_name} — Current Session</p>
-                    <p className="text-body-sm text-on-surface-variant">{currentSession.ip_address}</p>
+          <h4 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">
+            Active Sessions ({activeSessions.length})
+          </h4>
+          <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+            {activeSessions.map((s) => (
+              <div
+                key={s.id}
+                className={
+                  s.current
+                    ? 'flex items-center justify-between p-4 bg-surface-container rounded-lg'
+                    : 'flex items-center justify-between p-4 border border-outline-variant rounded-lg'
+                }
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="material-symbols-outlined text-on-surface-variant text-[28px]">
+                    {String(s.device_type).toUpperCase().includes('MOBILE') ? 'smartphone' : 'laptop_mac'}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-body-md truncate">
+                      {s.device_name}
+                      {s.current ? ' — Current Session' : ''}
+                    </p>
+                    <p className="text-body-sm text-on-surface-variant truncate">
+                      {s.ip_address}
+                      {s.last_used_at ? ` · Last used ${formatTime(s.last_used_at)}` : ''}
+                    </p>
                   </div>
                 </div>
-                <span className="text-secondary font-bold text-label-sm px-2 py-1 bg-secondary/10 rounded">
-                  CURRENT
-                </span>
+                {s.current ? (
+                  <span className="text-secondary font-bold text-label-sm px-2 py-1 bg-secondary/10 rounded shrink-0">
+                    CURRENT
+                  </span>
+                ) : (
+                  <Link
+                    to={profileRoutes.sessions}
+                    search={looseSearch()}
+                    params={looseParams()}
+                    className="text-error font-bold text-label-sm hover:underline shrink-0"
+                  >
+                    Manage
+                  </Link>
+                )}
               </div>
-            )}
-            {otherSession && (
-              <div className="flex items-center justify-between p-4 border border-outline-variant rounded-lg">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-on-surface-variant text-[28px]">smartphone</span>
-                  <div>
-                    <p className="font-semibold text-body-md">{otherSession.device_name}</p>
-                    <p className="text-body-sm text-on-surface-variant">{otherSession.ip_address}</p>
-                  </div>
-                </div>
-                <Link
-                  to={profileRoutes.sessions}
-                  search={looseSearch()}
-                  params={looseParams()}
-                  className="text-error font-bold text-label-sm hover:underline"
-                >
-                  Manage
-                </Link>
-              </div>
+            ))}
+            {activeSessions.length === 0 && (
+              <p className="text-body-sm text-on-surface-variant">No active sessions.</p>
             )}
           </div>
           <div className="mt-4">
@@ -438,7 +490,7 @@ export function ProfilePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/40">
-                {activity.map((row) => (
+                {recentActivity.map((row) => (
                   <tr key={row.id} className="bv-row-hover">
                     <td className="py-4">
                       <div className="flex items-center gap-3">
@@ -449,13 +501,13 @@ export function ProfilePage() {
                       </div>
                     </td>
                     <td className="py-4 text-body-sm text-on-surface-variant">{row.module}</td>
-                    <td className="py-4 text-body-sm text-on-surface-variant">{row.time}</td>
+                    <td className="py-4 text-body-sm text-on-surface-variant">{formatTime(row.time)}</td>
                     <td className="py-4 text-right">
                       <span className="text-label-sm font-semibold text-secondary">{row.status}</span>
                     </td>
                   </tr>
                 ))}
-                {activity.length === 0 && (
+                {recentActivity.length === 0 && (
                   <tr>
                     <td colSpan={4} className="py-8 text-center text-on-surface-variant text-body-sm">
                       No recent activity

@@ -1,8 +1,6 @@
 """TemplateService — CRUD for notification templates."""
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -26,7 +24,7 @@ class TemplateService(BasePublicService):
         self,
         data: NotificationTemplateCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> NotificationTemplateResponse:
         existing = await self._repo.get_template_by_code(data.code)
         if existing:
@@ -48,7 +46,7 @@ class TemplateService(BasePublicService):
         template_id: int,
         data: NotificationTemplateUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> NotificationTemplateResponse:
         tpl = await self._repo.get_template_by_id(template_id)
         if tpl is None:
@@ -57,6 +55,7 @@ class TemplateService(BasePublicService):
             setattr(tpl, field, value)
         tpl.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
+        await self._session.refresh(tpl)
         return NotificationTemplateResponse.model_validate(tpl)
 
     async def list_templates(

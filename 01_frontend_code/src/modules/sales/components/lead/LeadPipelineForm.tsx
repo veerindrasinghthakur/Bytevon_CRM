@@ -37,7 +37,6 @@ export function LeadPipelineForm({
   platformValue,
   stages,
   priorities,
-  statuses,
   platformOptions,
   platformsLoading,
   platformsError,
@@ -78,12 +77,7 @@ export function LeadPipelineForm({
           label="Status"
           value={statusValue}
           onChange={(v) => form.setValue('status', v as RecordStatus)}
-          options={[
-            ...RecordStatusOptions,
-            ...statuses
-              .filter((s) => !RecordStatusOptions.some((option) => option.value === s))
-              .map((s) => ({ value: s, label: s })),
-          ]}
+          options={[...RecordStatusOptions]}
           minWidthClass="w-full"
         />
         <div>

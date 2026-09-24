@@ -1,42 +1,64 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { useMutation } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myAdminRoutes } from '@/modules/admin/routes'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { useLocationDetail, useUpdateLocation } from '../../hooks/location/use-locations'
-import { archiveLocation } from '../../api/organization'
+import { useDeleteLocation, useLocationDetail, useRestoreLocation, useUpdateLocation } from '../../hooks/location/use-locations'
 import type { LocationRow } from '@/shared/schema'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 
 export function LocationDetailPage() {
   const { locationId } = useParams({ strict: false }) as { locationId: string }
   const navigate = useNavigate()
   const id = Number(locationId)
   const { data: loc, isLoading, isError, error, refetch } = useLocationDetail(id)
+
+  useDeletedRedirect({
+    ready: !isLoading,
+    data: loc ?? null,
+    error,
+    listTo: myAdminRoutes.locationsList,
+  })
   const updateMut = useUpdateLocation(id)
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
   const [actionError, setActionError] = useState<string | null>(null)
 
-  const archiveMut = useMutation({
-    mutationFn: archiveLocation,
-    onSuccess: () => {
-      setActionError(null)
-      safeNavigate(navigate, { to: '/admin/settings/locations' })
-    },
-    onError: (e: unknown) => {
-      setActionError(getApiErrorMessage(e, 'Could not archive location'))
-    },
-  })
+  const deleteMut = useDeleteLocation()
+  const restoreMut = useRestoreLocation()
 
-  const handleArchive = () => {
+  const handleDelete = () => {
     if (!loc) return
     setActionError(null)
-    archiveMut.mutate(loc.id)
+    deleteMut.mutate(loc.id, {
+      onSuccess: () => {
+        setActionError(null)
+        safeNavigate(navigate, { to: '/admin/settings/locations' })
+      },
+      onError: (e: unknown) => {
+        setActionError(getApiErrorMessage(e, 'Could not delete location'))
+      },
+    })
+  }
+
+  const handleRestore = () => {
+    if (!loc) return
+    setActionError(null)
+    restoreMut.mutate(loc.id, {
+      onSuccess: () => {
+        setActionError(null)
+        void refetch()
+      },
+      onError: (e: unknown) => {
+        setActionError(getApiErrorMessage(e, 'Could not restore location'))
+      },
+    })
   }
   const [draft, setDraft] = useState<Partial<LocationRow>>({})
 
@@ -116,6 +138,11 @@ export function LocationDetailPage() {
           <p className="text-body-sm text-on-surface-variant mt-0.5">
             {loc.city}, {loc.country} · {loc.timezone}
           </p>
+          {loc.is_archived && (
+            <div className="mt-1.5">
+              <ArchivedBadge />
+            </div>
+          )}
         </div>
         {isEditing ? (
           <div className="flex gap-2">
@@ -135,13 +162,29 @@ export function LocationDetailPage() {
             >
               Edit
             </Button>
-            <ArchiveButton
-              entityLabel={loc?.name}
-              mode="archive"
-              onConfirm={handleArchive}
-              disabled={updateMut.isPending || archiveMut.isPending}
-              isLoading={archiveMut.isPending}
-            />
+            {!loc.is_archived && (
+              <DeleteButton
+                iconOnly
+                entityLabel={loc?.name}
+                onConfirm={handleDelete}
+                disabled={updateMut.isPending || deleteMut.isPending}
+                isLoading={deleteMut.isPending}
+              />
+            )}
+            {loc.is_archived && (              <Button
+                variant="outline"
+                size="sm"
+                className="border-secondary text-secondary hover:bg-secondary/10"
+                leftIcon={
+                  <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                }
+                disabled={updateMut.isPending || restoreMut.isPending}
+                isLoading={restoreMut.isPending}
+                onClick={handleRestore}
+              >
+                Restore
+              </Button>
+            )}
           </div>
         )}
       </div>

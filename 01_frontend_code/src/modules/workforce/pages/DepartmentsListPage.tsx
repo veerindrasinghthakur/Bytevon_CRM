@@ -18,13 +18,12 @@ import {
   QuickRelatedRow,
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
-import { ResourceName } from '@/shared/schema'
-import { useDepartmentsList } from '../hooks/use-departments-list'
+import { useDepartments } from '../hooks/department/use-departments'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { DEPARTMENT_STATUS_OPTIONS } from '../schemas/enums'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -121,7 +120,9 @@ export function DepartmentsListPage() {
     page,
     setPage,
     reload,
-  } = useDepartmentsList()
+    deleteDepartment,
+    isMutating,
+  } = useDepartments()
 
   const selection = useListSelection({
     items: pageItems,
@@ -159,10 +160,6 @@ export function DepartmentsListPage() {
     })
   }
 
-  const archiveDepartment = (id: number) => {
-    // TODO: Implement archive logic
-  }
-
   if (loading) return <PageLoadingSkeleton />
   if (error) {
     return (
@@ -183,7 +180,7 @@ export function DepartmentsListPage() {
         actions={
           <div className="flex gap-2 flex-wrap">
             <ExportButton
-              resource={ResourceName.DEPARTMENT}
+              resource={'department'}
               query={search}
               filters={{ status }}
               selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
@@ -200,7 +197,7 @@ export function DepartmentsListPage() {
         <MetricCard label="Total Departments" value={String(metrics.total)} icon="domain" />
         <MetricCard label="Total Staffing" value={String(metrics.staffing)} icon="groups" />
         <MetricCard label="Active" value={String(metrics.active)} icon="check_circle" valueClassName="text-secondary" />
-        <MetricCard label="Inactive / Archived" value={String(metrics.inactive)} icon="archive" />
+        <MetricCard label="Deleted" value={String(metrics.inactive)} icon="delete" />
       </section>
 
       {selection.selectionMode && (
@@ -210,7 +207,7 @@ export function DepartmentsListPage() {
           onCancel={selection.exitSelectionMode}
         >
           <ExportButton
-            resource={ResourceName.DEPARTMENT}
+            resource={'department'}
             selectedIds={Array.from(selection.selectedIds)}
             filenameStem="departments-selected"
             label="Export selected"
@@ -272,7 +269,10 @@ export function DepartmentsListPage() {
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Department Head</th>
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest text-center">Staff</th>
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Status</th>
+                  {/* Actions column hidden — quick view → full record is the interaction path.
+                      Restore the block below when row actions return.
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest text-right">Actions</th>
+                  */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -331,7 +331,12 @@ export function DepartmentsListPage() {
                       </td>
                       <td className="px-6 py-5 text-on-surface-variant">{d.code}</td>
                       <td className="px-6 py-5">
-                        <span className="text-label-md">{d.headName}</span>
+                        <p className="text-label-md">{d.headName}</p>
+                        {d.headEmploymentId != null && (
+                          <p className="text-label-sm text-on-surface-variant">
+                            Head #{d.headEmploymentId}
+                          </p>
+                        )}
                       </td>
                       <td className="px-6 py-5 text-center">{d.staffCount}</td>
                       <td className="px-6 py-5">
@@ -346,20 +351,32 @@ export function DepartmentsListPage() {
                           {d.status}
                         </span>
                       </td>
+                      {/* Row actions hidden — row click opens quick view → full record.
+                          Restore with the Actions <th> above when row actions return.
                       <td
                         className="px-6 py-5 text-right"
                         onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <button
-                          type="button"
-                          className="p-2 hover:bg-secondary/10 rounded-lg text-on-surface-variant transition-colors"
-                          onClick={() => openDeptOverview(d)}
-                          aria-label={`Quick view ${d.name}`}
-                        >
-                          <Icon name="visibility" className="text-lg" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            className="p-2 hover:bg-secondary/10 rounded-lg text-on-surface-variant transition-colors"
+                            onClick={() => openDeptOverview(d)}
+                            aria-label={`Quick view ${d.name}`}
+                            title={`Quick view ${d.name}`}
+                          >
+                            <Icon name="visibility" className="text-lg" />
+                          </button>
+                          <DeleteButton
+                            iconOnly
+                            entityLabel={d.name}
+                            disabled={isMutating}
+                            onConfirm={() => deleteDepartment(d.id)}
+                          />
+                        </div>
                       </td>
+                      */}
                     </tr>
                   )
                 })}

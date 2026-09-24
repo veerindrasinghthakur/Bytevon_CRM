@@ -1,17 +1,14 @@
 """Activity schemas."""
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Optional
-
 from pydantic import BaseModel, ConfigDict
 
 
 class ActivityCreate(BaseModel):
     text: str
     type: str = "note"
-    lead_id: Optional[int] = None
-    client_id: Optional[int] = None
+    lead_id: int | None = None
+    client_id: int | None = None
 
 
 class ActivityResponse(BaseModel):

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getLocation, getLocations, updateLocation } from '../../api/organization'
+import { deleteLocation, getLocation, getLocations, restoreLocation, updateLocation } from '../../api/organization'
 import type { LocationRow } from '@/shared/schema'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 
@@ -28,6 +28,26 @@ export function useUpdateLocation(id: number) {
     },
     onError: () => {
       // Handled by consumer
+    },
+  })
+}
+
+export function useDeleteLocation() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => deleteLocation(id),
+    onSuccess: () => {
+      invalidate.locations(qc)
+    },
+  })
+}
+
+export function useRestoreLocation() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => restoreLocation(id),
+    onSuccess: () => {
+      invalidate.locations(qc)
     },
   })
 }

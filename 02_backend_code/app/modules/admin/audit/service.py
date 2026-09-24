@@ -9,15 +9,14 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.enums import AuditAction, AuditReferenceType
 from app.core.exceptions.exception import NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.core.storage.minio import get_minio_client
+from app.core.storage.minio import upload_file
 from app.modules.admin.audit.models import AuditLog
 from app.modules.admin.audit.repository import AuditRepository
 from app.modules.admin.audit.schemas import ArchiveResult, AuditLogCreate, AuditLogResponse
@@ -36,7 +35,7 @@ class AuditService(BasePublicService):
         data: AuditLogCreate,
         *,
         raise_on_error: bool = False,
-    ) -> Optional[AuditLogResponse]:
+    ) -> AuditLogResponse | None:
         try:
             row = AuditLog(
                 reference_type=data.reference_type,
@@ -68,10 +67,10 @@ class AuditService(BasePublicService):
         reference_id: int,
         action: AuditAction,
         description: str,
-        employment_id: Optional[int] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-    ) -> Optional[AuditLogResponse]:
+        employment_id: int | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+    ) -> AuditLogResponse | None:
         return await self.log(
             AuditLogCreate(
                 reference_type=reference_type,
@@ -93,12 +92,12 @@ class AuditService(BasePublicService):
     async def list_logs(
         self,
         *,
-        reference_type: Optional[AuditReferenceType] = None,
-        reference_id: Optional[int] = None,
-        action: Optional[AuditAction] = None,
-        employment_id: Optional[int] = None,
-        from_ts: Optional[datetime] = None,
-        to_ts: Optional[datetime] = None,
+        reference_type: AuditReferenceType | None = None,
+        reference_id: int | None = None,
+        action: AuditAction | None = None,
+        employment_id: int | None = None,
+        from_ts: datetime | None = None,
+        to_ts: datetime | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[AuditLogResponse]:
@@ -115,7 +114,7 @@ class AuditService(BasePublicService):
         return [AuditLogResponse.model_validate(r) for r in rows]
 
     async def archive_old_logs(self, *, retention_days: int = DEFAULT_RETENTION_DAYS) -> ArchiveResult:
-        cutoff = datetime.now(timezone.utc) - timedelta(days=retention_days)
+        cutoff = datetime.now(UTC) - timedelta(days=retention_days)
         rows = list(await self._repo.list_older_than(cutoff))
         if not rows:
             return ArchiveResult(exported_count=0, deleted_count=0, message="Nothing to archive")
@@ -139,8 +138,7 @@ class AuditService(BasePublicService):
 
         try:
             lines = "\n".join(json.dumps(item, default=str) for item in payload)
-            minio_client = get_minio_client()
-            await minio_client.upload_file(
+            await upload_file(
                 bucket_name="audit-archives",
                 object_name=storage_path,
                 data=lines,

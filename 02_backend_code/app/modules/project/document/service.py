@@ -1,13 +1,12 @@
 """DocumentService — types, documents, versions, links."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.db.enums import DocumentStatus
+from app.core.db.enums import DocumentLinkType, DocumentStatus
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.project.document.models import (
@@ -30,7 +29,6 @@ from app.modules.project.document.schemas import (
     DocumentVersionResponse,
     MessageResponse,
 )
-from app.core.db.enums import DocumentLinkType
 
 
 class DocumentService(BasePublicService):
@@ -38,11 +36,37 @@ class DocumentService(BasePublicService):
         super().__init__(session)
         self._repo = DocumentRepository(session)
 
+    async def _uploader_info(
+        self, employment_id: int | None
+    ) -> tuple[str | None, str | None]:
+        """changed_by employment id → (display name, employee code)."""
+        if not employment_id:
+            return None, None
+        try:
+            from app.modules.auth.models import Person
+            from app.modules.workforce.models import Employment
+            from sqlalchemy import select as _select
+
+            emp = await self._session.get(Employment, int(employment_id))
+            if emp is None:
+                return None, None
+            code = getattr(emp, "employee_code", None)
+            person = await self._session.get(Person, emp.person_id)
+            if person is not None:
+                name = f"{person.first_name} {person.last_name}".strip()
+                if name:
+                    return name, str(code) if code else None
+            return (str(code) if code else f"Emp #{employment_id}"), (
+                str(code) if code else None
+            )
+        except Exception:
+            return None, None
+
     async def create_type(
         self,
         data: DocumentTypeCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> DocumentTypeResponse:
         dt = DocumentType(
             name=data.name,
@@ -62,7 +86,7 @@ class DocumentService(BasePublicService):
         type_id: int,
         data: DocumentTypeUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> DocumentTypeResponse:
         dt = await self._repo.get_type_by_id(type_id)
         if dt is None:
@@ -71,20 +95,21 @@ class DocumentService(BasePublicService):
             setattr(dt, field, value)
         dt.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
+        await self._session.refresh(dt)
         return DocumentTypeResponse.model_validate(dt)
 
     async def archive_type(
         self,
         type_id: int,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MessageResponse:
         dt = await self._repo.get_type_by_id(type_id)
         if dt is None:
             raise NotFoundError("Document type not found")
         if dt.is_archived:
             raise DomainError("Document type already archived")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         dt.is_archived = True
         dt.archived_at = now
         dt.archived_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
@@ -95,7 +120,7 @@ class DocumentService(BasePublicService):
         self,
         data: DocumentCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> DocumentDetailResponse:
         dtype = await self._repo.get_type_by_id(data.document_type_id)
         if dtype is None:
@@ -133,11 +158,15 @@ class DocumentService(BasePublicService):
             await self._repo.add(link)
 
         await self._commit()
+        await self._session.refresh(doc)
         await self._audit("document.created", doc.id, actor_employment_id)
+        uploader_name, uploader_code = await self._uploader_info(doc.changed_by)
         return DocumentDetailResponse(
             **DocumentResponse.model_validate(doc).model_dump(),
             current_version=DocumentVersionResponse.model_validate(version),
             versions=[DocumentVersionResponse.model_validate(version)],
+            uploaded_by_name=uploader_name,
+            uploaded_by_code=uploader_code,
         )
 
     async def add_version(
@@ -145,7 +174,7 @@ class DocumentService(BasePublicService):
         document_id: int,
         data: DocumentVersionCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> DocumentVersionResponse:
         doc = await self._repo.get_by_id(document_id)
         if doc is None:
@@ -182,19 +211,22 @@ class DocumentService(BasePublicService):
             current = next(
                 (v for v in versions if v.id == doc.current_version_id), None
             )
+        uploader_name, uploader_code = await self._uploader_info(doc.changed_by)
         return DocumentDetailResponse(
             **DocumentResponse.model_validate(doc).model_dump(),
             current_version=(
                 DocumentVersionResponse.model_validate(current) if current else None
             ),
             versions=[DocumentVersionResponse.model_validate(v) for v in versions],
+            uploaded_by_name=uploader_name,
+            uploaded_by_code=uploader_code,
         )
 
     async def archive(
         self,
         document_id: int,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MessageResponse:
         doc = await self._repo.get_by_id(document_id)
         if doc is None:
@@ -211,7 +243,7 @@ class DocumentService(BasePublicService):
         self,
         data: DocumentLinkCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> DocumentLinkResponse:
         doc = await self._repo.get_by_id(data.document_id)
         if doc is None:

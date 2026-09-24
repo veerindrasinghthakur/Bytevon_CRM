@@ -5,6 +5,10 @@ import { SelectOption, SelectProps } from '@/shared/types'
 /**
  * Custom select — options panel matches Bytevon Component Reference design.
  * Default minWidthClass is compact so filter bars stay on one line.
+ *
+ * Drop direction: 'auto' measures viewport space on open and flips the panel
+ * above the button when there isn't room below (e.g. fields above a fixed
+ * footer bar). Applies to every consumer — no per-page positioning needed.
  */
 export function Select({
   value,
@@ -17,12 +21,14 @@ export function Select({
   minWidthClass = 'min-w-[7rem] max-w-[12rem]',
   id,
   disabled,
+  dropDirection = 'auto',
   'aria-label': ariaLabel,
 }: SelectProps) {
   const autoId = useId()
   const selectId = id ?? (label ? `select-${label.replace(/\s+/g, '-').toLowerCase()}` : autoId)
   const [open, setOpen] = useState(false)
   const [highlight, setHighlight] = useState(-1)
+  const [dropUp, setDropUp] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
   const selected = options.find((o) => o.value === value && !o.disabled)
@@ -43,7 +49,24 @@ export function Select({
     }
     const idx = enabledOptions.findIndex((o) => o.value === value)
     setHighlight(idx >= 0 ? idx : 0)
-  }, [open, value, enabledOptions])
+    // Space-aware placement: flip above when the list won't fit below.
+    if (dropDirection === 'up') {
+      setDropUp(true)
+    } else if (dropDirection === 'down') {
+      setDropUp(false)
+    } else {
+      const rect = rootRef.current?.getBoundingClientRect()
+      if (rect && typeof window !== 'undefined') {
+        const rows = Math.max(enabledOptions.length, 1)
+        const needed = Math.min(rows * 44 + 16, 256)
+        const spaceBelow = window.innerHeight - rect.bottom
+        const spaceAbove = rect.top
+        setDropUp(spaceBelow < needed && spaceAbove > spaceBelow)
+      } else {
+        setDropUp(false)
+      }
+    }
+  }, [open, value, enabledOptions, dropDirection])
 
   const pick = (opt: SelectOption) => {
     if (opt.disabled) return
@@ -136,8 +159,11 @@ export function Select({
 
       {open && !disabled ? (
         <div
+          data-testid="select-panel"
+          data-drop={dropUp ? 'up' : 'down'}
           className={cn(
-            'absolute z-50 mt-2 w-full min-w-[10rem]',
+            'absolute z-50 w-full min-w-[10rem]',
+            dropUp ? 'bottom-full mb-2' : 'mt-2',
             'bg-surface-container-lowest rounded-xl border border-outline-variant/50',
             'executive-shadow overflow-hidden',
           )}

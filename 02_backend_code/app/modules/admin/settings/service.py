@@ -1,13 +1,15 @@
 """SettingsService — organization settings singleton."""
 from __future__ import annotations
-from typing import Optional
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
 from app.core.exceptions.exception import NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.admin.settings.models import OrganizationSettings
 from app.modules.admin.settings.repository import SettingsRepository
 from app.modules.admin.settings.schemas import OrganizationSettingsResponse, OrganizationSettingsUpdate
+
 
 class SettingsService(BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
@@ -20,7 +22,7 @@ class SettingsService(BasePublicService):
             raise NotFoundError("Organization settings not configured")
         return OrganizationSettingsResponse.model_validate(row)
 
-    async def upsert(self, data: OrganizationSettingsUpdate, *, actor_employment_id: Optional[int] = None) -> OrganizationSettingsResponse:
+    async def upsert(self, data: OrganizationSettingsUpdate, *, actor_employment_id: int | None = None) -> OrganizationSettingsResponse:
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         row = await self._repo.get()
         payload = data.model_dump(exclude_unset=True)

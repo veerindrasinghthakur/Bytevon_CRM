@@ -2,15 +2,18 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { DynamicRouteCrumbs } from '../../components/RouteCrumbs'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { getEmployeeDetail, updateEmployment } from '../../api/employment'
+import { getEmployeeDetail, rehireEmployment, updateEmployment, changeEmploymentState } from '../../api/employment'
+import { getDepartment } from '../../api/departments'
+import { invalidate } from '@/shared/lib/query-keys'
 import type { EmployeeDetailDto } from '@/shared/schema'
-import { Can } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { Can, useRbac } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 import { workforceRoutes } from '../../routes'
 import {
   employeeDetailEditSchema,
@@ -30,6 +33,7 @@ import { EmployeeHistoryTab } from '../../components/employee/EmployeeHistoryTab
 import { EmployeeSalaryTab } from '../../components/employee/EmployeeSalaryTab'
 import { EmployeeDocumentsTab } from '../../components/employee/EmployeeDocumentsTab'
 import { EmployeeQuickLinks } from '../../components/employee/EmployeeQuickLinks'
+import { LinkDepartmentModal } from '../../components/employee/LinkDepartmentModal'
 
 export function EmployeeDetailPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId: string }
@@ -38,9 +42,21 @@ export function EmployeeDetailPage() {
   const [data, setData] = useState<EmployeeDetailDto | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [manager, setManager] = useState<{ name: string; code: string; employmentId: number } | null>(null)
+  const [stateTarget, setStateTarget] = useState('')
   const [tab, setTab] = useState<EmployeeDetailTab>('overview')
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [linkDeptOpen, setLinkDeptOpen] = useState(false)
+  const { can } = useRbac()
+  const qc = useQueryClient()
+  const rehireMut = useMutation({
+    mutationFn: () => rehireEmployment(id, { reason: 'Rehired' }),
+    onSuccess: () => {
+      invalidate.employees(qc)
+      return load()
+    },
+  })
 
   const form = useForm<EmployeeDetailEditInput>({
     resolver: zodResolver(employeeDetailEditSchema),
@@ -60,10 +76,12 @@ export function EmployeeDetailPage() {
     try {
       const dto = await getEmployeeDetail(id)
       if (!dto) {
-        setError('Employee not found')
+        // Deleted elsewhere (API returns null) → back to the list.
+        safeNavigate(navigate, { to: workforceRoutes.employees, replace: true })
         setData(null)
       } else {
         setData(dto)
+        void loadManager(dto)
         form.reset({
           firstName: dto.person?.first_name ?? '',
           lastName: dto.person?.last_name ?? '',
@@ -84,6 +102,42 @@ export function EmployeeDetailPage() {
     void load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  /** Reporting manager = head of the employee's current department. */
+  const loadManager = async (dto: EmployeeDetailDto) => {
+    setManager(null)
+    const deptId = dto.currentAssignment?.department_id
+    if (!deptId) return
+    try {
+      const dept = await getDepartment(deptId)
+      if (dept?.headEmploymentId && dept.headName && dept.headName !== '—') {
+        const headId = dept.headEmploymentId
+        const headDetail = await getEmployeeDetail(headId).catch(() => null)
+        setManager({
+          name: dept.headName,
+          code: headDetail?.employment?.employee_code ?? `EMP-${headId}`,
+          employmentId: headId,
+        })
+      }
+    } catch {
+      setManager(null)
+    }
+  }
+
+  const changeState = async () => {
+    if (!stateTarget || stateTarget === resolveEmploymentState(data?.employment)) return
+    if (!window.confirm(`Change employment state to ${stateTarget.replace(/_/g, ' ')}?`)) return
+    setSaving(true)
+    try {
+      await changeEmploymentState(id, stateTarget as never, 'State changed from employee profile')
+      setStateTarget('')
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'State change failed')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const startEdit = () => {
     if (!data) return
@@ -226,7 +280,7 @@ export function EmployeeDetailPage() {
             >
               Download
             </Button>
-            <Can action={Action.UPDATE} resource={ResourceName.EMPLOYMENT}>
+            <Can action={Action.UPDATE} resource={'employment'}>
               {editing ? (
                 <>
                   <Button variant="outline" size="sm" onClick={cancelEdit}>
@@ -244,13 +298,6 @@ export function EmployeeDetailPage() {
               ) : (
                 <>
                   <Button
-                    variant="primary"
-                    leftIcon={<Icon name="edit" className="text-lg" />}
-                    onClick={startEdit}
-                  >
-                    Edit Employee
-                  </Button>
-                  <Button
                     variant="outline"
                     size="sm"
                     className="text-error border-error/30 hover:bg-error/5"
@@ -259,6 +306,13 @@ export function EmployeeDetailPage() {
                     isLoading={saving}
                   >
                     Deactivate
+                  </Button>
+                  <Button
+                    variant="primary"
+                    leftIcon={<Icon name="edit" className="text-lg" />}
+                    onClick={startEdit}
+                  >
+                    Edit Employee
                   </Button>
                 </>
               )}
@@ -276,25 +330,62 @@ export function EmployeeDetailPage() {
           Emp code: {data.employment?.employee_code}
         </span>
         {data.hasLogin && <span className={loginEnabledClass}>Login: {data.loginEmail}</span>}
+        {['RESIGNED', 'TERMINATED', 'ALUMNI'].includes(currentState) && (
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={<Icon name="person_add" className="text-lg" />}
+            isLoading={rehireMut.isPending}
+            onClick={() => {
+              if (!window.confirm(`Rehire ${fullName}?`)) return
+              rehireMut.mutate()
+            }}
+          >
+            {rehireMut.isPending ? 'Rehiring…' : 'Rehire'}
+          </Button>
+        )}
       </div>
 
       {editing && <EmployeeEditForm form={form} />}
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        <EmployeeProfileSidebar data={data} fullName={fullName} initials={initials} />
+        <EmployeeProfileSidebar
+          data={data}
+          fullName={fullName}
+          initials={initials}
+          manager={manager}
+          onLinkDepartment={() => setLinkDeptOpen(true)}
+        />
 
         <div className="xl:col-span-6">
           <EmployeeDetailTabNav tab={tab} onTabChange={setTab} />
           <div className="bv-surface rounded-t-none border-t-0 p-6 space-y-6">
             {tab === 'overview' && <EmployeeOverviewTab data={data} stateLabel={stateLabel} />}
-            {tab === 'history' && <EmployeeHistoryTab data={data} />}
+            {tab === 'history' && (
+              <EmployeeHistoryTab
+                data={data}
+                currentState={currentState}
+                stateTarget={stateTarget}
+                setStateTarget={setStateTarget}
+                saving={saving}
+                onApplyState={() => void changeState()}
+                canChangeState={can(Action.UPDATE, 'employment')}
+              />
+            )}
             {tab === 'salary' && <EmployeeSalaryTab data={data} employmentId={id} />}
-            {tab === 'documents' && <EmployeeDocumentsTab />}
+            {tab === 'documents' && <EmployeeDocumentsTab employmentId={id} />}
           </div>
         </div>
 
         <EmployeeQuickLinks employmentId={id} />
       </div>
+
+      <LinkDepartmentModal
+        open={linkDeptOpen}
+        employmentId={id}
+        onClose={() => setLinkDeptOpen(false)}
+        onLinked={() => void load()}
+      />
     </div>
   )
 }

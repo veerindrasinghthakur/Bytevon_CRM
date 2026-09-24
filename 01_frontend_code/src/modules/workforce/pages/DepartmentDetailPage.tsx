@@ -8,14 +8,17 @@ import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Can } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { Action } from '@/shared/schema'
 import type { DepartmentEmployee } from '../api/departments'
-import { useDepartmentDetail } from '../hooks/use-department-detail'
+import { useDepartment } from '../hooks/department/use-departments'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -35,14 +38,17 @@ export function DepartmentDetailPage() {
     staff,
     isLoading,
     isError,
+    detailError,
     refetch,
     updateDepartment,
+    deleteDepartment,
+    restoreDepartment,
     assignEmployee,
     removeEmployee,
     isMutating,
     listCandidates,
     listHeadOptions,
-  } = useDepartmentDetail(id)
+  } = useDepartment(id)
 
   const [addOpen, setAddOpen] = useState(false)
   const [mode, setMode] = useState<'choose' | 'existing'>('choose')
@@ -54,7 +60,14 @@ export function DepartmentDetailPage() {
   const [draftHeadId, setDraftHeadId] = useState<string>('')
   const [headPickerOpen, setHeadPickerOpen] = useState(false)
   const [headOptions, setHeadOptions] = useState<{ value: string; label: string }[]>([])
+  const [assignHeadOpen, setAssignHeadOpen] = useState(false)
+  const [assignHeadId, setAssignHeadId] = useState('')
+  const [assignHeadOptions, setAssignHeadOptions] = useState<{ value: string; label: string }[]>([])
   const [removeTarget, setRemoveTarget] = useState<DepartmentEmployee | null>(null)
+  const [actionError, setActionError] = useState('')
+
+  // Deleted/archived-elsewhere → back to the list (network errors keep inline UI).
+  useDeletedRedirect({ ready: !isLoading, data: d, error: detailError, listTo: workforceRoutes.departments })
 
   const openPositions = Math.max(
     0,
@@ -89,6 +102,7 @@ export function DepartmentDetailPage() {
 
   const saveEdit = async () => {
     if (!d) return
+    setActionError('')
     try {
       await updateDepartment({
         name: draftName.trim() || d.name,
@@ -96,12 +110,37 @@ export function DepartmentDetailPage() {
       })
       setIsEditing(false)
       setHeadPickerOpen(false)
+    } catch (e) {
+      setActionError(getApiErrorMessage(e, 'Failed to save department'))
+    }
+  }
+
+  const openAssignHead = async () => {
+    setActionError('')
+    setAssignHeadId('')
+    setAssignHeadOpen(true)
+    try {
+      const all = await listHeadOptions()
+      setAssignHeadOptions(all.map((o) => ({ value: o.value, label: o.label })))
     } catch {
-      /* mutation error surface later if needed */
+      setAssignHeadOptions([])
+    }
+  }
+
+  const saveAssignHead = async () => {
+    if (!d || !assignHeadId) return
+    setActionError('')
+    try {
+      await updateDepartment({ headEmploymentId: Number(assignHeadId) })
+      setAssignHeadOpen(false)
+      setAssignHeadId('')
+    } catch (e) {
+      setActionError(getApiErrorMessage(e, 'Failed to assign head'))
     }
   }
 
   const openAdd = async () => {
+    setActionError('')
     setMode('choose')
     setSelectedEmp('')
     setAddOpen(true)
@@ -115,33 +154,47 @@ export function DepartmentDetailPage() {
 
   const assignExisting = async () => {
     if (!selectedEmp) return
+    setActionError('')
     try {
       await assignEmployee(Number(selectedEmp))
       setAddOpen(false)
-    } catch {
-      /* ignore */
+    } catch (e) {
+      setActionError(getApiErrorMessage(e, 'Failed to assign employee'))
     }
   }
 
   const confirmRemove = async () => {
     if (!removeTarget) return
+    setActionError('')
     try {
       await removeEmployee(removeTarget.employmentId)
       setRemoveTarget(null)
-    } catch {
-      /* ignore */
+    } catch (e) {
+      setRemoveTarget(null)
+      setActionError(getApiErrorMessage(e, 'Failed to remove employee'))
     }
   }
 
-  const { archiveDepartment: archiveMutation } = useDepartmentDetail(id)
-
-  const handleArchiveDepartment = async () => {
+  const handleDeleteDepartment = async () => {
     if (!d) return
+    setActionError('')
     try {
-      await archiveMutation(d.id)
+      await deleteDepartment()
       safeNavigate(navigate, { to: workforceRoutes.departments })
-    } catch {
-      /* error handling */
+    } catch (e) {
+      // Guard 409s / grant 403s stay on the page with a visible message.
+      setActionError(getApiErrorMessage(e, 'Failed to delete department'))
+    }
+  }
+
+  const handleRestoreDepartment = async () => {
+    if (!d) return
+    setActionError('')
+    try {
+      await restoreDepartment()
+      await refetch()
+    } catch (e) {
+      setActionError(getApiErrorMessage(e, 'Failed to restore department'))
     }
   }
 
@@ -165,7 +218,7 @@ export function DepartmentDetailPage() {
         <BackButton to={workforceRoutes.departments} label="Back to departments" />
         <ErrorState
           title="Department not found"
-          description="This department may have been archived or the link is invalid."
+          description="This department may have been deleted or the link is invalid."
           showBack={false}
           onBack={() => safeNavigate(navigate, { to: workforceRoutes.departments })}
         />
@@ -179,6 +232,7 @@ export function DepartmentDetailPage() {
     null
 
   const displayName = isEditing ? draftName : d.name
+  const hasHead = d.headEmploymentId != null || !!d.headName
   const displayHeadName = isEditing
     ? headOptions.find((o) => o.value === draftHeadId)?.label?.replace(/\s*\(.*\)$/, '') ??
       (draftHeadId ? d.headName : 'Unassigned')
@@ -189,6 +243,14 @@ export function DepartmentDetailPage() {
       <div>
         <BackButton to={workforceRoutes.departments} label="Back to departments" />
         <DynamicRouteCrumbs className="mt-2 mb-3" lastLabel={d.name} />
+        {actionError && (
+          <div
+            role="alert"
+            className="mt-2 rounded-lg border border-error/30 bg-error/5 px-4 py-3 text-body-sm text-error"
+          >
+            {actionError}
+          </div>
+        )}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex items-center gap-3 flex-wrap">
             {isEditing ? (
@@ -211,6 +273,7 @@ export function DepartmentDetailPage() {
             >
               {d.status}
             </span>
+            {d.isArchived && <ArchivedBadge />}
           </div>
           <div className="flex gap-2 flex-wrap">
             {isEditing ? (
@@ -223,7 +286,7 @@ export function DepartmentDetailPage() {
                 </Button>
               </div>
             ) : (
-              // <Can action={Action.Update} resource={ResourceName.Department}>
+              // <Can action={Action.Update} resource={'department'}>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -232,13 +295,31 @@ export function DepartmentDetailPage() {
                   >
                     Edit
                   </Button>
-                  <ArchiveButton
-                    entityLabel={d?.name}
-                    mode="archive"
-                    onConfirm={handleArchiveDepartment}
-                    disabled={isMutating}
-                    isLoading={isMutating}
-                  />
+                  {!d.isArchived && (
+                    <DeleteButton
+                      iconOnly
+                      entityLabel={d?.name}
+                      onConfirm={handleDeleteDepartment}
+                      disabled={isMutating}
+                      isLoading={isMutating}
+                    />
+                  )}
+                  {d.isArchived && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-secondary text-secondary hover:bg-secondary/10"
+                      leftIcon={
+                        <span className="material-symbols-outlined text-[18px]">
+                          restore_from_trash
+                        </span>
+                      }
+                      isLoading={isMutating}
+                      onClick={() => void handleRestoreDepartment()}
+                    >
+                      Restore
+                    </Button>
+                  )}
                 </div>
               // </Can>
             )}
@@ -249,7 +330,7 @@ export function DepartmentDetailPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bv-surface card-hover p-6 transition-all hover:-translate-y-0.5">
           <p className="text-on-surface-variant text-label-md mb-2">Total Staff</p>
-          <p className="text-display-lg font-bold">{d.staffCount}</p>
+          <p className="text-display-lg font-bold">{staff.length}</p>
         </div>
         <div className="bv-surface card-hover p-6 transition-all hover:-translate-y-0.5">
           <p className="text-on-surface-variant text-label-md mb-2">Active assignments</p>
@@ -274,7 +355,7 @@ export function DepartmentDetailPage() {
           <h3 className="text-title-md font-semibold flex items-center gap-2">
             <Icon name="star" className="text-amber-500" /> Department Head
           </h3>
-          {isEditing && (
+          {isEditing ? (
             <Button
               variant="outline"
               size="sm"
@@ -283,8 +364,46 @@ export function DepartmentDetailPage() {
             >
               {headPickerOpen ? 'Hide picker' : 'Change head'}
             </Button>
+          ) : (
+            !hasHead && (
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<Icon name="person_add" />}
+                onClick={() => void openAssignHead()}
+              >
+                Assign head
+              </Button>
+            )
           )}
         </div>
+
+        {!isEditing && assignHeadOpen && (
+          <div className="mb-4 p-4 rounded-xl border border-outline-variant bg-surface-container-low space-y-3">
+            <Select
+              label="Select department head"
+              value={assignHeadId}
+              onChange={setAssignHeadId}
+              options={assignHeadOptions}
+              placeholder="Choose employee…"
+              minWidthClass="min-w-full"
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setAssignHeadOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={!assignHeadId || isMutating}
+                isLoading={isMutating}
+                onClick={() => void saveAssignHead()}
+              >
+                Assign
+              </Button>
+            </div>
+          </div>
+        )}
 
         {isEditing && headPickerOpen && (
           <div className="mb-4 p-4 rounded-xl border border-outline-variant bg-surface-container-low space-y-3">
@@ -335,9 +454,21 @@ export function DepartmentDetailPage() {
       </section>
 
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-title-lg font-semibold">Team members</h3>
-          <span className="text-sm text-on-surface-variant">{staff.length} people</span>
+        <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+          <h3 className="text-title-lg font-semibold">Members</h3>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-on-surface-variant">{staff.length} people</span>
+            <Can action={Action.UPDATE} resource={'department'}>
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<Icon name="person_add" />}
+                onClick={() => void openAdd()}
+              >
+                Add employee
+              </Button>
+            </Can>
+          </div>
         </div>
 
         {staff.length === 0 ? (
@@ -345,7 +476,7 @@ export function DepartmentDetailPage() {
             <Icon name="group_off" className="text-5xl" />
             <p>No employees assigned yet.</p>
             {!isEditing && (
-              <Can action={Action.UPDATE} resource={ResourceName.DEPARTMENT}>
+              <Can action={Action.UPDATE} resource={'department'}>
                 <Button variant="primary" size="sm" onClick={() => void openAdd()}>
                   Add Member
                 </Button>

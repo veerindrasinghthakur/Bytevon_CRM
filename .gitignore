@@ -1,5 +1,2 @@
 .env
 __pycache__
-02_backend_code/app/api/__pycache__/router.cpython-312.pyc
-02_backend_code/app/core/security/__pycache__/password_manager.cpython-312.pyc
-02_backend_code/app/core/security/__pycache__/password_manager.cpython-312.pyc

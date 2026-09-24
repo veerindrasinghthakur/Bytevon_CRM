@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -16,7 +15,7 @@ class HolidayCalendarCreate(BaseModel):
 
 
 class HolidayCalendarUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=150)
+    name: str | None = Field(None, min_length=1, max_length=150)
 
 
 class HolidayCalendarResponse(BaseModel):
@@ -24,9 +23,9 @@ class HolidayCalendarResponse(BaseModel):
     id: int
     name: str
     is_archived: bool = False
-    archived_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    archived_at: datetime | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class HolidayCreate(BaseModel):
@@ -37,10 +36,10 @@ class HolidayCreate(BaseModel):
 
 
 class HolidayUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=150)
-    holiday_date: Optional[date] = None
-    is_optional: Optional[bool] = None
-    recurring_flag: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=150)
+    holiday_date: date | None = None
+    is_optional: bool | None = None
+    recurring_flag: bool | None = None
 
 
 class HolidayResponse(BaseModel):
@@ -49,13 +48,9 @@ class HolidayResponse(BaseModel):
     holiday_calendar_id: int
     name: str
     date: date
-    holiday_type: Optional[str] = None
+    holiday_type: str | None = None
     recurring_flag: bool = False
-    created_at: Optional[datetime] = None
-
-
-class MessageResponse(BaseModel):
-    message: str
+    created_at: datetime | None = None
 
 
 class RecurringHolidayOption(BaseModel):
@@ -63,4 +58,4 @@ class RecurringHolidayOption(BaseModel):
     id: int
     name: str
     date: date
-    holiday_type: Optional[str] = None
+    holiday_type: str | None = None

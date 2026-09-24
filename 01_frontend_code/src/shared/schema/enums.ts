@@ -51,17 +51,6 @@ export const ScopeName = {
 } as const
 export type ScopeName = (typeof ScopeName)[keyof typeof ScopeName]
 
-export const LeaveType = {
-  CASUAL: 'CASUAL',
-  SICK: 'SICK',
-  EARNED: 'EARNED',
-  MATERNITY: 'MATERNITY',
-  PATERNITY: 'PATERNITY',
-  LOSS_OF_PAY: 'LOSS_OF_PAY',
-  COMP_OFF: 'COMP_OFF',
-} as const
-export type LeaveType = (typeof LeaveType)[keyof typeof LeaveType]
-
 export const LeaveRequestStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
@@ -140,29 +129,34 @@ export const NoteReferenceType = {
 } as const
 export type NoteReferenceType = (typeof NoteReferenceType)[keyof typeof NoteReferenceType]
 
-/** Seeded RBAC resource names used by can() */
-export const ResourceName = {
-  EMPLOYMENT: 'employment',
-  DEPARTMENT: 'department',
-  LOCATION: 'location',
-  ROLE: 'role',
-  USER: 'user',
-  LEAVE_REQUEST: 'leave_request',
-  LEAVE_POLICY: 'leave_policy',
-  ATTENDANCE: 'attendance',
-  PAYROLL: 'payroll',
-  SALARY: 'salary',
-  PROJECT: 'project',
-  TASK: 'task',
-  LEAD: 'lead',
-  CLIENT: 'client',
-  APPROVAL: 'approval',
-  AUDIT: 'audit',
-  NOTIFICATION: 'notification',
-  ORG_SETTINGS: 'org_settings',
-  SHIFT: 'shift',
-  HOLIDAY: 'holiday',
-  DOCUMENT: 'document',
-  NOTE: 'note',
-} as const
-export type ResourceName = (typeof ResourceName)[keyof typeof ResourceName]
+/**
+ * RBAC resource name — plain string, NOT an enum.
+ *
+ * Single source of truth is the backend `resources` table (seeded) served via
+ * `GET /rbac/resources` and embedded in effective-permissions grants. The
+ * frontend never enumerates resources; it passes the lowercase backend name
+ * (e.g. 'employment', 'leave_request') straight through to can()/Can/requireView.
+ */
+export type ResourceName = string
+
+// ---------------------------------------------------------------------------
+// Leave types — master data in backend `leave_types` (FK leave_type_id).
+// There is NO frontend enum: catalogs come from GET /leave/types (admin) and
+// GET /my-work/leave/types + /leave/apply-context (self-service).
+// leaveTypeLabel() below is a legacy-label fallback for cached/mock data only.
+// ---------------------------------------------------------------------------
+
+/** Display label fallback for a legacy leave-type code (cached/mock data). */
+export function leaveTypeLabel(code: string): string {
+  const key = (code ?? '').trim().toUpperCase().replace(/[\s-]+/g, '_')
+  const labels: Record<string, string> = {
+    CASUAL: 'Casual',
+    SICK: 'Sick',
+    EARNED: 'Earned',
+    MATERNITY: 'Maternity',
+    PATERNITY: 'Paternity',
+    LOSS_OF_PAY: 'Unpaid',
+    COMP_OFF: 'Comp Off',
+  }
+  return labels[key] ?? (code ?? '')
+}

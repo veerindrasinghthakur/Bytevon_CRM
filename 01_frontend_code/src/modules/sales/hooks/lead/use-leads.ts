@@ -8,6 +8,7 @@ import {
   getLeadById,
   createLead,
   updateLead,
+  deleteLead,
   getLeadFilterOptions,
 } from '../../api/lead'
 import type { Lead, LeadListParams } from '../../types'
@@ -94,6 +95,17 @@ export function useUpdateLead() {
   })
 }
 
+export function useDeleteLead() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteLead(id),
+    onSuccess: (_v, id) => {
+      qc.removeQueries({ queryKey: queryKeys.sales.leads.detail(id) })
+      void qc.invalidateQueries({ queryKey: queryKeys.sales.leads.all })
+    },
+  })
+}
+
 const FILTER_DEFAULTS = {
   status: 'All',
   stage: 'All',
@@ -119,7 +131,7 @@ export function useLeadsList() {
   })
 
   /** Server-side filter + page — API receives page/pageSize/search/filters */
-  const { data, isLoading, isError, refetch, isFetching } = useLeadsQuery({
+  const { data, isLoading, isError, error, refetch, isFetching } = useLeadsQuery({
     search: controls.debouncedSearch.trim() || undefined,
     status: controls.filters.status,
     stage: controls.filters.stage,
@@ -151,6 +163,7 @@ export function useLeadsList() {
     pageItems,
     isLoading: isLoading || filterOptionsQuery.isLoading,
     isError,
+    error,
     refetch,
     isFetching,
     search: controls.search,

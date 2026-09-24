@@ -30,3 +30,17 @@ class DashboardRepository:
             )
             or 0
         )
+
+    async def source_count(self) -> dict[str, int]:
+        from app.modules.sales.models import Platform
+
+        total = int(await self._session.scalar(select(func.count()).select_from(Platform)) or 0)
+        active = int(
+            await self._session.scalar(
+                select(func.count())
+                .select_from(Platform)
+                .where(Platform.is_archived.is_(False))
+            )
+            or 0
+        )
+        return {"total": total, "active": active}

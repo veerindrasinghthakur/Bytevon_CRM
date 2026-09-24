@@ -69,7 +69,9 @@ export interface Task {
   projectName?: string
   assigneeName?: string
   assigneeEmploymentId?: number | null
+  startDate?: string | null
   dueDate?: string | null
+  estimatedHours?: number | null
   createdAt: string
 }
 
@@ -126,6 +128,7 @@ export interface ProjectDocument {
   url?: string
   referenceType?: string
   referenceId?: number
+  projectName?: string
 }
 
 export interface ProjectNote {
@@ -166,6 +169,7 @@ export interface TaskRow {
   projectId: number
   projectName?: string | null
   assigneeName?: string | null
+  startDate?: string | null
   dueDate?: string | null
   createdAt: string
 }
@@ -179,8 +183,10 @@ export interface TeamMemberRow {
   title?: string
   role: string
   email?: string
+  department?: string
   status?: 'Active' | 'On Leave' | string
   joined?: string
+  leftDate?: string
   isHead?: boolean
 }
 

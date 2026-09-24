@@ -5,6 +5,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { workforceRoutes } from '../routes'
 import { useAttendanceDayDetail } from '../hooks/use-attendance'
 
@@ -14,6 +15,8 @@ export function AttendanceDayDetailPage() {
   const search = useSearch({ strict: false }) as { date?: string }
   const date = search.date ?? new Date().toISOString().slice(0, 10)
   const { data, isLoading, isError, error, refetch } = useAttendanceDayDetail(employmentId, date)
+
+  useDeletedRedirect({ ready: !isLoading, data: data ?? null, error, listTo: workforceRoutes.attendanceRoster })
 
   if (isLoading) return <PageLoadingSkeleton />
   if (isError || !data) {

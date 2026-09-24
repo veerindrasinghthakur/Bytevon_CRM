@@ -1,11 +1,11 @@
 """Leave ledger / balance / apply routes."""
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Header, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
-from app.core.db.enums import LeaveType
+from app.core.authorization import AuthContext, enforce_owner_or_grant, require_permission
 from app.modules.leave.dependencies import LedgerServiceDep
 from app.modules.leave.ledger.schemas import (
     ApplyLeaveContextResponse,
@@ -18,8 +18,6 @@ from app.modules.leave.ledger.schemas import (
 
 router = APIRouter(tags=["Leave"])
 
-ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
-
 
 @router.post(
     "/ledger",
@@ -29,9 +27,9 @@ ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 async def post_ledger_entry(
     body: LeaveLedgerCreate,
     service: LedgerServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "CREATE", "ORGANIZATION"))],
 ) -> LeaveLedgerResponse:
-    return await service.post_ledger_entry(body, actor_employment_id=actor)
+    return await service.post_ledger_entry(body, actor_employment_id=auth.employment_id)
 
 
 @router.get(
@@ -41,9 +39,11 @@ async def post_ledger_entry(
 async def list_ledger(
     employment_id: int,
     service: LedgerServiceDep,
-    leave_type: Optional[LeaveType] = Query(None),
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "SELF", union=True))],
+    leave_type: str | None = Query(None),
     limit: int = Query(200, ge=1, le=1000),
 ) -> list[LeaveLedgerResponse]:
+    enforce_owner_or_grant(auth, "leave_request", "VIEW", owner_employment_id=employment_id)
     return await service.list_ledger(
         employment_id, leave_type=leave_type, limit=limit
     )
@@ -56,7 +56,9 @@ async def list_ledger(
 async def get_balances(
     employment_id: int,
     service: LedgerServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "SELF", union=True))],
 ) -> LeaveBalanceResponse:
+    enforce_owner_or_grant(auth, "leave_request", "VIEW", owner_employment_id=employment_id)
     return await service.get_balances(employment_id)
 
 
@@ -67,9 +69,11 @@ async def get_balances(
 async def get_apply_context(
     employment_id: int,
     service: LedgerServiceDep,
-    holiday_calendar_id: Optional[int] = Query(None),
-    year: Optional[int] = Query(None),
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "SELF", union=True))],
+    holiday_calendar_id: int | None = Query(None),
+    year: int | None = Query(None),
 ) -> ApplyLeaveContextResponse:
+    enforce_owner_or_grant(auth, "leave_request", "VIEW", owner_employment_id=employment_id)
     return await service.get_apply_context(
         employment_id,
         holiday_calendar_id=holiday_calendar_id,
@@ -80,6 +84,7 @@ async def get_apply_context(
 @router.post(
     "/calculate",
     response_model=LeaveCalculateResponse,
+    dependencies=[Depends(require_permission("leave_request", "VIEW", "ORGANIZATION"))],
 )
 async def calculate_leave_days(
     body: LeaveCalculateRequest,

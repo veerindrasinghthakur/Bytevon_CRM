@@ -24,6 +24,12 @@ export function LeadDetailSidebar({ lead }: Props) {
         <p className="text-[10px] font-bold uppercase text-on-surface-variant">Expected close</p>
         <p className="text-lg font-semibold text-on-background mt-1">{lead.date ?? '—'}</p>
       </div>
+      <div className="bv-surface p-5">
+        <p className="text-[10px] font-bold uppercase text-on-surface-variant">Project auto-create</p>
+        <p className="text-lg font-semibold text-on-background mt-1">
+          {lead.autoCreateProject ? 'On (creates on WON)' : 'Off'}
+        </p>
+      </div>
       {lead.probability != null && (
         <div className="bv-surface p-5">
           <p className="text-[10px] font-bold uppercase text-on-surface-variant">Win probability</p>

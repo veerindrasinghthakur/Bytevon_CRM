@@ -35,8 +35,8 @@ export function AssignProjectPage() {
   })
 
   const projectsQuery = useQuery({
-    queryKey: ['projects', 'unassigned-for-team', numericTeamId],
-    queryFn: () => getProjects({ unassignedOnly: true, pageSize: 200 }),
+    queryKey: ['projects', 'assignable-for-team', numericTeamId],
+    queryFn: () => getProjects({ pageSize: 200 }),
     enabled: Number.isFinite(numericTeamId),
   })
 
@@ -47,7 +47,9 @@ export function AssignProjectPage() {
 
   const selected = form.watch('projectId')
   const teamName = teamQuery.data?.name ?? `Team #${teamId}`
-  const assignable = useMemo(() => (projectsQuery.data?.items ?? []).filter((p) => p.teamId == null), [projectsQuery.data])
+  // All projects are assignable (re-assignment allowed); the team's current
+  // project is marked so the user sees what will change.
+  const assignable = useMemo(() => projectsQuery.data?.items ?? [], [projectsQuery.data])
 
   const assignMutation = useMutation({
     mutationFn: (projectId: number) =>
@@ -56,11 +58,13 @@ export function AssignProjectPage() {
         assignmentType: 'TEAM',
         assignedToId: numericTeamId,
       }),
-    onSuccess: async () => {
+    onSuccess: async (_data, projectId) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.teams.projects(numericTeamId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.teams.detail(numericTeamId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.teams.all }),
         queryClient.invalidateQueries({ queryKey: ['projects'] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) }),
       ])
       safeNavigate(navigate, {
         to: projectRoutes.teamProjectsPath,
@@ -84,19 +88,22 @@ export function AssignProjectPage() {
         <BackButton to={projectRoutes.teamDetail(String(numericTeamId))} label="Back to team" />
         <h1 className="text-headline-xl font-bold mt-2">Assign to Project</h1>
         <p className="text-body-md text-on-surface-variant">
-          Link <strong>{teamName}</strong> to an unassigned project.
+          Link <strong>{teamName}</strong> to a project. Already-assigned projects can be
+          re-assigned here.
         </p>
       </div>
       <form className="bv-surface p-6 space-y-5" onSubmit={onSubmit}>
         {(teamQuery.isLoading || projectsQuery.isLoading) && <Skeleton className="h-14 w-full" />}
         {!projectsQuery.isLoading && assignable.length === 0 && (
           <p className="text-body-sm text-on-surface-variant py-6 text-center border border-dashed border-outline-variant rounded-lg">
-            No unassigned projects available.
+            No projects available.
           </p>
         )}
         <ul className="space-y-2">
           {assignable.map((p) => {
             const active = selected === String(p.id)
+            const isCurrent = p.teamId === numericTeamId
+            const assignedElsewhere = p.teamId != null && !isCurrent
             return (
               <li key={p.id}>
                 <button
@@ -107,7 +114,22 @@ export function AssignProjectPage() {
                     active ? 'border-secondary bg-secondary/5' : 'border-outline-variant',
                   )}
                 >
-                  <p className="font-semibold text-body-sm">{p.name}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold text-body-sm">{p.name}</p>
+                    {isCurrent ? (
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-secondary/10 text-secondary">
+                        Current
+                      </span>
+                    ) : assignedElsewhere ? (
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">
+                        Team #{p.teamId}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant">
+                        Unassigned
+                      </span>
+                    )}
+                  </div>
                   <p className="text-caption text-on-surface-variant">{p.clientName ?? '—'}</p>
                 </button>
               </li>

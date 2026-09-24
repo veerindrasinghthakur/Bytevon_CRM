@@ -1,7 +1,7 @@
 """Center (inbox) repository."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,7 @@ class CenterRepository(BaseRepository):
 
     async def get_notification_by_id(
         self, notification_id: int
-    ) -> Optional[Notification]:
+    ) -> Notification | None:
         stmt = select(Notification).where(Notification.id == notification_id)
         return await self.scalar_one_or_none(stmt)
 
@@ -26,7 +26,7 @@ class CenterRepository(BaseRepository):
         recipient_type: str,
         recipient_id: int,
         *,
-        status: Optional[NotificationStatus] = None,
+        status: NotificationStatus | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> Sequence[Notification]:

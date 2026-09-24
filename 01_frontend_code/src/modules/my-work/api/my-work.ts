@@ -5,6 +5,22 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay } from '@/shared/mock/db'
+import {
+  approverDirectory,
+  attendanceHistory,
+  correctionRequestsSeed,
+  currentUser,
+  holidaysSeed,
+  leaveBalances,
+  myApprovals,
+  myTasks,
+  myWorkMetrics,
+  myWorkQuickActions,
+  recentNotifications,
+  todayAttendance,
+  upcomingEvents,
+  weekHours,
+} from '@/shared/mock/data/my-work'
 import { DEFAULT_LIST_PAGE, DEFAULT_LIST_PAGE_SIZE, paginateItems } from '@/shared/lib/list-params'
 import type {
   ApprovalListResponse,
@@ -40,6 +56,96 @@ export interface MyWorkListParams {
   dateTo?: string
 }
 
+/**
+ * Backend leave codes → UI labels (legacy cached values).
+ * Live endpoints return {value: code, label: name}; map at the boundary so
+ * self-service keeps working if the master catalog gains new types.
+ */
+const BACKEND_LEAVE_TYPE_TO_UI: Record<string, string> = {
+  CASUAL: 'Casual',
+  SICK: 'Sick',
+  EARNED: 'Earned',
+  LOSS_OF_PAY: 'Unpaid',
+  LOP: 'Unpaid',
+  UNPAID: 'Unpaid',
+  COMP_OFF: 'Comp Off',
+  MATERNITY: 'Maternity',
+  PATERNITY: 'Paternity',
+}
+
+function mapLeaveTypeToUI(value: unknown): string {
+  const key = String(value ?? '').toUpperCase()
+  return BACKEND_LEAVE_TYPE_TO_UI[key] ?? String(value ?? '')
+}
+
+function mapApiLeaveRequest(r: Record<string, unknown>): LeaveRequest {
+  return {
+    id: String(r.id ?? ''),
+    type: mapLeaveTypeToUI(r.type) as LeaveRequest['type'],
+    from: String(r.from ?? r.from_date ?? ''),
+    to: String(r.to ?? r.to_date ?? ''),
+    days: Number(r.days ?? 0),
+    reason: String(r.reason ?? ''),
+    status: String(r.status ?? 'Pending') as LeaveRequest['status'],
+    appliedOn: String(r.appliedOn ?? r.applied_on ?? ''),
+    approver: r.approver == null ? undefined : String(r.approver),
+    approverRemarks:
+      r.approverRemarks == null && r.approver_remarks == null
+        ? undefined
+        : String(r.approverRemarks ?? r.approver_remarks ?? ''),
+    decidedOn:
+      r.decidedOn == null && r.decided_on == null
+        ? undefined
+        : String(r.decidedOn ?? r.decided_on ?? ''),
+    halfDay: (r.halfDay ?? r.half_day ?? null) as LeaveRequest['halfDay'],
+  }
+}
+
+/** Withdraw a pending leave — backend POST /leave/requests/{id}/cancel (releases the HOLD). */
+export async function cancelLeaveRequest(id: string): Promise<void> {
+  if (env.useMockApi) {
+    await delay(300)
+    return
+  }
+  await apiClient.post(`/leave/requests/${encodeURIComponent(id)}/cancel`)
+}
+
+/** Backend task codes (HIGH, IN_PROGRESS…) → UI labels (High, In Progress…). */
+const BACKEND_TASK_PRIORITY_TO_UI: Record<string, string> = {
+  LOW: 'Low',
+  MEDIUM: 'Medium',
+  HIGH: 'High',
+  CRITICAL: 'Critical',
+}
+
+const BACKEND_TASK_STATUS_TO_UI: Record<string, string> = {
+  TODO: 'Not Started',
+  IN_PROGRESS: 'In Progress',
+  IN_REVIEW: 'Pending',
+  BLOCKED: 'Blocked',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+}
+
+export function mapApiMyTask(r: Record<string, unknown>): MyTask {
+  const est = r.estimated_hours ?? r.estimatedHours
+  const created = r.created_at ?? r.createdAt
+  return {
+    id: String(r.id ?? ''),
+    name: String(r.name ?? ''),
+    project: r.project == null ? undefined : String(r.project),
+    priority: (BACKEND_TASK_PRIORITY_TO_UI[String(r.priority ?? '').toUpperCase()] ??
+      String(r.priority ?? 'Medium')) as MyTask['priority'],
+    dueDate: String(r.due_date ?? r.dueDate ?? ''),
+    status: (BACKEND_TASK_STATUS_TO_UI[String(r.status ?? '').toUpperCase()] ??
+      String(r.status ?? 'Not Started')) as MyTask['status'],
+    estimatedHours:
+      est == null || est === '' ? undefined : typeof est === 'number' ? `${est}h` : String(est),
+    assignee: r.assignee == null ? undefined : String(r.assignee),
+    createdAt: created == null || created === '' ? undefined : String(created).slice(0, 10),
+  }
+}
+
 function toISO(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
@@ -67,6 +173,29 @@ function mockCountWorkingDays(
 }
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+
+/** Backend sends full ISO datetimes for check-in/out; cards need short local HH:MM. */
+function formatClockShort(value: unknown): string {
+  if (typeof value !== 'string' || value.trim() === '') return '—'
+  const bare = /^(\d{1,2}):(\d{2})(?::\d{2})?(\s*[AP]M)?$/i.exec(value.trim())
+  if (bare) return `${bare[1].padStart(2, '0')}:${bare[2]}${bare[3] ? ` ${bare[3].trim()}` : ''}`
+  const dt = new Date(value)
+  if (!Number.isNaN(dt.getTime())) {
+    return dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+  return '—'
+}
+
+const ATTENDANCE_STATUS_LABEL: Record<string, string> = {
+  PRESENT: 'Present',
+  ABSENT: 'Absent',
+  HALF_DAY: 'Half Day',
+  ON_LEAVE: 'On Leave',
+  HOLIDAY: 'Holiday',
+  WEEK_OFF: 'Week Off',
+  NOT_MARKED: 'Not marked',
+  UPCOMING: 'Upcoming',
+}
 
 /** Backend returns WeekHoursResponse { days: [{ date, status, minutes }] }; UI needs WeekHourBar[]. */
 function mapWeekHoursPayload(data: unknown): WeekHourBar[] {
@@ -105,7 +234,9 @@ function mapOneWeekDay(raw: Record<string, unknown>): WeekHourBar {
     if (!Number.isNaN(dt.getTime())) {
       dow = dt.getDay()
       isWeekend = dow === 0 || dow === 6
-      const todayIso = new Date().toISOString().slice(0, 10)
+      // Local calendar day (not UTC) so isToday matches the server day.
+      const n = new Date()
+      const todayIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
       isToday = dateStr === todayIso
     }
   }
@@ -134,7 +265,47 @@ export async function getMyWorkOverview(): Promise<MyWorkOverview> {
     }
   }
   const { data } = await apiClient.get<MyWorkOverview>('/my-work/overview')
-  return data
+  // Backend overview shapes differ from UI shapes (WeekHoursResponse object,
+  // TodayInfoResponse, numeric employmentId). Normalize so pages never crash.
+  const raw = data as unknown as Record<string, unknown>
+  const rawUser = (raw.user ?? {}) as Record<string, unknown>
+  const rawToday = (raw.todayAttendance ?? null) as Record<string, unknown> | null
+  const workedMinutes = Number(rawToday?.workedMinutes ?? 0)
+  const hours = Math.floor(workedMinutes / 60)
+  const mins = workedMinutes % 60
+  return {
+    user: {
+      name: String(rawUser.name ?? 'User'),
+      employeeId: String(rawUser.employmentId ?? rawUser.employeeId ?? ''),
+      employeeCode: typeof rawUser.employeeCode === 'string' ? rawUser.employeeCode : undefined,
+      department: String(rawUser.department ?? ''),
+      role: typeof rawUser.role === 'string' ? (rawUser.role as string) : undefined,
+      todayLabel: String(rawUser.todayLabel ?? 'Today'),
+      shift: String(rawUser.shift ?? '—'),
+    },
+    metrics: Array.isArray(raw.metrics) ? raw.metrics : [],
+    todayAttendance: {
+      checkIn: formatClockShort(rawToday?.checkIn),
+      checkInNote:
+        typeof rawToday?.status === 'string'
+          ? (ATTENDANCE_STATUS_LABEL[String(rawToday.status).toUpperCase()] ?? String(rawToday.status))
+          : '',
+      totalHours:
+        rawToday && (rawToday.checkIn || rawToday.checkOut)
+          ? `${hours}h ${mins}m`
+          : '—',
+      totalHoursNote:
+        rawToday?.breakMinutes != null ? `Break ${String(rawToday.breakMinutes)}m` : '',
+    },
+    weekHours: mapWeekHoursPayload(raw.weekHours),
+    leaveBalances: Array.isArray(raw.leaveBalances) ? raw.leaveBalances : [],
+    tasks: (Array.isArray(raw.tasks) ? raw.tasks : []).map((t) =>
+      mapApiMyTask(t as Record<string, unknown>),
+    ),
+    notifications: Array.isArray(raw.notifications) ? raw.notifications : [],
+    events: Array.isArray(raw.events) ? raw.events : [],
+    quickActions: Array.isArray(raw.quickActions) ? raw.quickActions : [],
+  } as unknown as MyWorkOverview
 }
 
 export async function listMyLeaveRequests(
@@ -144,16 +315,25 @@ export async function listMyLeaveRequests(
   const pageSize = params.pageSize ?? DEFAULT_LIST_PAGE_SIZE
 
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<LeaveListResponse>('/my-work/leave', { params })
-    return data
+    const { data } = await apiClient.get<{
+      items?: Array<Record<string, unknown>>
+      total?: number
+    }>('/my-work/leave', { params })
+    const items = Array.isArray(data) ? data : (data.items ?? [])
+    return {
+      items: (Array.isArray(items) ? items : []).map(mapApiLeaveRequest),
+      total: Array.isArray(data) ? items.length : (data.total ?? items.length),
+      page,
+      pageSize,
+    }
   }
 
   await delay()
   // Mock fallback - in production this would be replaced by real API
-  let items = [
+  let items: LeaveRequest[] = [
     {
       id: 'LV-20240101',
-      type: 'Annual',
+      type: 'Earned',
       from: '2024-01-01',
       to: '2024-01-05',
       days: 5,
@@ -181,25 +361,45 @@ export async function listMyLeaveRequests(
 
 export async function listMyLeaveBalances(): Promise<LeaveBalance[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<LeaveBalance[]>('/my-work/leave/balances')
-    return data
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+      '/my-work/leave/balances',
+    )
+    return (Array.isArray(data) ? data : []).map((b) => ({
+      type: mapLeaveTypeToUI(b.type) as LeaveBalance['type'],
+      used: Number(b.used ?? 0),
+      total: Number(b.total ?? 0),
+      remaining: Number(b.remaining ?? 0),
+    }))
   }
   await delay()
   return leaveBalances.map((b) => ({ ...b }))
 }
 
+/** Mock-only catalog fallback (mirrors seeded leave_types master). */
+const FALLBACK_LEAVE_TYPE_OPTIONS: LeaveTypeOption[] = [
+  { value: 'Casual', label: 'Casual', requires_approval: true },
+  { value: 'Sick', label: 'Sick', requires_approval: true },
+  { value: 'Earned', label: 'Earned', requires_approval: true },
+  { value: 'Maternity', label: 'Maternity', requires_approval: true },
+  { value: 'Paternity', label: 'Paternity', requires_approval: true },
+  { value: 'Unpaid', label: 'Unpaid', requires_approval: true },
+  { value: 'Comp Off', label: 'Comp Off', requires_approval: true },
+]
+
 export async function listLeaveTypeOptions(): Promise<LeaveTypeOption[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<LeaveTypeOption[]>('/my-work/leave/types')
-    return data
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+      '/my-work/leave/types',
+    )
+    return (Array.isArray(data) ? data : []).map((o) => ({
+      value: mapLeaveTypeToUI(o.value),
+      label: String(o.label ?? mapLeaveTypeToUI(o.value)),
+      requires_approval:
+        typeof o.requires_approval === 'boolean' ? o.requires_approval : true,
+    }))
   }
   await delay()
-  return [
-    { value: 'Annual', label: 'Annual Leave', requires_approval: true },
-    { value: 'Sick', label: 'Sick Leave', requires_approval: false },
-    { value: 'Personal', label: 'Personal Day', requires_approval: true },
-    { value: 'Parental', label: 'Parental Leave', requires_approval: true },
-  ]
+  return FALLBACK_LEAVE_TYPE_OPTIONS.map((o) => ({ ...o }))
 }
 
 export async function getApplyLeaveContext(): Promise<ApplyLeaveContext> {
@@ -207,25 +407,73 @@ export async function getApplyLeaveContext(): Promise<ApplyLeaveContext> {
     await delay()
     return {
       holidays: [],
-      leaveTypes: [
-        { value: 'Annual', label: 'Annual Leave', requires_approval: true },
-        { value: 'Sick', label: 'Sick Leave', requires_approval: false },
-        { value: 'Personal', label: 'Personal Day', requires_approval: true },
-        { value: 'Parental', label: 'Parental Leave', requires_approval: true },
-      ],
+    leaveTypes: FALLBACK_LEAVE_TYPE_OPTIONS.map((o) => ({ ...o })),
       balances: leaveBalances.map((b) => ({ ...b })),
     }
   }
-  const { data } = await apiClient.get<ApplyLeaveContext>('/my-work/leave/apply-context')
-  return data
+  const { data } = await apiClient.get<{
+    holidays?: Array<Record<string, unknown>>
+    leaveTypes?: Array<Record<string, unknown>>
+    balances?: Array<Record<string, unknown>>
+  }>('/my-work/leave/apply-context')
+  const raw = (data ?? {}) as {
+    holidays?: Array<Record<string, unknown>>
+    leaveTypes?: Array<Record<string, unknown>>
+    balances?: Array<Record<string, unknown>>
+  }
+  return {
+    holidays: (raw.holidays ?? []).map((h) => ({
+      date: String(h.date ?? ''),
+      name: String(h.name ?? ''),
+      holidayType: h.holidayType == null ? undefined : String(h.holidayType),
+    })),
+    leaveTypes: (raw.leaveTypes ?? []).map((o) => ({
+      value: mapLeaveTypeToUI(o.value),
+      label: String(o.label ?? mapLeaveTypeToUI(o.value)),
+      requires_approval:
+        typeof o.requires_approval === 'boolean' ? o.requires_approval : true,
+    })),
+    balances: (raw.balances ?? []).map((b) => ({
+      type: mapLeaveTypeToUI(b.type) as LeaveBalance['type'],
+      used: Number(b.used ?? 0),
+      total: Number(b.total ?? 0),
+      remaining: Number(b.remaining ?? 0),
+    })),
+  }
 }
 
 export async function calculateLeaveDays(
   input: LeaveCalculateInput,
 ): Promise<LeaveCalculateResult> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<LeaveCalculateResult>('/my-work/leave/calculate', input)
-    return data
+    const { data } = await apiClient.post<Record<string, unknown>>(
+      '/my-work/leave/calculate',
+      {
+        type: input.type,
+        from: input.from,
+        to: input.to,
+        half_day: Boolean(input.halfDay),
+      },
+    )
+    const balanceRemainingRaw = data.balance_remaining ?? data.balanceRemaining
+    const estimatedAfterRaw =
+      data.estimated_balance_after ?? data.estimatedBalanceAfter
+    return {
+      dayCost: Number(data.day_cost ?? data.dayCost ?? 0),
+      balanceRemaining:
+        balanceRemainingRaw == null ? null : Number(balanceRemainingRaw),
+      estimatedBalanceAfter:
+        estimatedAfterRaw == null ? null : Number(estimatedAfterRaw),
+      holidaysInRange: (
+        (Array.isArray(data.holidays_in_range)
+          ? data.holidays_in_range
+          : (data.holidaysInRange as Array<Record<string, unknown>> | undefined)) ?? []
+      ).map((h) => ({
+        date: String(h.date ?? ''),
+        name: String(h.name ?? ''),
+        holidayType: h.holidayType == null ? undefined : String(h.holidayType),
+      })),
+    }
   }
   await delay(80)
   const holidayDates = new Set(holidaysSeed.map((h) => h.date))
@@ -251,33 +499,82 @@ export async function calculateLeaveDays(
 }
 
 export async function listMyAttendance(
-  params: MyWorkListParams = {},
+  params: MyWorkListParams & { fromDate?: string; toDate?: string } = {},
 ): Promise<AttendanceListResponse> {
   const page = params.page ?? DEFAULT_LIST_PAGE
   const pageSize = params.pageSize ?? DEFAULT_LIST_PAGE_SIZE
 
   if (!env.useMockApi) {
-    try {
-      const { data } = await apiClient.get<
-        AttendanceListResponse | unknown[] | { items?: unknown[]; total?: number }
-      >('/my-work/attendance', { params })
-      if (Array.isArray(data)) {
-        return { items: data as AttendanceRecord[], total: data.length, page, pageSize }
-      }
-      const items = ((data as { items?: AttendanceRecord[] }).items ?? []) as AttendanceRecord[]
-      return {
-        items,
-        total: Number((data as { total?: number }).total ?? items.length),
-        page,
-        pageSize,
-      }
-    } catch {
-      return { items: [], total: 0, page, pageSize }
+    const { fromDate, toDate, ...rest } = params
+    const { data } = await apiClient.get<
+      AttendanceListResponse | unknown[] | { items?: unknown[]; total?: number }
+    >(
+      '/my-work/attendance',
+      {
+        params: {
+          ...rest,
+          ...(fromDate ? { from_date: fromDate } : {}),
+          ...(toDate ? { to_date: toDate } : {}),
+          include_punches: true,
+        },
+      },
+    )
+    const rawItems: unknown[] = Array.isArray(data)
+      ? data
+      : ((data as { items?: unknown[] }).items ?? [])
+    const items = rawItems.map((r) => mapApiAttendanceDay(r as Record<string, unknown>))
+    return {
+      items,
+      total: Number((data as { total?: number }).total ?? items.length),
+      page,
+      pageSize,
     }
   }
 
   await delay()
   return { items: [], total: 0, page, pageSize }
+}
+
+/** Backend AttendanceDay(+punches) → UI AttendanceRecord. */
+const BACKEND_ATTENDANCE_STATUS_TO_UI: Record<string, string> = {
+  PRESENT: 'Present',
+  ABSENT: 'Absent',
+  HALF_DAY: 'Half Day',
+  ON_LEAVE: 'On Leave',
+  HOLIDAY: 'Holiday',
+  WEEK_OFF: 'Weekend',
+  NOT_MARKED: 'Absent',
+  NOT_STARTED: 'Absent',
+  UPCOMING: 'Absent',
+}
+
+function mapApiAttendanceDay(r: Record<string, unknown>): AttendanceRecord {
+  const punches = Array.isArray(r.punches) ? (r.punches as Array<Record<string, unknown>>) : []
+  let checkIn: string | undefined
+  let checkOut: string | undefined
+  for (const p of punches) {
+    const t = String(p.punch_type ?? p.punchType ?? '').toUpperCase()
+    const at = String(p.punch_time ?? p.punchTime ?? '')
+    const hm = formatClockShort(at === '' ? undefined : at)
+    if (t === 'CHECK_IN' && checkIn == null) checkIn = hm === '—' ? undefined : hm
+    if (t === 'CHECK_OUT') checkOut = hm === '—' ? undefined : hm
+  }
+  const wh = r.working_hours ?? r.workingHours
+  let totalHours: string | undefined
+  if (wh != null && wh !== '') {
+    const mins = Math.round(Number(wh) * 60)
+    totalHours = `${Math.floor(mins / 60)}h ${mins % 60}m`
+  }
+  const statusKey = String(r.status ?? '').toUpperCase()
+  return {
+    id: String(r.id ?? ''),
+    date: String(r.attendance_date ?? r.date ?? ''),
+    checkIn,
+    checkOut,
+    totalHours,
+    status: (BACKEND_ATTENDANCE_STATUS_TO_UI[statusKey] ?? 'Present') as AttendanceRecord['status'],
+    note: typeof r.note === 'string' ? r.note : undefined,
+  }
 }
 
 export async function getMyWorkTodayInfo(): Promise<{ todayLabel: string; shift: string }> {
@@ -306,6 +603,102 @@ export async function getMyWeekHours(): Promise<WeekHourBar[]> {
   return weekHours.map((w) => ({ ...w }))
 }
 
+/** Real check-in / check-out punch. Server owns the attendance_day row. */
+export async function punchAttendance(input: {
+  employmentId: number
+  punchType: 'CHECK_IN' | 'CHECK_OUT'
+}): Promise<{ id?: number; dayId?: number }> {
+  const { data } = await apiClient.post<Record<string, unknown>>(
+    '/my-work/attendance/punch',
+    {
+      employment_id: input.employmentId,
+      punch_type: input.punchType,
+    },
+  )
+  const dayId = data.attendance_day_id ?? data.day_id ?? data.dayId
+  return {
+    id: typeof data.id === 'number' ? data.id : undefined,
+    dayId: typeof dayId === 'number' ? dayId : undefined,
+  }
+}
+
+/** Today's attendance day id (needed to open a server-side break). */
+export async function getMyTodayDayId(): Promise<number | null> {
+  const { data } = await apiClient.get<Record<string, unknown>>(
+    '/my-work/attendance/today-info',
+  )
+  const dayId = data.dayId ?? data.day_id ?? data.attendance_day_id
+  return typeof dayId === 'number' ? dayId : null
+}
+
+const BREAK_SERVER_ID_KEY = 'bytevon.breakServerIds'
+
+function readBreakServerIds(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(BREAK_SERVER_ID_KEY) ?? '{}') as Record<string, number>
+  } catch {
+    return {}
+  }
+}
+
+/** Open a server-side break; remembers the server id for the local break id. */
+export async function syncBreakStartToServer(
+  localId: string,
+  attendanceDayId: number,
+): Promise<number | null> {
+  try {
+    const { data } = await apiClient.post<Record<string, unknown>>(
+      '/my-work/attendance/breaks/start',
+      { attendance_day_id: attendanceDayId },
+    )
+    if (typeof data.id === 'number') {
+      const map = readBreakServerIds()
+      map[localId] = data.id
+      localStorage.setItem(BREAK_SERVER_ID_KEY, JSON.stringify(map))
+      return data.id
+    }
+  } catch {
+    /* best-effort: local timer remains source of truth */
+  }
+  return null
+}
+
+/** Close the server-side break linked to a local break id. */
+export async function syncBreakEndToServer(localId: string): Promise<void> {
+  try {
+    const map = readBreakServerIds()
+    const serverId = map[localId]
+    if (serverId == null) return
+    await apiClient.post(`/my-work/attendance/breaks/${serverId}/end`, {})
+    delete map[localId]
+    localStorage.setItem(BREAK_SERVER_ID_KEY, JSON.stringify(map))
+  } catch {
+    /* best-effort */
+  }
+}
+
+/** Backend day status → UI display status. */
+function mapDayStatus(status: unknown): AttendanceRecord['status'] {
+  const key = String(status ?? '').toUpperCase()
+  switch (key) {
+    case 'PRESENT':
+      return 'Present'
+    case 'ABSENT':
+      return 'Absent'
+    case 'HALF_DAY':
+    case 'HALF':
+      return 'Half Day'
+    case 'ON_LEAVE':
+      return 'On Leave'
+    case 'HOLIDAY':
+      return 'Holiday'
+    case 'WEEK_OFF':
+      return 'Weekend'
+    default:
+      return 'Absent'
+  }
+}
+
 export async function listCorrectionCandidates(): Promise<AttendanceRecord[]> {
   if (env.useMockApi) {
     await delay()
@@ -313,17 +706,51 @@ export async function listCorrectionCandidates(): Promise<AttendanceRecord[]> {
       .filter((r) => r.status === 'Half Day' || r.status === 'Absent' || Boolean(r.note))
       .map((r) => ({ ...r }))
   }
-  const { data } = await apiClient.get<AttendanceRecord[]>('/my-work/attendance/correction-candidates')
-  return data
+  // Backend returns [{ attendanceDayId, date, status, label }]; normalize to UI rows.
+  const { data } = await apiClient.get<
+    Array<{ attendanceDayId?: number; id?: number | string; date?: string; status?: string }>
+  >('/my-work/attendance/correction-candidates')
+  return (Array.isArray(data) ? data : []).map((c, i) => ({
+    id: String(c.attendanceDayId ?? c.id ?? `${c.date ?? i}`),
+    date: String(c.date ?? ''),
+    status: mapDayStatus(c.status),
+  }))
 }
+
+/** "09:00 AM" + "2026-09-21" → ISO datetime for the correction API. */
+function combineDateTime(date: string, time: string): string | null {
+  const m = time.trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/)
+  if (!m || !date) return null
+  let hh = Number(m[1])
+  const mm = m[2]
+  const mer = (m[3] ?? '').toUpperCase()
+  if (mer === 'PM' && hh < 12) hh += 12
+  if (mer === 'AM' && hh === 12) hh = 0
+  return `${date}T${String(hh).padStart(2, '0')}:${mm}:00`
+}
+
+export type SubmitCorrectionInput = Omit<
+  AttendanceCorrectionRequest,
+  'id' | 'submittedOn' | 'status'
+> & { attendanceDayId?: number | string }
 
 export async function listMyTasks(params: MyWorkListParams = {}): Promise<MyTaskListResponse> {
   const page = params.page ?? DEFAULT_LIST_PAGE
   const pageSize = params.pageSize ?? DEFAULT_LIST_PAGE_SIZE
 
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<MyTaskListResponse>('/my-work/tasks', { params })
-    return data
+    const { data } = await apiClient.get<{
+      items?: Array<Record<string, unknown>>
+      total?: number
+    }>('/my-work/tasks', { params })
+    const raw = Array.isArray(data) ? data : (data.items ?? [])
+    const items = (Array.isArray(raw) ? raw : []).map(mapApiMyTask)
+    return {
+      items,
+      total: Array.isArray(data) ? items.length : Number((data as { total?: number }).total ?? items.length),
+      page,
+      pageSize,
+    }
   }
 
   await delay()
@@ -339,6 +766,58 @@ export async function listMyTasks(params: MyWorkListParams = {}): Promise<MyTask
   }
   const sliced = paginateItems(items, page, pageSize)
   return { ...sliced, page, pageSize }
+}
+
+/** Single task for the detail page — backend exposes list only, so resolve by id. */
+export async function getMyTask(taskId: string): Promise<MyTask> {
+  const { items } = await listMyTasks({ pageSize: 200 })
+  const task = items.find((t) => String(t.id) === String(taskId))
+  if (!task) throw new Error('Task not found')
+  return task
+}
+
+export interface MyProjectOption {
+  id: number
+  name: string
+  status: string
+}
+
+/** Active projects assigned to me or to one of my teams. */
+export async function listMyProjects(): Promise<MyProjectOption[]> {
+  if (env.useMockApi) {
+    await delay()
+    return []
+  }
+  const { data } = await apiClient.get<MyProjectOption[]>('/my-work/tasks/projects')
+  return Array.isArray(data) ? data : []
+}
+
+export interface CreateMyTaskInput {
+  projectId: number
+  title: string
+  description?: string | null
+  priority: string
+  startDate?: string | null
+  dueDate?: string | null
+  estimatedHours?: number | null
+}
+
+/** Self-assign task create — assignee is always the caller (server-enforced). */
+export async function createMyTask(input: CreateMyTaskInput): Promise<Record<string, unknown>> {
+  if (env.useMockApi) {
+    await delay(400)
+    return { id: `T-${Date.now()}`, ...input }
+  }
+  const { data } = await apiClient.post<Record<string, unknown>>('/my-work/tasks', {
+    project_id: input.projectId,
+    title: input.title,
+    description: input.description ?? null,
+    priority: input.priority,
+    start_date: input.startDate ?? null,
+    due_date: input.dueDate ?? null,
+    estimated_hours: input.estimatedHours ?? null,
+  })
+  return data
 }
 
 export async function listMyApprovals(
@@ -374,7 +853,22 @@ export async function listMySubmittedRequests(
   }
 
   await delay()
-  let items = myRequests.map((r) => ({ ...r })) as ApprovalRow[]
+  // Mock fallback derived from the approvals seed (no dedicated mock store).
+  let items: ApprovalRow[] = myApprovals.map((a, i) => ({
+    id: String(a.id ?? `APR-${i}`),
+    type: String(a.type ?? 'Leave'),
+    typeIcon: 'approval',
+    typeColor: 'secondary',
+    requester: 'You',
+    requesterInitials: 'YO',
+    date: String(a.submittedOn ?? ''),
+    priority: 'Normal',
+    status: (['Pending', 'Approved', 'Rejected'] as const).includes(
+      a.status as 'Pending' | 'Approved' | 'Rejected',
+    )
+      ? (a.status as 'Pending' | 'Approved' | 'Rejected')
+      : 'Pending',
+  }))
   if (params.status && params.status !== 'All') {
     items = items.filter(
       (r) => r.status === params.status || (params.status === 'In-Progress' && r.status === 'Pending'),
@@ -417,7 +911,7 @@ export async function listAttendanceCorrections(
 }
 
 export async function submitAttendanceCorrection(
-  body: Omit<AttendanceCorrectionRequest, 'id' | 'submittedOn' | 'status'>,
+  body: SubmitCorrectionInput & { date?: string },
 ): Promise<AttendanceCorrectionRequest> {
   if (env.useMockApi) {
     await delay()
@@ -428,11 +922,67 @@ export async function submitAttendanceCorrection(
       submittedOn: new Date().toISOString().slice(0, 10),
     }
   }
-  const { data } = await apiClient.post<AttendanceCorrectionRequest>(
-    '/my-work/attendance/corrections',
-    body,
+  // Canonical route is POST /workforce/attendance/corrections (my-work has no POST).
+  const dayId = Number((body as { attendanceDayId?: unknown }).attendanceDayId)
+  if (!Number.isFinite(dayId)) throw new Error('Select an attendance day for the correction')
+  const date = typeof body.date === 'string' ? body.date : ''
+  const { data } = await apiClient.post<{ id?: number; status?: string }>(
+    '/workforce/attendance/corrections',
+    {
+      attendance_day_id: dayId,
+      requested_check_in: combineDateTime(date, String(body.requestedCheckIn ?? '')),
+      requested_check_out: combineDateTime(date, String(body.requestedCheckOut ?? '')),
+      reason: body.reason,
+    },
   )
-  return data
+  const status = String(data.status ?? 'PENDING').toUpperCase()
+  return {
+    ...body,
+    id: `corr-${data.id ?? Date.now()}`,
+    status: status === 'APPROVED' ? 'Approved' : status === 'REJECTED' ? 'Rejected' : 'Pending',
+    submittedOn: new Date().toISOString().slice(0, 10),
+  }
+}
+
+/**
+ * Manual attendance entry (Mark Attendance → Request Approval).
+ * Resolves the caller's day for the date; when none exists the backend
+ * auto-creates it (attendance_date fallback) and files the correction,
+ * which raises an approval request to the department head.
+ */
+export async function submitManualAttendance(input: {
+  date: string
+  timeIn?: string
+  timeOut?: string
+  reason: string
+  employmentId: number
+}): Promise<{ id: number | null }> {
+  const requestedIn = combineDateTime(input.date, String(input.timeIn ?? ''))
+  const requestedOut = combineDateTime(input.date, String(input.timeOut ?? ''))
+  if (!requestedIn && !requestedOut) {
+    throw new Error('Enter at least a time-in or time-out for the manual entry')
+  }
+  let dayId: number | null = null
+  try {
+    const { data } = await apiClient.get<Array<{ id?: number }>>(
+      `/workforce/attendance/days/by-employment/${input.employmentId}`,
+      { params: { from_date: input.date, to_date: input.date } },
+    )
+    const hit = Array.isArray(data) ? data[0] : undefined
+    if (hit && typeof hit.id === 'number') dayId = hit.id
+  } catch {
+    dayId = null
+  }
+  const { data } = await apiClient.post<{ id?: number }>(
+    '/workforce/attendance/corrections',
+    {
+      ...(dayId != null ? { attendance_day_id: dayId } : { attendance_date: input.date }),
+      requested_check_in: requestedIn,
+      requested_check_out: requestedOut,
+      reason: input.reason,
+    },
+  )
+  return { id: typeof data.id === 'number' ? data.id : null }
 }
 
 export async function submitLeaveRequest(input: CreateLeaveRequestInput): Promise<LeaveRequest> {
@@ -447,7 +997,7 @@ export async function submitLeaveRequest(input: CreateLeaveRequestInput): Promis
     )
     return {
       id: `LV-${Date.now()}`,
-      type: input.type,
+      type: mapLeaveTypeToUI(input.type) as LeaveRequest['type'],
       from: input.from,
       to: input.to,
       days,
@@ -458,8 +1008,14 @@ export async function submitLeaveRequest(input: CreateLeaveRequestInput): Promis
       halfDay: input.halfDay ? 'start' : null,
     }
   }
-  const { data } = await apiClient.post<LeaveRequest>('/my-work/leave', input)
-  return data
+  const { data } = await apiClient.post<Record<string, unknown>>('/my-work/leave', {
+    type: input.type,
+    from_date: input.from,
+    to_date: input.to,
+    reason: input.reason,
+    half_day: input.halfDay ? 'start' : null,
+  })
+  return mapApiLeaveRequest(data)
 }
 
 export async function listApproverDirectory(): Promise<ApproverOption[]> {
@@ -477,6 +1033,21 @@ export const fetchHolidays = async (): Promise<Record<string, string>> => {
     return Object.fromEntries(holidaysSeed.map((holiday) => [holiday.date, holiday.name]))
   }
 
-  const { data } = await apiClient.get<Record<string, string>>('/api/holidays')
-  return data
+  // No standalone self-scope holiday endpoint exists; the leave apply-context
+  // carries the year's holidays for the employee's calendar.
+  const ctx = await getApplyLeaveContext()
+  return Object.fromEntries(
+    (ctx.holidays ?? [])
+      .filter((h) => typeof h?.date === 'string')
+      .map((h) => [h.date, String(h.name ?? '')]),
+  )
+}
+
+/** Request cancellation of an approved leave — backend POST /leave/requests/{id}/request-cancel. */
+export async function requestLeaveCancel(id: string): Promise<void> {
+  if (env.useMockApi) {
+    await delay(300)
+    return
+  }
+  await apiClient.post(`/leave/requests/${encodeURIComponent(id)}/request-cancel`)
 }

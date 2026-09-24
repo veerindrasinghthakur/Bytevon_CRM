@@ -44,6 +44,10 @@ export const createEmploymentSchema = z.object({
   locationId: z.number().positive(),
   shiftId: z.number().positive(),
   workMode: z.string().optional(),
+  create_login: z.boolean().optional().default(false),
+  login_email: z.string().email().nullable().optional().or(z.literal('')),
+  login_temporary_password: z.string().nullable().optional().or(z.literal('')),
+  login_role_id: z.number().nullable().optional(),
   bank: z
     .object({
       accountHolderName: z.string(),

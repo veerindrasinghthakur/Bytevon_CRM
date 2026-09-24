@@ -58,45 +58,46 @@ export function extractApiErrorMessage(err: unknown, fallback = 'Request failed'
   return fallback
 }
 
-function mapLoginUsers(): AdminUserListItem[] {
+function toListDisplay(login: LoginUserRow): AdminUserListItem {
   const db = getDb()
-  const logins = ensureLoginUsers()
-  return logins.map((login) => {
-    const emp = db.employments.find((e) => e.id === login.employment_id)
-    const person = emp ? db.persons.find((p) => p.id === emp.person_id) : null
-    const name = person ? `${person.first_name} ${person.last_name}` : login.email
-    const assignment = emp
-      ? db.employment_assignments.find((a) => a.employment_id === emp.id && a.effective_to == null)
-      : null
-    const dept = assignment
-      ? db.schema_departments.find((d) => d.id === assignment.department_id)
-      : null
-    const roleIds = emp
-      ? db.employee_roles.filter((er) => er.employment_id === emp.id).map((er) => er.role_id)
-      : []
-    const roleNames = db.roles.filter((r) => roleIds.includes(r.id)).map((r) => r.name)
-    return {
-      id: login.id,
-      employmentId: login.employment_id,
-      name,
-      email: login.email,
-      role: roleNames[0] ?? '—',
-      department: dept?.name ?? '—',
-      status: statusLabel(login.status),
-      lastLogin: login.last_login_at
-        ? new Date(login.last_login_at).toLocaleString('en-IN', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          })
-        : 'Never',
-      lastLoginAt: login.last_login_at ?? null,
-      initials: initials(name),
-      employeeCode: emp?.employee_code ?? '—',
-    }
-  })
+  const emp = db.employments.find((e) => e.id === login.employment_id)
+  const person = emp ? db.persons.find((p) => p.id === emp.person_id) : null
+  const name = person ? `${person.first_name} ${person.last_name}` : login.email
+  const assignment = emp
+    ? db.employment_assignments.find((a) => a.employment_id === emp.id && a.effective_to == null)
+    : null
+  const dept = assignment
+    ? db.schema_departments.find((d) => d.id === assignment.department_id)
+    : null
+  const roleIds = emp
+    ? db.employee_roles.filter((er) => er.employment_id === emp.id).map((er) => er.role_id)
+    : []
+  const roleNames = db.roles.filter((r) => roleIds.includes(r.id)).map((r) => r.name)
+  return {
+    id: login.id,
+    employmentId: login.employment_id,
+    name,
+    email: login.email,
+    role: roleNames[0] ?? '—',
+    department: dept?.name ?? '—',
+    status: statusLabel(login.status),
+    lastLogin: login.last_login_at
+      ? new Date(login.last_login_at).toLocaleString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : 'Never',
+    lastLoginAt: login.last_login_at ?? null,
+    initials: initials(name),
+    employeeCode: emp?.employee_code ?? '—',
+  }
+}
+
+function mapLoginUsers(): AdminUserListItem[] {
+  return ensureLoginUsers().map(toListDisplay)
 }
 
 export async function listAdminUsers(params?: AdminUserListParams) {
@@ -207,7 +208,7 @@ export async function listDepartments(): Promise<DepartmentOption[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<
       { items?: Array<{ id: number; name: string }> } | Array<{ id: number; name: string }>
-    >('/admin/departments')
+    >('/workforce/departments')
     const rows = Array.isArray(data) ? data : data?.items ?? []
     return rows.map((d) => ({ id: Number(d.id), name: d.name }))
   }
@@ -218,9 +219,11 @@ export async function listDepartments(): Promise<DepartmentOption[]> {
 export async function listRoles(): Promise<AdminRoleOption[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<
-      Array<{ id: string | number; name: string; description?: string | null }>
+      | Array<{ id: string | number; name: string; description?: string | null }>
+      | { items?: Array<{ id: string | number; name: string; description?: string | null }> }
     >('/rbac/roles')
-    return (Array.isArray(data) ? data : []).map((r) => ({
+    const rows = Array.isArray(data) ? data : (data.items ?? [])
+    return rows.map((r) => ({
       id: String(r.id),
       name: r.name,
       description: r.description ?? null,
@@ -292,6 +295,11 @@ export async function updateUserLogin(
       'email' | 'status' | 'temporary_password' | 'locked_until' | 'failed_attempt_count'
     >
   > & {
+    // Display name / department / role live on linked records; forwarded so a
+    // future backend field picks them up (currently ignored server-side).
+    name?: string
+    department?: string
+    role?: string
     temporaryPassword?: string
     departmentId?: number
     roleId?: number | string
@@ -300,6 +308,9 @@ export async function updateUserLogin(
   if (!env.useMockApi) {
     const body: Record<string, unknown> = {}
     if (patch.email != null) body.email = String(patch.email).trim().toLowerCase()
+    if (patch.name != null) body.name = String(patch.name).trim()
+    if (patch.department != null) body.department = patch.department
+    if (patch.role != null) body.role = patch.role
     if (patch.temporary_password != null) body.temporaryPassword = patch.temporary_password
     if (patch.temporaryPassword != null) body.temporaryPassword = patch.temporaryPassword
     if (patch.departmentId != null) body.departmentId = patch.departmentId
@@ -342,12 +353,12 @@ export async function activateUser(loginId: number) {
   return updateUserLogin(loginId, { status: 'ACTIVE', failed_attempt_count: 0, locked_until: null })
 }
 
-export async function archiveUserCredentials(loginId: number) {
+export async function deleteUserCredentials(loginId: number) {
   if (!env.useMockApi) {
     try {
-      return (await apiClient.post(`${USERS_API}/${loginId}/archive`)).data
+      return (await apiClient.delete(`${USERS_API}/${loginId}`)).data
     } catch (err) {
-      throw new Error(extractApiErrorMessage(err, 'Could not archive user'))
+      throw new Error(extractApiErrorMessage(err, 'Could not delete user'))
     }
   }
   const logins = ensureLoginUsers()
@@ -357,15 +368,103 @@ export async function archiveUserCredentials(loginId: number) {
   return { ok: true, employmentId: removed.employment_id }
 }
 
-export async function getUserLogin(loginId: number) {
+/** @deprecated Use deleteUserCredentials (DELETE verb + soft-delete). */
+export async function archiveUserCredentials(loginId: number) {
+  return deleteUserCredentials(loginId)
+}
+
+/** Q16: restore an archived login (real backend only). */
+export async function restoreUserCredentials(loginId: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get(`${USERS_API}/${loginId}`)
-    return data
+    try {
+      return (await apiClient.post(`${USERS_API}/${loginId}/restore`)).data
+    } catch (err) {
+      throw new Error(extractApiErrorMessage(err, 'Could not restore user'))
+    }
+  }
+  await delay(300)
+  return { ok: true, loginId }
+}
+
+/** Alias kept for symmetry with the restore* naming used elsewhere. */
+export const restoreUser = restoreUserCredentials
+
+export type AdminUserDetailDisplay = AdminUserListItem & {
+  departmentId?: number | null
+  isArchived?: boolean
+}
+
+export type AdminUserDetail = {
+  display: AdminUserDetailDisplay
+  login: Record<string, unknown>
+  isArchived?: boolean
+}
+
+function toDetailDisplay(
+  raw: Record<string, unknown>,
+  loginId: number,
+  viaArchived: boolean,
+): AdminUserDetailDisplay {
+  const status = String(raw.status ?? 'Active') as AdminUserListItem['status']
+  return {
+    id: Number(raw.id ?? loginId),
+    employmentId: Number(raw.employmentId ?? 0),
+    name: String(raw.name ?? raw.email ?? ''),
+    email: String(raw.email ?? ''),
+    role: String(raw.role ?? '—'),
+    department: String(raw.department ?? '—'),
+    status,
+    lastLogin: String(raw.lastLogin ?? 'Never'),
+    lastLoginAt: (raw.lastLoginAt as string | null) ?? null,
+    initials: String(raw.initials ?? 'U'),
+    employeeCode: String(raw.employeeCode ?? '—'),
+    departmentId: raw.departmentId != null ? Number(raw.departmentId) : null,
+    isArchived: viaArchived,
+  }
+}
+
+function isNotFound(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    (err as { response?: { status?: number } }).response?.status === 404
+  )
+}
+
+export async function getUserLogin(loginId: number, opts?: { includeArchived?: boolean }) {
+  if (!env.useMockApi) {
+    const fetchOne = async (withArchived: boolean) => {
+      const { data } = await apiClient.get<Record<string, unknown>>(
+        `${USERS_API}/${loginId}`,
+        { params: withArchived ? { include_archived: true } : undefined },
+      )
+      return (data ?? {}) as Record<string, unknown>
+    }
+    let viaArchived = opts?.includeArchived === true
+    let raw: Record<string, unknown>
+    try {
+      raw = await fetchOne(viaArchived)
+    } catch (err) {
+      // Archived rows 404 by default — retry with include_archived before giving up.
+      if (!viaArchived && isNotFound(err)) {
+        raw = await fetchOne(true)
+        viaArchived = true
+      } else {
+        throw err
+      }
+    }
+    return {
+      display: toDetailDisplay(raw, loginId, viaArchived),
+      login: raw,
+      isArchived: viaArchived,
+    } as AdminUserDetail
   }
   await delay()
   const login = ensureLoginUsers().find((l) => l.id === loginId)
   if (!login) return null
-  return { login: { ...login } }
+  const display: AdminUserDetailDisplay = { ...toListDisplay(login), isArchived: false }
+  return { login: { ...login }, display, isArchived: false } as AdminUserDetail
 }
 
 export async function lockUser(loginId: number) {

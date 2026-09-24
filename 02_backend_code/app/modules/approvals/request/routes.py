@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Header, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
+from app.core.authorization import AuthContext, enforce_owner_or_grant, require_permission
 from app.core.db.enums import ApprovalStatus
 from app.modules.approvals.dependencies import RequestServiceDep
 from app.modules.approvals.request.schemas import (
@@ -55,7 +56,7 @@ def _ui_row(r: ApprovalRequestResponse) -> dict[str, Any]:
     }
 
 
-@router.get("/kpis")
+@router.get("/kpis", dependencies=[Depends(require_permission("approval", "VIEW", "ORGANIZATION"))])
 async def approval_kpis(service: RequestServiceDep) -> dict[str, int]:
     pending = await service.list_requests(status=ApprovalStatus.PENDING, limit=500)
     approved = await service.list_requests(status=ApprovalStatus.APPROVED, limit=500)
@@ -82,11 +83,11 @@ async def approval_kpis(service: RequestServiceDep) -> dict[str, int]:
     }
 
 
-@router.get("/pending")
+@router.get("/pending", dependencies=[Depends(require_permission("approval", "VIEW", "ORGANIZATION"))])
 async def list_pending(
     service: RequestServiceDep,
-    search: Optional[str] = Query(None),
-    type: Optional[str] = Query(None),
+    search: str | None = Query(None),
+    type: str | None = Query(None),
     limit: int = Query(100, ge=1, le=500),
 ) -> list[dict[str, Any]]:
     rows = await service.list_requests(status=ApprovalStatus.PENDING, limit=limit)
@@ -109,12 +110,12 @@ async def list_pending(
 @router.get("/my-requests")
 async def list_my_requests(
     service: RequestServiceDep,
-    actor: Optional[int] = Header(None, alias="X-Employment-Id"),
-    search: Optional[str] = Query(None),
-    status_filter: Optional[str] = Query(None, alias="status"),
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "SELF"))],
+    search: str | None = Query(None),
+    status_filter: str | None = Query(None, alias="status"),
     limit: int = Query(100, ge=1, le=500),
 ) -> list[dict[str, Any]]:
-    st: Optional[ApprovalStatus] = None
+    st: ApprovalStatus | None = None
     if status_filter and status_filter not in ("All", ""):
         try:
             st = ApprovalStatus(status_filter.upper())
@@ -122,7 +123,7 @@ async def list_my_requests(
             st = None
     rows = await service.list_requests(
         status=st,
-        requester_employment_id=actor,
+        requester_employment_id=auth.employment_id,
         limit=limit,
     )
     out = [_ui_row(r) for r in rows]
@@ -138,7 +139,7 @@ async def list_my_requests(
     return out
 
 
-@router.get("/approvers")
+@router.get("/approvers", dependencies=[Depends(require_permission("approval", "VIEW", "ORGANIZATION"))])
 async def list_approvers() -> list[dict[str, str]]:
     return [
         {"value": "1", "label": "Manager (Emp #1)"},
@@ -154,18 +155,19 @@ async def list_approvers() -> list[dict[str, str]]:
 async def create_request(
     body: ApprovalRequestCreate,
     service: RequestServiceDep,
-    actor: Optional[int] = Header(None, alias="X-Employment-Id"),
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "CREATE", "SELF"))],
 ) -> ApprovalRequestResponse:
-    return await service.create_request(body, actor_employment_id=actor)
+    body = body.model_copy(update={"requester_employment_id": auth.employment_id})
+    return await service.create_request(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/requests", response_model=list[ApprovalRequestResponse])
+@router.get("/requests", response_model=list[ApprovalRequestResponse], dependencies=[Depends(require_permission("approval", "VIEW", "ORGANIZATION"))])
 async def list_requests(
     service: RequestServiceDep,
-    status_filter: Optional[ApprovalStatus] = Query(None, alias="status"),
-    request_type: Optional[str] = Query(None),
-    requester_employment_id: Optional[int] = Query(None),
-    target_department_id: Optional[int] = Query(None),
+    status_filter: ApprovalStatus | None = Query(None, alias="status"),
+    request_type: str | None = Query(None),
+    requester_employment_id: int | None = Query(None),
+    target_department_id: int | None = Query(None),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ) -> list[ApprovalRequestResponse]:
@@ -183,8 +185,11 @@ async def list_requests(
 async def get_request(
     request_id: int,
     service: RequestServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "SELF", union=True))],
 ) -> ApprovalRequestDetailResponse:
-    return await service.get_request(request_id)
+    detail = await service.get_request(request_id)
+    enforce_owner_or_grant(auth, "approval", "VIEW", owner_employment_id=detail.requester_employment_id)
+    return detail
 
 
 @router.get(
@@ -195,16 +200,21 @@ async def get_request_by_reference(
     request_type: str,
     reference_id: int,
     service: RequestServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "SELF", union=True))],
 ) -> ApprovalRequestDetailResponse:
-    return await service.get_request_by_reference(request_type, reference_id)
+    detail = await service.get_request_by_reference(request_type, reference_id)
+    enforce_owner_or_grant(auth, "approval", "VIEW", owner_employment_id=detail.requester_employment_id)
+    return detail
 
 
 @router.get("/{request_id}")
 async def get_request_ui(
     request_id: int,
     service: RequestServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "SELF", union=True))],
 ) -> dict[str, Any]:
     detail = await service.get_request(request_id)
+    enforce_owner_or_grant(auth, "approval", "VIEW", owner_employment_id=detail.requester_employment_id)
     row = _ui_row(detail)
     row["actions"] = [
         a.model_dump(mode="json") if hasattr(a, "model_dump") else a

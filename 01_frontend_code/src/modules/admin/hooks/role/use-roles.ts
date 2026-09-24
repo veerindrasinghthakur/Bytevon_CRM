@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { listAdminRoles } from '../../api/role'
+import { listAdminRoles, restoreAdminRole } from '../../api/role'
 import { getRoleListMetrics } from '../../api/attendance'
 import type { AdminRole, RoleCategoryFilter, RoleStatusFilter } from '../../types'
 import {
@@ -95,3 +95,18 @@ export function useRolesList() {
     onRowPressCancel: selection.onRowPressCancel,
   }
 }
+
+/** Q16: restore an archived role — same invalidation as the delete path. */
+export function useRestoreAdminRole() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (roleId: string) => restoreAdminRole(roleId),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.roles.all })
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
+    },
+  })
+}
+
+/** Alias kept for symmetry with the restore* naming used elsewhere. */
+export const useRestoreRole = useRestoreAdminRole

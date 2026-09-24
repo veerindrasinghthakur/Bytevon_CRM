@@ -17,6 +17,7 @@ export function useExecutiveDashboard() {
     quickActions: query.data?.quickActions ?? [],
     isLoading: query.isLoading,
     isError: query.isError,
+    error: query.error,
     refetch: query.refetch,
   }
 }

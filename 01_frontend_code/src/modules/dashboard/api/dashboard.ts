@@ -54,6 +54,53 @@ export async function getExecutiveDashboard(): Promise<ExecutiveDashboardData> {
     }
   }
   const { data } = await apiClient.get<ExecutiveDashboardData>('/dashboard/executive')
+  // Backend returns live aggregations { kpis, pending, activities, meta, ... }.
+  // Normalize defensively so the page always has a complete shape.
+  const raw = data as unknown as Record<string, unknown>
+  const asArray = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : [])
+  const serverMeta =
+    raw.meta && typeof raw.meta === 'object'
+      ? (raw.meta as Record<string, unknown>)
+      : {}
+  const today = new Date()
+  const dateLine = today.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  const numList = (v: unknown, fallback: number[]): number[] =>
+    Array.isArray(v) && v.every((n) => typeof n === 'number') ? (v as number[]) : fallback
+  const strList = (v: unknown, fallback: string[]): string[] =>
+    Array.isArray(v) && v.every((s) => typeof s === 'string') ? (v as string[]) : fallback
+  return {
+    kpis: asArray(raw.kpis ?? (data as { kpis?: unknown }).kpis),
+    pending: asArray(raw.pending),
+    activities: asArray(raw.recentActivities ?? raw.activities),
+    meta: {
+      ...executiveMeta,
+      greetingName: String(serverMeta.greetingName ?? 'there'),
+      dateLine: String(serverMeta.dateLine ?? dateLine),
+      activeUsers: String(serverMeta.activeUsers ?? executiveMeta.activeUsers),
+      presentToday: String(serverMeta.presentToday ?? executiveMeta.presentToday),
+      attendanceBars: numList(serverMeta.attendanceBars, [...executiveMeta.attendanceBars]),
+      revenueBars: numList(serverMeta.revenueBars, [...executiveMeta.revenueBars]),
+      months: strList(serverMeta.months, [...executiveMeta.months]),
+    },
+    quickActions: executiveQuickActions.map((q) => ({ ...q })),
+  } as unknown as ExecutiveDashboardData
+}
+
+export type DashboardAttendanceParams = {
+  employment_id?: number
+  from_date?: string
+  to_date?: string
+  year?: number
+  month?: number
+}
+
+export async function getDashboardAttendance(params: DashboardAttendanceParams = {}) {
+  const { data } = await apiClient.get('/dashboard/attendance', { params })
   return data
 }
 
@@ -69,6 +116,34 @@ export async function getEmployeeDashboard(): Promise<EmployeeDashboardData> {
     }
   }
   const { data } = await apiClient.get<EmployeeDashboardData>('/dashboard/employee')
-  return data
+  const raw = data as unknown as Record<string, unknown>
+  const asArray = <T,>(v: unknown, fallback: T[]): T[] =>
+    Array.isArray(v) ? (v as T[]) : fallback
+  const serverMeta =
+    raw.meta && typeof raw.meta === 'object'
+      ? (raw.meta as Record<string, unknown>)
+      : {}
+  const str = (v: unknown, fallback: string): string =>
+    typeof v === 'string' || typeof v === 'number' ? String(v) : fallback
+  const m = employeeMeta
+  return {
+    kpis: asArray(raw.kpis, []),
+    tasks: asArray(raw.tasks, []),
+    leaveSummary: asArray(raw.leaveSummary, []),
+    meta: {
+      ...m,
+      name: str(serverMeta.name, 'there'),
+      employeeId: str(serverMeta.employeeId, ''),
+      department: str(serverMeta.department, ''),
+      todayLabel: str(serverMeta.todayLabel, ''),
+      shift: str(serverMeta.shift, '—'),
+      checkIn: str(serverMeta.checkIn, '—'),
+      checkInNote: str(serverMeta.checkInNote, ''),
+      totalHours: str(serverMeta.totalHours, '0h'),
+      totalHoursNote: str(serverMeta.totalHoursNote, ''),
+      weekBars: asArray(serverMeta.weekBars, []),
+    },
+    quickActions: asArray(raw.quickActions, employeeQuickActions.map((q) => ({ ...q }))),
+  } as unknown as EmployeeDashboardData
 }
 

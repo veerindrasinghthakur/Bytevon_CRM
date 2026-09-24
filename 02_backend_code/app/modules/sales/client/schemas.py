@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -16,22 +15,31 @@ class MessageResponse(BaseModel):
 class ClientCreate(BaseModel):
     client_type: ClientType
     client_name: str = Field(..., min_length=1, max_length=255)
-    website: Optional[str] = None
-    industry: Optional[str] = None
-    country: Optional[str] = None
-    state: Optional[str] = None
-    city: Optional[str] = None
-    address: Optional[str] = None
+    website: str | None = None
+    industry: str | None = None
+    country: str | None = None
+    state: str | None = None
+    city: str | None = None
+    address: str | None = None
+    legal_name: str | None = Field(None, max_length=255)
+    tax_id: str | None = Field(None, max_length=100)
+    founded: str | None = Field(None, max_length=100)
+    chat_link: str | None = Field(None, max_length=500)
 
 
 class ClientUpdate(BaseModel):
-    client_name: Optional[str] = Field(None, min_length=1, max_length=255)
-    website: Optional[str] = None
-    industry: Optional[str] = None
-    country: Optional[str] = None
-    state: Optional[str] = None
-    city: Optional[str] = None
-    address: Optional[str] = None
+    client_type: ClientType | None = None
+    client_name: str | None = Field(None, min_length=1, max_length=255)
+    website: str | None = None
+    industry: str | None = None
+    country: str | None = None
+    state: str | None = None
+    city: str | None = None
+    address: str | None = None
+    legal_name: str | None = Field(None, max_length=255)
+    tax_id: str | None = Field(None, max_length=100)
+    founded: str | None = Field(None, max_length=100)
+    chat_link: str | None = Field(None, max_length=500)
 
 
 class ClientResponse(BaseModel):
@@ -40,16 +48,20 @@ class ClientResponse(BaseModel):
     id: int
     client_type: ClientType
     client_name: str
-    website: Optional[str]
-    industry: Optional[str]
-    country: Optional[str]
-    state: Optional[str]
-    city: Optional[str]
-    address: Optional[str]
+    website: str | None
+    industry: str | None
+    country: str | None
+    state: str | None
+    city: str | None
+    address: str | None
+    legal_name: str | None
+    tax_id: str | None
+    founded: str | None
+    chat_link: str | None
     is_archived: bool
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None
 
 
 class ClientDetailResponse(ClientResponse):
@@ -59,9 +71,9 @@ class ClientDetailResponse(ClientResponse):
 class ContactCreate(BaseModel):
     client_id: int
     name: str = Field(..., min_length=1, max_length=150)
-    designation: Optional[str] = None
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = None
+    designation: str | None = None
+    email: EmailStr | None = None
+    phone: str | None = None
 
 
 # Alias used by older routes
@@ -74,12 +86,12 @@ class ContactResponse(BaseModel):
     id: int
     client_id: int
     name: str
-    designation: Optional[str]
-    email: Optional[str]
-    phone: Optional[str]
+    designation: str | None
+    email: str | None
+    phone: str | None
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None
 
 
 ClientContactResponse = ContactResponse

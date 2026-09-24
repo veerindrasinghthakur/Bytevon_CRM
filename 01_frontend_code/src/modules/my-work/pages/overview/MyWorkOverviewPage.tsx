@@ -1,7 +1,11 @@
+import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useMyWorkOverview } from '../../hooks/use-my-work-overview'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { myWorkRoutes } from '../../routes'
+import { MY_WORK_QUICK_ACTIONS } from '../../quick-actions'
 import { priorityClass, statusDot } from '../../schemas/enums'
 import type { MyTask } from '../../types'
 
@@ -10,6 +14,8 @@ export function MyWorkOverviewPage() {
     data,
     isLoading,
     isError,
+    error,
+    refetch,
     todayAttendance,
     weekHours,
     leaveBalances,
@@ -20,19 +26,36 @@ export function MyWorkOverviewPage() {
   } = useMyWorkOverview()
   const navigate = useNavigate()
 
-  const myWorkQuickActions = [
-    { label: 'Apply Leave', to: myWorkRoutes.leaveApply, icon: 'event_available' },
-    { label: 'Mark Attendance', to: myWorkRoutes.attendanceMark, icon: 'calendar_today' },
-    { label: 'View Tasks', to: myWorkRoutes.tasks, icon: 'task_alt' },
-    { label: 'Request Approval', to: myWorkRoutes.requests, icon: 'approval' },
-    { label: 'Update Bank Details', to: myWorkRoutes.root, icon: 'account_balance' },
-  ]
+  const myWorkQuickActions = MY_WORK_QUICK_ACTIONS
+
+  const greeting = useMemo(() => {
+    const h = new Date().getHours()
+    if (h < 12) return 'Good Morning'
+    if (h < 17) return 'Good Afternoon'
+    return 'Good Evening'
+  }, [])
+
+  const unreadCount = useMemo(
+    () => recentNotifications.filter((n) => n.unread).length,
+    [recentNotifications],
+  )
 
   if (isLoading || isError) {
+    if (isError) {
+      return (
+        <div className="animate-fade-in">
+          <ErrorState
+            title="Could not load your workspace"
+            description={getApiErrorMessage(error, 'We could not load your workspace data.')}
+            onRetry={() => void refetch()}
+          />
+        </div>
+      )
+    }
     return (
       <div className="animate-fade-in">
         <div className="h-96 flex items-center justify-center bg-surface-container-lowest text-on-surface-variant">
-          {isLoading ? 'Loading...' : 'Error loading data. Retry?'}
+          Loading...
         </div>
       </div>
     )
@@ -44,17 +67,19 @@ export function MyWorkOverviewPage() {
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h2 className="text-headline-md md:text-headline-lg font-bold tracking-tight mb-3">
-              Good Morning, {data?.user?.name ?? 'User'}
+              {greeting}, {data?.user?.name ?? 'User'}
             </h2>
             <div className="flex flex-wrap gap-3 text-sm text-inverse-primary">
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
                 <span className="material-symbols-outlined text-[18px]" aria-hidden="true">badge</span>
-                {data?.user?.employeeId ?? 'EMP-001'}
+                {data?.user?.employeeCode || (data?.user?.employeeId ? `EMP-${data.user.employeeId}` : '—')}
               </span>
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
-                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">business_center</span>
-                {data?.user?.department ?? 'Engineering'}
-              </span>
+              {data?.user?.department ? (
+                <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">business_center</span>
+                  {data.user.department}
+                </span>
+              ) : null}
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
                 <span className="material-symbols-outlined text-[18px]" aria-hidden="true">calendar_month</span>
                 {data?.user?.todayLabel ?? 'Today'}
@@ -94,13 +119,13 @@ export function MyWorkOverviewPage() {
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {myWorkMetrics.map((m) => (
-          <div key={m.id} className="bv-surface card-hover p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-label-sm font-medium text-on-surface-variant uppercase tracking-wider">{m.label}</span>
-              <span className="material-symbols-outlined text-[18px] text-secondary" aria-hidden="true">{m.icon}</span>
+          <div key={m.id} className="bv-surface card-hover p-5 min-w-0 overflow-hidden">
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <span className="text-label-sm font-medium text-on-surface-variant uppercase tracking-wider truncate">{m.label}</span>
+              <span className="material-symbols-outlined text-[18px] text-secondary shrink-0" aria-hidden="true">{m.icon}</span>
             </div>
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-headline-md font-bold text-on-background">{m.value}</span>
+            <div className="flex items-baseline gap-2 flex-wrap min-w-0">
+              <span className="text-headline-md font-bold text-on-background break-words">{m.value}</span>
               {m.subtitle && (
                 <span className={`text-[10px] font-semibold ${m.changeType === 'negative' ? 'text-error' : 'text-on-surface-variant'}`}>
                   {m.subtitle}
@@ -112,29 +137,29 @@ export function MyWorkOverviewPage() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bv-surface lg:col-span-2 p-6">
+        <div className="bv-surface lg:col-span-2 p-6 min-w-0 overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-title-lg font-semibold text-on-background">Attendance Overview</h3>
             <button
               type="button"
               onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendance })}
-              className="text-label-md font-semibold text-secondary hover:underline transition-colors duration-200 cursor-pointer"
+              className="text-label-md font-semibold text-secondary hover:underline transition-colors duration-200 cursor-pointer shrink-0"
             >
               Full Report
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-surface-container-low p-4 rounded-lg flex flex-col gap-1">
+            <div className="bg-surface-container-low p-4 rounded-lg flex flex-col gap-1 min-w-0 overflow-hidden">
               <span className="text-label-sm text-on-surface-variant">Check-in</span>
-              <span className="text-body-lg font-bold text-secondary">{todayAttendance?.checkIn ?? '—'}</span>
-              <span className="text-[10px] text-on-surface-variant">{todayAttendance?.checkInNote}</span>
+              <span className="text-body-lg font-bold text-secondary truncate">{todayAttendance?.checkIn ?? '—'}</span>
+              <span className="text-[10px] text-on-surface-variant truncate">{todayAttendance?.checkInNote}</span>
             </div>
-            <div className="bg-surface-container-low p-4 rounded-lg flex flex-col gap-1">
+            <div className="bg-surface-container-low p-4 rounded-lg flex flex-col gap-1 min-w-0 overflow-hidden">
               <span className="text-label-sm text-on-surface-variant">Total Hours</span>
-              <span className="text-body-lg font-bold text-on-background">{todayAttendance?.totalHours ?? '—'}</span>
-              <span className="text-[10px] text-on-surface-variant">{todayAttendance?.totalHoursNote}</span>
+              <span className="text-body-lg font-bold text-on-background truncate">{todayAttendance?.totalHours ?? '—'}</span>
+              <span className="text-[10px] text-on-surface-variant truncate">{todayAttendance?.totalHoursNote}</span>
             </div>
-            <div className="md:col-span-2 h-20 flex items-end gap-1.5">
+            <div className="md:col-span-2 h-20 flex items-end gap-1.5 min-w-0">
               {weekHours.map((d) => (
                 <div
                   key={d.day}
@@ -193,6 +218,7 @@ export function MyWorkOverviewPage() {
                 <th className="px-6 py-3 font-semibold">Due Date</th>
                 <th className="px-6 py-3 font-semibold">Status</th>
                 <th className="px-6 py-3 font-semibold">Est. Time</th>
+                <th className="px-6 py-3 font-semibold">Created</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
@@ -211,9 +237,17 @@ export function MyWorkOverviewPage() {
                       {task.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-label-md text-on-surface-variant">{task.estimatedHours}</td>
+                  <td className="px-6 py-4 text-label-md text-on-surface-variant">{task.estimatedHours ?? '—'}</td>
+                  <td className="px-6 py-4 text-label-md text-on-surface-variant">{task.createdAt ?? '—'}</td>
                 </tr>
               ))}
+              {myTasks.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-body-sm text-on-surface-variant">
+                    No tasks assigned to you.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -223,9 +257,14 @@ export function MyWorkOverviewPage() {
         <div className="bv-surface p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-title-lg font-semibold text-on-background">Recent Notifications</h3>
-            <span className="bg-secondary text-on-secondary text-[10px] px-2 py-0.5 rounded-full font-bold">3 UNREAD</span>
+            <span className="bg-secondary text-on-secondary text-[10px] px-2 py-0.5 rounded-full font-bold">
+              {unreadCount > 0 ? `${unreadCount} UNREAD` : 'ALL READ'}
+            </span>
           </div>
           <div className="flex flex-col gap-3">
+            {recentNotifications.length === 0 && (
+              <p className="text-body-sm text-on-surface-variant">No notifications.</p>
+            )}
             {recentNotifications.map((n) => (
               <div
                 key={n.id}
@@ -250,6 +289,9 @@ export function MyWorkOverviewPage() {
         <div className="bv-surface p-6">
           <h3 className="text-title-lg font-semibold text-on-background mb-6">Upcoming Events</h3>
           <div className="flex flex-col gap-3">
+            {upcomingEvents.length === 0 && (
+              <p className="text-body-sm text-on-surface-variant">Nothing scheduled in the next 14 days.</p>
+            )}
             {upcomingEvents.map((e) => (
               <div
                 key={e.id}

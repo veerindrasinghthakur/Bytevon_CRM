@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm, type UseFormRegister } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
@@ -8,30 +7,25 @@ import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
-import { createLocation, getLocation, updateLocation } from '../../api/organization'
+import { useOfficeForm } from '../../hooks/office/use-office-form'
 import {
   emptyOfficeForm,
   officeFormSchema,
-  toLocationCreatePayload,
-  toLocationUpdatePayload,
   type OfficeFormValues,
 } from '../../schemas/offices'
-import { queryKeys } from '@/shared/lib/query-keys'
 
 export function OfficeFormPage() {
   const navigate = useNavigate()
-  const qc = useQueryClient()
   const { officeId } = useParams({ strict: false }) as { officeId?: string }
-  const isEdit = Boolean(officeId && officeId !== 'new')
-  const numericId = isEdit ? Number(officeId) : NaN
-
-  const officeQuery = useQuery({
-    queryKey: queryKeys.organization.locations.detail(numericId),
-    queryFn: () => getLocation(numericId),
-    enabled: isEdit && Number.isFinite(numericId),
-  })
-
-  const existing = officeQuery.data
+  const {
+    isEdit,
+    existing,
+    isLoading: officeLoading,
+    isError: officeError,
+    error: officeQueryError,
+    saveOffice,
+    isSaving,
+  } = useOfficeForm(officeId)
 
   const {
     register,
@@ -72,30 +66,25 @@ export function OfficeFormPage() {
 
   const goLocations = () => safeNavigate(navigate, { to: '/admin/settings/locations' })
 
-  const saveMutation = useMutation({
-    mutationFn: async (values: OfficeFormValues) => {
-      if (isEdit && Number.isFinite(numericId)) {
-        return updateLocation(numericId, toLocationUpdatePayload(values) as any)
-      }
-      return createLocation(toLocationCreatePayload(values) as any)
+  const saveMutation = {
+    isPending: isSaving,
+    error: null as unknown,
+    mutate: (values: OfficeFormValues) => {
+      void saveOffice(values).then(
+        () => goLocations(),
+        (e: unknown) => setError(getApiErrorMessage(e, 'Failed to save location')),
+      )
     },
-    onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: queryKeys.organization.locations.all })
-      goLocations()
-    },
-    onError: (e: unknown) => {
-      setError(getApiErrorMessage(e, 'Failed to save location'))
-    },
-  })
+  }
 
-  if (isEdit && officeQuery.isLoading) {
+  if (isEdit && officeLoading) {
     return <div className="p-12 text-center text-on-surface-variant">Loading location…</div>
   }
 
-  if (isEdit && officeQuery.isError) {
+  if (isEdit && officeError) {
     return (
       <div className="p-6 rounded-lg border border-error/30 bg-error/10 text-body-sm text-error">
-        {getApiErrorMessage(officeQuery.error, 'Could not load location')}
+        {getApiErrorMessage(officeQueryError, 'Could not load location')}
       </div>
     )
   }
@@ -118,7 +107,7 @@ export function OfficeFormPage() {
         description={
           isEdit
             ? 'Update location details, geo fence, timezone, and fiscal settings.'
-            : 'Register a new office / branch. Matches POST /organization/locations.'
+            : 'Register a new office / branch. Matches POST /admin/locations.'
         }
         actions={
           <div className="flex gap-2">

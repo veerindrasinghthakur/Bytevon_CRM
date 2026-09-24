@@ -1,16 +1,13 @@
 import { useMemo, useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { useWorkingWeeks } from '../../hooks/settings/use-settings'
-import { archiveWorkingWeek, createWorkingWeek } from '../../api/organization'
+import { useWorkingWeeks } from '../../hooks/working_week/use-working-weeks'
 import type { WorkingWeekRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { queryKeys } from '@/shared/lib/query-keys'
 
 /** Backend: working_days_of_week 0=Mon … 6=Sun */
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
@@ -41,10 +38,10 @@ function todayISO() {
 }
 
 export function WorkingWeeksPage() {
-  const qc = useQueryClient()
-  const { data, isLoading, isError, error, refetch } = useWorkingWeeks()
+  const { items: rawItems, isLoading, isError, error, refetch, createWorkingWeek, closeWorkingWeek, isMutating } =
+    useWorkingWeeks()
   const items = useMemo(() => {
-    const raw = data?.items ?? []
+    const raw = rawItems ?? []
     return raw.map((w) => ({
       ...w,
       working_days_of_week: toDayIndexes(w as WorkingWeekRow),
@@ -52,7 +49,7 @@ export function WorkingWeeksPage() {
       effective_from: (w as WorkingWeekRow).effective_from || '—',
       effective_to: (w as WorkingWeekRow).effective_to ?? null,
     }))
-  }, [data?.items])
+  }, [rawItems])
 
   const [showCreate, setShowCreate] = useState(false)
   const [name, setName] = useState('Standard week')
@@ -61,36 +58,37 @@ export function WorkingWeeksPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [archiveError, setArchiveError] = useState<string | null>(null)
 
-  const createMut = useMutation({
-    mutationFn: () =>
-      createWorkingWeek({
+  const createMut = {
+    isPending: isMutating,
+    mutate: () => {
+      void createWorkingWeek({
         name: name.trim(),
         working_days_of_week: days,
         effective_from: effectiveFrom,
-      }),
-    onSuccess: async () => {
-      setShowCreate(false)
-      setFormError(null)
-      setName('Standard week')
-      setEffectiveFrom(todayISO())
-      setDays([0, 1, 2, 3, 4])
-      await qc.invalidateQueries({ queryKey: queryKeys.organization.workingWeeks() })
+      })
+        .then(() => {
+          setShowCreate(false)
+          setFormError(null)
+          setName('Standard week')
+          setEffectiveFrom(todayISO())
+          setDays([0, 1, 2, 3, 4])
+        })
+        .catch((e: unknown) => {
+          setFormError(getApiErrorMessage(e, 'Failed to create working week'))
+        })
     },
-    onError: (e: unknown) => {
-      setFormError(getApiErrorMessage(e, 'Failed to create working week'))
-    },
-  })
+  }
 
-  const archiveMut = useMutation({
-    mutationFn: (id: number) => archiveWorkingWeek(id),
-    onSuccess: async () => {
-      setArchiveError(null)
-      await qc.invalidateQueries({ queryKey: queryKeys.organization.workingWeeks() })
-    },
-    onError: (e: unknown) => {
-      setArchiveError(getApiErrorMessage(e, 'Could not close working week'))
-    },
-  })
+  const archiveMut = {
+    isPending: isMutating,
+    mutateAsync: (id: number) =>
+      closeWorkingWeek(id).then(
+        () => setArchiveError(null),
+        (e: unknown) => {
+          setArchiveError(getApiErrorMessage(e, 'Could not close working week'))
+        },
+      ),
+  }
 
   const toggleDay = (i: number) => {
     setDays((prev) =>

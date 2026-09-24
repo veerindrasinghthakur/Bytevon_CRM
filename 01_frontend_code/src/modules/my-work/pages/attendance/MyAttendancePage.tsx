@@ -3,9 +3,12 @@ import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
 import { myWorkRoutes } from '../../routes'
 
 import {
@@ -50,7 +53,7 @@ function WeekHourBarChart({
             : d.isToday
               ? 'bg-secondary'
               : d.pct > 0
-                ? 'bg-secondary/25'
+                ? 'bg-secondary/60'
                 : 'bg-outline-variant/30',
         )}
         style={{ height }}
@@ -99,14 +102,26 @@ export function MyAttendancePage() {
     queryKey: queryKeys.myWork.attendance.weekHours(),
     queryFn: getMyWeekHours,
   })
+  const historyRange = useMemo(() => {
+    const to = new Date()
+    const from = new Date()
+    from.setDate(from.getDate() - 89)
+    const iso = (d: Date): string =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    return { fromDate: iso(from), toDate: iso(to) }
+  }, [])
   const historyQuery = useQuery({
-    queryKey: queryKeys.myWork.attendance.list({}),
-    queryFn: () => listMyAttendance({ pageSize: 50 }),
+    queryKey: queryKeys.myWork.attendance.list(historyRange),
+    queryFn: () => listMyAttendance({ pageSize: 50, ...historyRange }),
   })
 
   const currentUser = todayInfoQuery.data
   const weekHours = weekHoursQuery.data ?? []
   const attendanceHistory = historyQuery.data?.items ?? []
+  const queriesError =
+    todayInfoQuery.error ?? weekHoursQuery.error ?? historyQuery.error
+  const allFailed =
+    todayInfoQuery.isError && weekHoursQuery.isError && historyQuery.isError
 
   useEffect(() => {
     const refresh = () => setTick((t) => t + 1)
@@ -139,7 +154,27 @@ export function MyAttendancePage() {
       const liveMarkers = breaksToBarMarkers(todayBreaks, windowStart, windowEnd, now)
       return { ...d, breakMarkers: liveMarkers }
     })
-  }, [session, todayBreaks, tick])
+  }, [session, todayBreaks, tick, weekHours])
+
+  if (allFailed) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <PageHeader
+          title="My Attendance"
+          description="Mark attendance, review daily hours, and track history."
+        />
+        <ErrorState
+          title="Could not load attendance"
+          description={getApiErrorMessage(queriesError, 'We could not load your attendance data.')}
+          onRetry={() => {
+            void todayInfoQuery.refetch()
+            void weekHoursQuery.refetch()
+            void historyQuery.refetch()
+          }}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -147,22 +182,24 @@ export function MyAttendancePage() {
         title="My Attendance"
         description="Mark attendance, review daily hours, and track history."
         actions={
-          <div className="flex items-center gap-2">
-            <Button
-              leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
-              variant="outline"
-              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })}
-            >
-              Corrections
-            </Button>
-            <Button
-              variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">fingerprint</span>}
-              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceMark })}
-            >
-              Mark Attendance
-            </Button>
-          </div>
+          <Can action="CREATE" resource="attendance" minScope="SELF">
+            <div className="flex items-center gap-2">
+              <Button
+                leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
+                variant="outline"
+                onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })}
+              >
+                Corrections
+              </Button>
+              <Button
+                variant="primary"
+                leftIcon={<span className="material-symbols-outlined text-lg">fingerprint</span>}
+                onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceMark })}
+              >
+                Mark Attendance
+              </Button>
+            </div>
+          </Can>
         }
       />
 
@@ -218,7 +255,7 @@ export function MyAttendancePage() {
         </div>
         <div className="flex flex-wrap gap-4 mt-3 text-label-sm text-on-surface-variant">
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-secondary/40" /> Work hours
+            <span className="w-3 h-3 rounded-sm bg-secondary/60" /> Work hours
           </span>
           <span className="inline-flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-sm bg-error/90" /> Break (red band — one per break)
@@ -324,6 +361,13 @@ export function MyAttendancePage() {
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{row.note ?? '—'}</td>
                 </tr>
               ))}
+              {attendanceHistory.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-body-sm text-on-surface-variant">
+                    No attendance records in the last 90 days. Mark attendance to start your history.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

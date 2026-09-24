@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import delete, func, or_, select
+from sqlalchemy.engine import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.db.enums import Action
 from app.core.repositories.base_repository import BaseRepository
 from app.modules.rbac.models import (
     EmployeeRole,
@@ -29,19 +31,19 @@ class RBACRepository(BaseRepository):
         stmt = select(Resource).order_by(Resource.name)
         return await self.scalars(stmt)
 
-    async def get_resource_by_id(self, resource_id: int) -> Optional[Resource]:
+    async def get_resource_by_id(self, resource_id: int) -> Resource | None:
         stmt = select(Resource).where(Resource.id == resource_id)
         return await self.scalar_one_or_none(stmt)
 
     async def list_permissions(
-        self, *, resource_id: Optional[int] = None
+        self, *, resource_id: int | None = None
     ) -> Sequence[Permission]:
         stmt = select(Permission).order_by(Permission.resource_id, Permission.action)
         if resource_id is not None:
             stmt = stmt.where(Permission.resource_id == resource_id)
         return await self.scalars(stmt)
 
-    async def get_permission_by_id(self, permission_id: int) -> Optional[Permission]:
+    async def get_permission_by_id(self, permission_id: int) -> Permission | None:
         stmt = select(Permission).where(Permission.id == permission_id)
         return await self.scalar_one_or_none(stmt)
 
@@ -49,16 +51,16 @@ class RBACRepository(BaseRepository):
         stmt = select(Scope).order_by(Scope.name)
         return await self.scalars(stmt)
 
-    async def get_scope_by_id(self, scope_id: int) -> Optional[Scope]:
+    async def get_scope_by_id(self, scope_id: int) -> Scope | None:
         stmt = select(Scope).where(Scope.id == scope_id)
         return await self.scalar_one_or_none(stmt)
 
-    async def get_scope_by_name(self, name: str) -> Optional[Scope]:
+    async def get_scope_by_name(self, name: str) -> Scope | None:
         stmt = select(Scope).where(Scope.name == name)
         return await self.scalar_one_or_none(stmt)
 
     async def list_sensitive_fields(
-        self, *, resource_id: Optional[int] = None
+        self, *, resource_id: int | None = None
     ) -> Sequence[SensitiveField]:
         stmt = select(SensitiveField).order_by(SensitiveField.field_key)
         if resource_id is not None:
@@ -67,14 +69,16 @@ class RBACRepository(BaseRepository):
 
     async def get_sensitive_field_by_id(
         self, field_id: int
-    ) -> Optional[SensitiveField]:
+    ) -> SensitiveField | None:
         stmt = select(SensitiveField).where(SensitiveField.id == field_id)
         return await self.scalar_one_or_none(stmt)
 
     async def get_role_by_id(
-        self, role_id: int, *, with_details: bool = False
-    ) -> Optional[Role]:
+        self, role_id: int, *, with_details: bool = False, include_archived: bool = False
+    ) -> Role | None:
         stmt = select(Role).where(Role.id == role_id)
+        if not include_archived:
+            stmt = stmt.where(Role.is_archived.is_(False))
         if with_details:
             stmt = stmt.options(
                 selectinload(Role.role_permissions)
@@ -85,17 +89,19 @@ class RBACRepository(BaseRepository):
             )
         return await self.scalar_one_or_none(stmt)
 
-    async def get_role_by_name(self, name: str) -> Optional[Role]:
+    async def get_role_by_name(self, name: str) -> Role | None:
+        # Q6: archived role names stay reserved (409 at service level) so the
+        # DB unique constraint never surfaces as an IntegrityError.
         stmt = select(Role).where(Role.name == name)
         return await self.scalar_one_or_none(stmt)
 
     def _role_filter_stmt(
         self,
         *,
-        search: Optional[str] = None,
-        is_system_role: Optional[bool] = None,
+        search: str | None = None,
+        is_system_role: bool | None = None,
     ):
-        stmt = select(Role)
+        stmt = select(Role).where(Role.is_archived.is_(False))
         if search and search.strip():
             q = f"%{search.strip()}%"
             stmt = stmt.where(or_(Role.name.ilike(q), Role.description.ilike(q)))
@@ -106,8 +112,8 @@ class RBACRepository(BaseRepository):
     async def count_roles(
         self,
         *,
-        search: Optional[str] = None,
-        is_system_role: Optional[bool] = None,
+        search: str | None = None,
+        is_system_role: bool | None = None,
     ) -> int:
         base = self._role_filter_stmt(search=search, is_system_role=is_system_role)
         stmt = select(func.count()).select_from(base.subquery())
@@ -118,10 +124,10 @@ class RBACRepository(BaseRepository):
         self,
         *,
         with_details: bool = False,
-        search: Optional[str] = None,
-        is_system_role: Optional[bool] = None,
+        search: str | None = None,
+        is_system_role: bool | None = None,
         skip: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> Sequence[Role]:
         stmt = self._role_filter_stmt(search=search, is_system_role=is_system_role)
         stmt = stmt.order_by(Role.name)
@@ -158,7 +164,7 @@ class RBACRepository(BaseRepository):
 
     async def get_role_permission(
         self, role_id: int, permission_id: int, scope_id: int
-    ) -> Optional[RolePermission]:
+    ) -> RolePermission | None:
         stmt = select(RolePermission).where(
             RolePermission.role_id == role_id,
             RolePermission.permission_id == permission_id,
@@ -186,7 +192,7 @@ class RBACRepository(BaseRepository):
 
     async def get_employee_role(
         self, employment_id: int, role_id: int
-    ) -> Optional[EmployeeRole]:
+    ) -> EmployeeRole | None:
         stmt = select(EmployeeRole).where(
             EmployeeRole.employment_id == employment_id,
             EmployeeRole.role_id == role_id,
@@ -218,7 +224,7 @@ class RBACRepository(BaseRepository):
 
     async def get_role_sensitive_field_permission(
         self, role_id: int, sensitive_field_id: int
-    ) -> Optional[RoleSensitiveFieldPermission]:
+    ) -> RoleSensitiveFieldPermission | None:
         stmt = select(RoleSensitiveFieldPermission).where(
             RoleSensitiveFieldPermission.role_id == role_id,
             RoleSensitiveFieldPermission.sensitive_field_id == sensitive_field_id,
@@ -235,7 +241,7 @@ class RBACRepository(BaseRepository):
 
     async def load_effective_permissions_for_employment(
         self, employment_id: int
-    ) -> Sequence[tuple]:
+    ) -> Sequence[Row[tuple[str, Action, str, str]]]:
         stmt = (
             select(
                 Resource.name,

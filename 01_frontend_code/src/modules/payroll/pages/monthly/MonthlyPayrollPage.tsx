@@ -6,11 +6,11 @@ import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { Select } from '@/shared/components/ui/Select'
-import { ResourceName } from '@/shared/schema'
 import { useMonthlyPayroll } from '../../hooks/monthly/use-monthly-payroll'
 import { payrollStatusStyles } from '../../schemas/enums'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
 import type { PayrollRunView } from '../../types'
 import { DEMO_VIEW_OPTIONS, MONTH_OPTIONS, YEAR_OPTIONS, PAYROLL_STATUS_OPTIONS } from '../../schemas/enums'
@@ -28,6 +28,7 @@ export function MonthlyPayrollPage() {
     formatMoney,
     isLoading,
     isError,
+    error,
     refetch,
   } = useMonthlyPayroll()
   const [view, setView] = useState<PayrollRunView>('ready')
@@ -176,7 +177,7 @@ export function MonthlyPayrollPage() {
               </div>
             </div>
             <ExportButton
-              resource={ResourceName.PAYROLL}
+              resource={'payroll'}
               filenameStem="monthly-payroll"
               query={search}
               filters={{ status: statusFilter, month, year }}
@@ -185,7 +186,11 @@ export function MonthlyPayrollPage() {
           </div>
 
           {isLoading && <p className="text-body-sm text-on-surface-variant">Loading…</p>}
-          {isError && <p className="text-body-sm text-error">Failed to load payroll data.</p>}
+          {isError && (
+            <p className="text-body-sm text-error">
+              {getApiErrorMessage(error, 'Failed to load payroll data.')}
+            </p>
+          )}
 
           {summaryCards && (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
@@ -215,7 +220,11 @@ export function MonthlyPayrollPage() {
                     <th className="p-4 text-label-bold text-on-surface-variant text-right">Net Salary</th>
                     <th className="p-4 text-label-bold text-on-surface-variant">Status</th>
                     <th className="p-4 text-label-bold text-on-surface-variant">Payment Ref</th>
+                    {/* Actions column hidden (View/Payslip/Review/Approve/Pay) — restore
+                        the block below. NOTE: this removes the approve/pay entry points
+                        until a quick-view flow exists for payroll rows.
                     <th className="p-4 text-label-bold text-on-surface-variant text-right">Actions</th>
+                    */}
                   </tr>
                 </thead>
                 <tbody className="text-body-md">
@@ -249,6 +258,7 @@ export function MonthlyPayrollPage() {
                         </span>
                       </td>
                       <td className="p-4 text-on-surface-variant text-caption">{r.paymentRef ?? '—'}</td>
+                      {/* Row actions hidden (View/Payslip/Review/Approve/Pay) — see <th> note.
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {effectiveView === 'locked' || r.status === 'Paid' ? (
@@ -259,7 +269,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.payslipPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -272,7 +282,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.payslipPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -287,7 +297,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.reviewPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -299,7 +309,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.reviewPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -314,7 +324,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.reviewPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -326,7 +336,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.reviewPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -336,6 +346,7 @@ export function MonthlyPayrollPage() {
                           )}
                         </div>
                       </td>
+                      */}
                     </tr>
                   ))}
                 </tbody>

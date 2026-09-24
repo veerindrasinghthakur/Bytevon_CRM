@@ -1,15 +1,14 @@
 import { useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { NotesPanel } from '@/shared/components/notes/NotesPanel'
-import { NoteReferenceType } from '@/shared/schema'
+import { ProjectNotesTab } from '../../components/project/ProjectNotesTab'
 import { projectRoutes } from '../../routes'
-import { projectNotes } from '../../data/notesMock'
 
 /**
- * Project workspace notes.
- * Schema NoteReferenceType is LEAD | TASK | CLIENT only — project-level
- * notes are stored against a representative task id under the project.
+ * Project workspace notes — live backend notes (GET/POST/PATCH
+ * /projects/notes). Schema NoteReferenceType is LEAD | TASK | CLIENT only —
+ * project-level notes are stored against a TASK reference carrying the
+ * project id.
  */
 export function ProjectNotesPage() {
   const { projectId } = useParams({ strict: false }) as { projectId: string }
@@ -22,16 +21,7 @@ export function ProjectNotesPage() {
         title="Project notes"
         description={`Notes linked to work under project #${projectId}`}
       />
-      <NotesPanel
-        className="max-w-3xl"
-        referenceType={NoteReferenceType.TASK}
-        referenceId={refId}
-        initialNotes={projectNotes.filter(
-          (n) =>
-            n.reference_type === NoteReferenceType.TASK &&
-            (refId === 0 || n.reference_id === refId),
-        )}
-      />
+      <ProjectNotesTab projectId={refId} />
     </div>
   )
 }

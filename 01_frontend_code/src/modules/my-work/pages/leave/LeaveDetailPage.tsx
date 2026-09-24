@@ -1,19 +1,48 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
+import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
-import { queryKeys } from '@/shared/lib/query-keys'
-import { listMyLeaveRequests, listMyLeaveBalances, getMyWorkOverview } from '../../api/my-work'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { listMyLeaveRequests, listMyLeaveBalances, getMyWorkOverview, requestLeaveCancel, cancelLeaveRequest } from '../../api/my-work'
 import { statusStyles } from '../../schemas/enums'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
+import { toast } from '@/shared/hooks/use-toast'
 import { myWorkRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
 
 export function LeaveDetailPage() {
   const { leaveId } = useParams({ strict: false }) as { leaveId: string }
   const navigate = useNavigate()
+  const qc = useQueryClient()
+  const [confirm, setConfirm] = useState<'withdraw' | 'request-cancel' | null>(null)
+  const requestCancelMut = useMutation({
+    mutationFn: (id: string) => requestLeaveCancel(id),
+    onSuccess: () => {
+      setConfirm(null)
+      void invalidate.myWorkLeave(qc)
+      toast.success('Cancellation request sent to your approver')
+    },
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not request cancellation'))
+    },
+  })
+  const withdrawMut = useMutation({
+    mutationFn: (id: string) => cancelLeaveRequest(id),
+    onSuccess: () => {
+      setConfirm(null)
+      void invalidate.myWorkLeave(qc)
+      toast.success('Leave request withdrawn — balance restored')
+    },
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not withdraw the request'))
+    },
+  })
 
   const listQuery = useQuery({
     queryKey: queryKeys.myWork.leave.list({ pageSize: 100 }),
@@ -28,6 +57,13 @@ export function LeaveDetailPage() {
   const overviewQuery = useQuery({
     queryKey: queryKeys.myWork.overview(),
     queryFn: getMyWorkOverview,
+  })
+
+  useDeletedRedirect({
+    ready: !listQuery.isLoading,
+    data: listQuery.data?.items.find((r) => r.id === leaveId) ?? null,
+    error: listQuery.error,
+    listTo: myWorkRoutes.leave,
   })
 
   if (listQuery.isLoading || balancesQuery.isLoading) {
@@ -77,12 +113,25 @@ export function LeaveDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
+                disabled={withdrawMut.isPending}
                 leftIcon={<span className="material-symbols-outlined text-base">cancel</span>}
-                onClick={() => console.info('Cancel leave', req.id)}
+                onClick={() => setConfirm('withdraw')}
               >
-                Withdraw
+                {withdrawMut.isPending ? 'Withdrawing…' : 'Withdraw'}
               </Button>
             )}
+            {req.status === 'Approved' &&
+              req.from >= new Date().toISOString().slice(0, 10) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={requestCancelMut.isPending}
+                  leftIcon={<span className="material-symbols-outlined text-base">cancel</span>}
+                  onClick={() => setConfirm('request-cancel')}
+                >
+                  {requestCancelMut.isPending ? 'Requesting…' : 'Request cancellation'}
+                </Button>
+              )}
           </div>
         }
       />
@@ -163,11 +212,12 @@ export function LeaveDetailPage() {
                       <span className="text-label-sm text-on-surface-variant">{req.appliedOn}</span>
                     </div>
                     <p className="text-body-sm text-on-surface">
-                      {req.status === 'Approved'
-                        ? 'Request approved. Enjoy your time off.'
-                        : req.status === 'Rejected'
-                          ? 'Request could not be approved at this time.'
-                          : 'Request received and under review.'}
+                      {req.approverRemarks ||
+                        (req.status === 'Approved'
+                          ? 'Request approved. Enjoy your time off.'
+                          : req.status === 'Rejected'
+                            ? 'Request could not be approved at this time.'
+                            : 'Request received and under review.')}
                     </p>
                   </div>
                 </div>
@@ -196,7 +246,43 @@ export function LeaveDetailPage() {
                   </div>
                   <div>
                     <p className="text-label-md font-bold text-secondary">Manager Review</p>
-                    <p className="text-label-sm text-on-surface-variant">In Progress</p>
+                    <p className="text-label-sm text-on-surface-variant">
+                      In Progress{req.approver ? ` · waiting on ${req.approver}` : ''}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {(req.status === 'Approved' || req.status === 'Rejected') && (
+                <div className="relative flex items-start pl-8">
+                  <div
+                    className={cn(
+                      'absolute left-0 top-0.5 w-6 h-6 rounded-full text-on-secondary flex items-center justify-center z-10 border-2 border-surface-container-lowest executive-shadow',
+                      req.status === 'Approved' ? 'bg-secondary' : 'bg-error',
+                    )}
+                  >
+                    <span className="material-symbols-outlined text-sm">
+                      {req.status === 'Approved' ? 'check' : 'close'}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-label-md font-bold text-on-surface">
+                      {req.status === 'Approved' ? 'Approved' : 'Rejected'}
+                      {req.approver ? ` by ${req.approver}` : ''}
+                    </p>
+                    <p className="text-label-sm text-on-surface-variant">
+                      {[req.decidedOn, req.approverRemarks].filter(Boolean).join(' · ') || '—'}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {req.status === 'Cancelled' && (
+                <div className="relative flex items-start pl-8">
+                  <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center z-10 border-2 border-surface-container-lowest executive-shadow">
+                    <span className="material-symbols-outlined text-sm">cancel</span>
+                  </div>
+                  <div>
+                    <p className="text-label-md font-bold text-on-surface">Withdrawn</p>
+                    <p className="text-label-sm text-on-surface-variant">Balance restored to your leave account</p>
                   </div>
                 </div>
               )}
@@ -239,6 +325,28 @@ export function LeaveDetailPage() {
           </section>
         </div>
       </div>
+
+      {confirm === 'withdraw' && (
+        <ConfirmDialog
+          title={`Withdraw leave request ${req.id}?`}
+          message="The request will be cancelled and the held balance will be restored to your leave account."
+          confirmLabel="Withdraw request"
+          danger
+          isLoading={withdrawMut.isPending}
+          onConfirm={() => withdrawMut.mutate(req.id)}
+          onClose={() => !withdrawMut.isPending && setConfirm(null)}
+        />
+      )}
+      {confirm === 'request-cancel' && (
+        <ConfirmDialog
+          title={`Request cancellation for ${req.id}?`}
+          message="Your approver will be notified to cancel this approved leave."
+          confirmLabel="Send request"
+          isLoading={requestCancelMut.isPending}
+          onConfirm={() => requestCancelMut.mutate(req.id)}
+          onClose={() => !requestCancelMut.isPending && setConfirm(null)}
+        />
+      )}
     </div>
   )
 }

@@ -16,11 +16,11 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { useLocationsList } from '../../hooks/location/use-locations'
+import { useDeleteLocation, useLocationsList } from '../../hooks/location/use-locations'
 import type { LocationRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { myAdminRoutes } from '../../routes'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 
 function LocationQuickContent({ loc }: { loc: LocationRow }) {
   return (
@@ -54,6 +54,7 @@ export function LocationsListPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
   const { data, isLoading, isFetching, isError, error, refetch } = useLocationsList(true)
+  const deleteMut = useDeleteLocation()
   const controls = useListControls({ filterDefaults: {} })
   const items = data?.items ?? []
 
@@ -91,9 +92,9 @@ export function LocationsListPage() {
     })
   }
 
-  const archiveLocation = async (id: number) => {
+  const deleteLocationById = async (id: number) => {
     try {
-      // API: wire archiveLocation from api/location when ready
+      await deleteMut.mutateAsync(id)
       await refetch()
     } catch {
       /* error handling */
@@ -162,14 +163,16 @@ export function LocationsListPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant">
-                {['Name', 'City', 'Timezone', 'Currency', 'Status', ''].map((h) => (
+                {['Name', 'City', 'Timezone', 'Currency', 'Status'].map((h) => (
                   <th
-                    key={h || 'actions'}
+                    key={h}
                     className="px-5 py-3 text-label-sm uppercase tracking-wider text-on-surface-variant"
                   >
                     {h}
                   </th>
                 ))}
+                {/* Actions column hidden — row click opens quick view → detail.
+                    Restore the '' entry above + block below when row actions return. */}
               </tr>
             </thead>
             <tbody>
@@ -195,6 +198,8 @@ export function LocationsListPage() {
                       {loc.is_archived ? 'ARCHIVED' : 'ACTIVE'}
                     </span>
                   </td>
+                  {/* Row actions hidden (edit/delete) — quick view → detail page keeps them.
+                      Restore when row actions return.
                   <td className="px-5 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-1">
                         <Button
@@ -204,16 +209,16 @@ export function LocationsListPage() {
                         >
                           <span className="material-symbols-outlined">edit</span>
                         </Button>
-                        <ArchiveButton
+                        <DeleteButton
+                          iconOnly
                           entityLabel={loc.name}
-                          mode="archive"
-                          onConfirm={() => archiveLocation(loc.id)}
-                          disabled={isFetching}
-                          isLoading={isFetching}
-                          size="sm"
+                          onConfirm={() => deleteLocationById(loc.id)}
+                          disabled={isFetching || deleteMut.isPending}
+                          isLoading={deleteMut.isPending}
                         />
                     </div>
                   </td>
+                  */}
                 </tr>
               ))}
             </tbody>

@@ -1,7 +1,7 @@
 """Employee payroll bank repository."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +16,7 @@ class EmployeePayrollRepository(BaseRepository):
 
     async def get_primary_bank(
         self, employment_id: int
-    ) -> Optional[EmployeeBankAccount]:
+    ) -> EmployeeBankAccount | None:
         stmt = select(EmployeeBankAccount).where(
             EmployeeBankAccount.employment_id == employment_id,
             EmployeeBankAccount.is_primary.is_(True),

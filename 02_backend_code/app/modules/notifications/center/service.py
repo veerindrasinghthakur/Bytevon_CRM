@@ -1,8 +1,7 @@
 """CenterService — inbox list, read, archive."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,7 +21,7 @@ class CenterService(BasePublicService):
         self,
         employment_id: int,
         *,
-        status: Optional[NotificationStatus] = None,
+        status: NotificationStatus | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> list[NotificationResponse]:
@@ -54,7 +53,7 @@ class CenterService(BasePublicService):
             raise NotFoundError("Notification not found")
         if notif.status == NotificationStatus.UNREAD:
             notif.status = NotificationStatus.READ
-            notif.read_at = datetime.now(timezone.utc)
+            notif.read_at = datetime.now(UTC)
             await self._commit()
         return NotificationResponse.model_validate(notif)
 
@@ -70,7 +69,7 @@ class CenterService(BasePublicService):
         ):
             raise NotFoundError("Notification not found")
         notif.status = NotificationStatus.ARCHIVED
-        notif.archived_at = datetime.now(timezone.utc)
+        notif.archived_at = datetime.now(UTC)
         if notif.read_at is None:
             notif.read_at = notif.archived_at
         await self._commit()

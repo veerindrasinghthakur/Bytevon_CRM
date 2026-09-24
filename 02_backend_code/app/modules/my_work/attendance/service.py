@@ -5,8 +5,7 @@ owns today-info / week-hours / corrections list shapes for the my-work UI.
 """
 from __future__ import annotations
 
-from datetime import date
-from typing import Any, Optional
+from datetime import date, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +14,7 @@ from app.modules.my_work.attendance.repository import MyWorkAttendanceRepository
 from app.modules.my_work.attendance.schemas import (
     ApproverOption,
     CorrectionCandidate,
+    CorrectionListItem,
     CorrectionListResponse,
     TodayInfoResponse,
     WeekDayHours,
@@ -43,7 +43,7 @@ class MyWorkAttendanceService:
         body: PunchRequest,
         *,
         client_ip: str,
-        employment_id: Optional[int] = None,
+        employment_id: int | None = None,
     ) -> PunchResponse:
         if employment_id is not None:
             body = body.model_copy(update={"employment_id": employment_id})
@@ -52,7 +52,7 @@ class MyWorkAttendanceService:
         )
 
     async def start_break(
-        self, body: BreakStartRequest, *, employment_id: Optional[int] = None
+        self, body: BreakStartRequest, *, employment_id: int | None = None
     ) -> BreakResponse:
         return await self._wf.start_break(body, actor_employment_id=employment_id)
 
@@ -61,7 +61,7 @@ class MyWorkAttendanceService:
         break_id: int,
         body: BreakEndRequest,
         *,
-        employment_id: Optional[int] = None,
+        employment_id: int | None = None,
     ) -> BreakResponse:
         return await self._wf.end_break(
             break_id, body, actor_employment_id=employment_id
@@ -69,10 +69,10 @@ class MyWorkAttendanceService:
 
     async def list_days(
         self,
-        employment_id: Optional[int],
+        employment_id: int | None,
         *,
-        from_date: Optional[date] = None,
-        to_date: Optional[date] = None,
+        from_date: date | None = None,
+        to_date: date | None = None,
     ) -> list[AttendanceDayResponse]:
         if employment_id is None:
             return []
@@ -80,7 +80,32 @@ class MyWorkAttendanceService:
             employment_id, from_date=from_date, to_date=to_date
         )
 
-    async def today_info(self, employment_id: Optional[int]) -> TodayInfoResponse:
+    async def list_days_detailed(
+        self,
+        employment_id: int | None,
+        *,
+        from_date: date | None = None,
+        to_date: date | None = None,
+    ) -> list[AttendanceDayDetailResponse]:
+        """History rows with punches for the my-work history table."""
+        if employment_id is None:
+            return []
+        days = await self._wf.list_days(
+            employment_id, from_date=from_date, to_date=to_date
+        )
+        out: list[AttendanceDayDetailResponse] = []
+        for d in days:
+            try:
+                out.append(await self._wf.get_day(d.id))
+            except Exception:
+                continue
+        return out
+
+    async def today_info(self, employment_id: int | None) -> TodayInfoResponse:
+        from sqlalchemy import select
+
+        from app.modules.workforce.attendance.models import AttendanceBreak
+
         if employment_id is None:
             return TodayInfoResponse()
         today = date.today()
@@ -101,6 +126,19 @@ class MyWorkAttendanceService:
                 check_out = p.punch_time.isoformat()
         worked = int(float(day.working_hours or 0) * 60)
         status = day.status.value if hasattr(day.status, "value") else str(day.status)
+        breaks = (
+            await self._session.execute(
+                select(AttendanceBreak).where(AttendanceBreak.attendance_day_id == day.id)
+            )
+        ).scalars().all()
+        break_minutes = 0
+        for b in breaks:
+            if b.duration_minutes is not None:
+                break_minutes += int(b.duration_minutes)
+            elif b.break_end and b.break_start:
+                end_ts = b.break_end.replace(tzinfo=None) if b.break_end.tzinfo else b.break_end
+                start_ts = b.break_start.replace(tzinfo=None) if b.break_start.tzinfo else b.break_start
+                break_minutes += max(0, int((end_ts - start_ts).total_seconds() // 60))
         return TodayInfoResponse(
             employmentId=employment_id,
             shift=str(day.shift_id) if day.shift_id else "—",
@@ -108,27 +146,58 @@ class MyWorkAttendanceService:
             checkIn=check_in,
             checkOut=check_out,
             workedMinutes=worked,
-            breakMinutes=0,
+            breakMinutes=break_minutes,
             dayId=day.id,
         )
 
-    async def week_hours(self, employment_id: Optional[int]) -> WeekHoursResponse:
+    async def week_hours(self, employment_id: int | None) -> WeekHoursResponse:
+        from sqlalchemy import select
+
+        from app.modules.workforce.attendance.models import AttendanceBreak
+
         if employment_id is None:
             return WeekHoursResponse()
         today = date.today()
         start = date.fromordinal(today.toordinal() - today.weekday())
-        days = await self._wf.list_days(employment_id, from_date=start, to_date=today)
+        end = start + timedelta(days=6)
+        days = await self._wf.list_days(employment_id, from_date=start, to_date=end)
+        by_date = {d.attendance_date.isoformat(): d for d in days}
+        day_ids = [d.id for d in days]
+        breaks_by_day: dict[int, int] = {}
+        if day_ids:
+            res = await self._session.execute(
+                select(AttendanceBreak).where(
+                    AttendanceBreak.attendance_day_id.in_(day_ids)
+                )
+            )
+            for b in res.scalars().all():
+                mins = b.duration_minutes
+                if mins is None and b.break_end and b.break_start:
+                    end_ts = b.break_end.replace(tzinfo=None) if b.break_end.tzinfo else b.break_end
+                    start_ts = b.break_start.replace(tzinfo=None) if b.break_start.tzinfo else b.break_start
+                    mins = max(0, int((end_ts - start_ts).total_seconds() // 60))
+                breaks_by_day[b.attendance_day_id] = breaks_by_day.get(b.attendance_day_id, 0) + int(mins or 0)
         out: list[WeekDayHours] = []
         total = 0
-        for d in days:
-            mins = int(float(d.working_hours or 0) * 60)
+        for i in range(7):
+            day = start + timedelta(days=i)
+            key = day.isoformat()
+            hit = by_date.get(key)
+            if hit is None:
+                status = "WEEK_OFF" if day.weekday() >= 5 else "NOT_MARKED"
+                if day > today:
+                    status = "UPCOMING"
+                out.append(WeekDayHours(date=key, status=status, minutes=0, break_minutes=0))
+                continue
+            mins = int(float(hit.working_hours or 0) * 60)
             total += mins
-            st = d.status.value if hasattr(d.status, "value") else str(d.status)
+            st = hit.status.value if hasattr(hit.status, "value") else str(hit.status)
             out.append(
                 WeekDayHours(
-                    date=d.attendance_date.isoformat(),
+                    date=key,
                     status=st,
                     minutes=mins,
+                    break_minutes=breaks_by_day.get(hit.id, 0),
                 )
             )
         return WeekHoursResponse(
@@ -139,23 +208,87 @@ class MyWorkAttendanceService:
 
     async def list_corrections(
         self,
-        employment_id: Optional[int],
+        employment_id: int | None,
         *,
         page: int = 1,
         page_size: int = 20,
     ) -> CorrectionListResponse:
-        # Wired when correction list query is exposed on workforce repo
-        return CorrectionListResponse(page=page, pageSize=page_size)
+        # Q14: real domain data (no stub).
+        if employment_id is None:
+            return CorrectionListResponse(page=page, pageSize=page_size)
+        rows = await self._wf.list_corrections_by_employment(
+            employment_id, limit=page * page_size
+        )
+        items = [
+            CorrectionListItem(
+                id=r.id,
+                attendanceDayId=r.attendance_day_id,
+                status=r.status.value if hasattr(r.status, "value") else str(r.status),
+                reason=r.reason or "",
+                createdAt=r.created_at,
+            )
+            for r in rows
+        ]
+        total = len(items)
+        start = (max(1, page) - 1) * max(1, page_size)
+        return CorrectionListResponse(
+            items=items[start : start + max(1, page_size)],
+            total=total,
+            page=page,
+            pageSize=page_size,
+        )
 
     async def correction_candidates(
-        self, employment_id: Optional[int]
+        self, employment_id: int | None
     ) -> list[CorrectionCandidate]:
-        return []
+        # Q14: recent attendance days are the correctable candidates.
+        if employment_id is None:
+            return []
+        today = date.today()
+        start = date.fromordinal(max(1, today.toordinal() - 30))
+        days = await self._wf.list_days(employment_id, from_date=start, to_date=today)
+        out: list[CorrectionCandidate] = []
+        for d in days:
+            st = d.status.value if hasattr(d.status, "value") else str(d.status)
+            out.append(
+                CorrectionCandidate(
+                    attendanceDayId=d.id,
+                    date=d.attendance_date,
+                    status=st,
+                    label=f"{d.attendance_date.isoformat()} — {st}",
+                )
+            )
+        return out
 
     async def list_approvers(
-        self, employment_id: Optional[int]
+        self, employment_id: int | None
     ) -> list[ApproverOption]:
-        return []
+        # Q10: approver resolved from the manager hierarchy (department head
+        # of the requester's current department).
+        if employment_id is None:
+            return []
+        try:
+            from app.modules.workforce.department.models import Department
+            from app.modules.workforce.employee.repository import EmployeeRepository
+
+            asg = await EmployeeRepository(self._session).get_current_assignment(
+                employment_id
+            )
+            if asg is None or asg.department_id is None:
+                return []
+            dept = await self._session.get(Department, asg.department_id)
+            head_id = getattr(dept, "department_head_employment_id", None)
+            if not head_id:
+                return []
+            return [
+                ApproverOption(
+                    employmentId=int(head_id),
+                    name=f"Emp #{int(head_id)}",
+                    role="Department Head",
+                )
+            ]
+        except Exception:
+            return []
 
 
 # Canonical name for my_work domain

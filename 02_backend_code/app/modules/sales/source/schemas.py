@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,12 +12,12 @@ class MessageResponse(BaseModel):
 
 class SourceCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class SourceUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=150)
-    description: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=150)
+    description: str | None = None
 
 
 class SourceResponse(BaseModel):
@@ -26,11 +25,33 @@ class SourceResponse(BaseModel):
 
     id: int
     name: str
-    description: Optional[str]
-    is_archived: bool
+    description: str | None
+    is_archived: bool = False
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None
+    created_by_name: str | None = None
+    lead_count: int = 0
+
+
+class SourceLeadRow(BaseModel):
+    id: int
+    title: str
+    status: str
+    contact_name: str | None = None
+    created_at: datetime | None = None
+
+
+class SourceMetrics(BaseModel):
+    total: int = 0
+    active: int = 0
+    archived: int = 0
+
+
+class SourceListResponse(BaseModel):
+    items: list[SourceResponse]
+    total: int = 0
+    metrics: SourceMetrics = Field(default_factory=SourceMetrics)
 
 
 # Back-compat aliases

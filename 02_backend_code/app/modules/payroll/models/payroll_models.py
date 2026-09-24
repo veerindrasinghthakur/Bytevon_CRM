@@ -9,9 +9,8 @@ Tables:
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
-from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -44,9 +43,9 @@ class EmployeeSalary(Base, IdentityMixin, EffectiveDatingMixin, TimestampMixin):
         Integer, ForeignKey("employments.id"), nullable=False, index=True
     )
     gross_salary: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    items: Mapped[List["EmployeeSalaryItem"]] = relationship(
+    items: Mapped[list[EmployeeSalaryItem]] = relationship(
         "EmployeeSalaryItem",
         back_populates="employee_salary",
         cascade="all, delete-orphan",
@@ -62,9 +61,9 @@ class EmployeeSalaryItem(Base, IdentityMixin, TimestampMixin):
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     type: Mapped[SalaryItemType] = mapped_column(nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    employee_salary: Mapped["EmployeeSalary"] = relationship(
+    employee_salary: Mapped[EmployeeSalary] = relationship(
         "EmployeeSalary", back_populates="items"
     )
 
@@ -90,14 +89,14 @@ class MonthlyPayroll(Base, IdentityMixin, TimestampMixin):
     total_deductions: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     net_salary: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     status: Mapped[PayrollStatus] = mapped_column(nullable=False)
-    payment_method: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    payment_reference: Mapped[Optional[str]] = mapped_column(String(150), nullable=True)
-    payment_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
-    payable_days: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2), nullable=True)
-    lop_days: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2), nullable=True)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    payment_method: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    payment_reference: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    payment_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    payable_days: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    lop_days: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    items: Mapped[List["MonthlyPayrollItem"]] = relationship(
+    items: Mapped[list[MonthlyPayrollItem]] = relationship(
         "MonthlyPayrollItem",
         back_populates="monthly_payroll",
         cascade="all, delete-orphan",
@@ -113,9 +112,9 @@ class MonthlyPayrollItem(Base, IdentityMixin):
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     type: Mapped[PayrollItemType] = mapped_column(nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    monthly_payroll: Mapped["MonthlyPayroll"] = relationship(
+    monthly_payroll: Mapped[MonthlyPayroll] = relationship(
         "MonthlyPayroll", back_populates="items"
     )
 
@@ -137,4 +136,4 @@ class EmployeeBankAccount(Base, IdentityMixin, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default="true"
     )
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)

@@ -7,9 +7,10 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
+from app.modules.leave.ledger.service import LedgerService
+from app.modules.leave.leave_type.service import LeaveTypeService
 from app.modules.leave.policy.service import PolicyService
 from app.modules.leave.request.service import RequestService
-from app.modules.leave.ledger.service import LedgerService
 
 
 def get_policy_service(
@@ -30,9 +31,16 @@ def get_ledger_service(
     return LedgerService(session)
 
 
+def get_leave_type_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> LeaveTypeService:
+    return LeaveTypeService(session)
+
+
 PolicyServiceDep = Annotated[PolicyService, Depends(get_policy_service)]
 RequestServiceDep = Annotated[RequestService, Depends(get_request_service)]
 LedgerServiceDep = Annotated[LedgerService, Depends(get_ledger_service)]
+LeaveTypeServiceDep = Annotated[LeaveTypeService, Depends(get_leave_type_service)]
 
 # Back-compat for lifespan / external callers
 LeaveServiceDep = RequestServiceDep

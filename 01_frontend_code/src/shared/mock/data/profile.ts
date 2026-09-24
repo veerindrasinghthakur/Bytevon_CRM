@@ -22,6 +22,7 @@ export const mockProfile: ProfileDetail = {
   workType: 'Hybrid (HQ / Remote)',
   employmentId: 1,
   personId: 1,
+  employeeCode: 'SYS-001',
   avatarUrl: null,
   orgMail: 'admin@bytevon.example',
   lastLoginAt: 'Today, 10:45 AM',

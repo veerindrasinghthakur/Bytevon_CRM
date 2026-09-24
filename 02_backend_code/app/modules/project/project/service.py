@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from datetime import date
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -38,7 +37,7 @@ class ProjectService(BasePublicService):
         self._repo = ProjectRepository(session)
         self._team_repo = TeamRepository(session)
 
-    async def _employment_display_name(self, employment_id: int) -> Optional[str]:
+    async def _employment_display_name(self, employment_id: int) -> str | None:
         from app.modules.workforce.models import Employment
 
         emp = await self._session.get(Employment, employment_id)
@@ -51,7 +50,7 @@ class ProjectService(BasePublicService):
         code = getattr(emp, "employee_code", None)
         return str(code) if code else f"Employment #{employment_id}"
 
-    async def _client_name(self, client_id: int) -> Optional[str]:
+    async def _client_name(self, client_id: int) -> str | None:
         try:
             from app.modules.sales.models import Client
 
@@ -75,13 +74,13 @@ class ProjectService(BasePublicService):
         if task_count > 0:
             progress = int(round(100 * (task_count - open_tasks) / task_count))
 
-        days_to_deadline: Optional[int] = None
+        days_to_deadline: int | None = None
         if project.planned_end_date is not None:
             days_to_deadline = max(0, (project.planned_end_date - date.today()).days)
 
-        team_id: Optional[int] = None
-        team_name: Optional[str] = None
-        team_head_name: Optional[str] = None
+        team_id: int | None = None
+        team_name: str | None = None
+        team_head_name: str | None = None
         team_member_count = 0
         team_count = 0
 
@@ -100,8 +99,10 @@ class ProjectService(BasePublicService):
 
         client_name = await self._client_name(project.client_id)
 
+        base_data = base.model_dump()
+        base_data.pop('client_name', None)
         return ProjectDetailResponse(
-            **base.model_dump(),
+            **base_data,
             client_name=client_name,
             open_tasks=open_tasks,
             task_count=task_count,
@@ -120,8 +121,8 @@ class ProjectService(BasePublicService):
         lead_id: int,
         client_id: int,
         title: str,
-        actor_employment_id: Optional[int] = None,
-        assigned_to_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
+        assigned_to_id: int | None = None,
         assignment_type: ProjectAssignmentType = ProjectAssignmentType.INDIVIDUAL,
         commit: bool = True,
     ) -> ProjectResponse:
@@ -157,7 +158,7 @@ class ProjectService(BasePublicService):
         self,
         data: ProjectCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> ProjectDetailResponse:
         if data.lead_id is not None:
             existing = await self._repo.get_project_by_lead_id(data.lead_id)
@@ -195,21 +196,48 @@ class ProjectService(BasePublicService):
     async def list_projects(
         self,
         *,
-        client_id: Optional[int] = None,
+        client_id: int | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[ProjectResponse]:
         rows = await self._repo.list_projects(
             client_id=client_id, limit=limit, offset=offset
         )
-        return [ProjectResponse.model_validate(r) for r in rows]
+        # Batch client names so list rows carry the real client name.
+        names: dict[int, str] = {}
+        ids = {r.client_id for r in rows if r.client_id}
+        if ids:
+            try:
+                from sqlalchemy import select as _select
+
+                from app.modules.sales.models import Client
+
+                clients = (
+                    await self._session.execute(
+                        _select(Client).where(Client.id.in_(ids))
+                    )
+                ).scalars()
+                for c in clients:
+                    for attr in ("company_name", "name", "client_name"):
+                        val = getattr(c, attr, None)
+                        if val:
+                            names[c.id] = str(val)
+                            break
+            except Exception:
+                names = {}
+        out: list[ProjectResponse] = []
+        for r in rows:
+            resp = ProjectResponse.model_validate(r)
+            resp.client_name = names.get(r.client_id)
+            out.append(resp)
+        return out
 
     async def update_project(
         self,
         project_id: int,
         data: ProjectUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> ProjectDetailResponse:
         project = await self._repo.get_project_by_id(project_id)
         if project is None:

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -18,9 +17,9 @@ class AuditLogCreate(BaseModel):
     reference_id: int
     action: AuditAction
     description: str = Field(..., min_length=1)
-    employment_id: Optional[int] = None
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
+    employment_id: int | None = None
+    ip_address: str | None = None
+    user_agent: str | None = None
 
 
 class AuditLogResponse(BaseModel):
@@ -31,14 +30,14 @@ class AuditLogResponse(BaseModel):
     reference_id: int
     action: AuditAction
     description: str
-    employment_id: Optional[int] = None
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
+    employment_id: int | None = None
+    ip_address: str | None = None
+    user_agent: str | None = None
     created_at: datetime
 
 
 class ArchiveResult(BaseModel):
     exported_count: int
     deleted_count: int
-    storage_path: Optional[str] = None
+    storage_path: str | None = None
     message: str = ""

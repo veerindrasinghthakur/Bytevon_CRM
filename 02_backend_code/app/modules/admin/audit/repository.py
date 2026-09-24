@@ -1,10 +1,12 @@
 """Audit repository (admin domain)."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Optional, Sequence
+from typing import Any, cast
 
 from sqlalchemy import delete, select
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.enums import AuditAction, AuditReferenceType
@@ -16,18 +18,18 @@ class AuditRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def get_by_id(self, log_id: int) -> Optional[AuditLog]:
+    async def get_by_id(self, log_id: int) -> AuditLog | None:
         return await self.scalar_one_or_none(select(AuditLog).where(AuditLog.id == log_id))
 
     async def list_logs(
         self,
         *,
-        reference_type: Optional[AuditReferenceType] = None,
-        reference_id: Optional[int] = None,
-        action: Optional[AuditAction] = None,
-        employment_id: Optional[int] = None,
-        from_ts: Optional[datetime] = None,
-        to_ts: Optional[datetime] = None,
+        reference_type: AuditReferenceType | None = None,
+        reference_id: int | None = None,
+        action: AuditAction | None = None,
+        employment_id: int | None = None,
+        from_ts: datetime | None = None,
+        to_ts: datetime | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> Sequence[AuditLog]:
@@ -51,5 +53,9 @@ class AuditRepository(BaseRepository):
         return await self.scalars(stmt)
 
     async def delete_older_than(self, cutoff: datetime) -> int:
-        result = await self.execute(delete(AuditLog).where(AuditLog.created_at < cutoff))
+        # DML via session.execute yields a CursorResult at runtime; cast for rowcount
+        result = cast(
+            CursorResult[Any],
+            await self._session.execute(delete(AuditLog).where(AuditLog.created_at < cutoff)),
+        )
         return result.rowcount or 0

@@ -7,6 +7,15 @@ import { createRoute, redirect } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
+import { requirePermission, requireView } from '@/shared/rbac/require-permission'
+
+/** Variable grants: any VIEW opens a page; CREATE/UPDATE gates forms. Data is scope-filtered server-side. */
+const requireEmploymentView = () => requireView('employment')
+const requireDepartmentView = () => requireView('department')
+const requireAttendanceView = () => requireView('attendance')
+const requireEmploymentCreate = () => requirePermission({ action: 'CREATE', resource: 'employment' })
+const requireDepartmentCreate = () => requirePermission({ action: 'CREATE', resource: 'department' })
+const requireDepartmentUpdate = () => requirePermission({ action: 'UPDATE', resource: 'department' })
 
 const EmployeesListPage = lazyPage(() => import('./pages/employee/EmployeesListPage'), 'EmployeesListPage')
 const EmployeeCreatePage = lazyPage(() => import('./pages/employee/EmployeeCreatePage'), 'EmployeeCreatePage')
@@ -15,6 +24,8 @@ const EmployeeBankDetailsPage = lazyPage(() => import('./pages/EmployeeBankDetai
 const DepartmentsListPage = lazyPage(() => import('./pages/DepartmentsListPage'), 'DepartmentsListPage')
 const DepartmentCreatePage = lazyPage(() => import('./pages/DepartmentCreatePage'), 'DepartmentCreatePage')
 const DepartmentDetailPage = lazyPage(() => import('./pages/DepartmentDetailPage'), 'DepartmentDetailPage')
+const PositionsListPage = lazyPage(() => import('./pages/position/PositionsListPage'), 'PositionsListPage')
+const PositionDetailPage = lazyPage(() => import('./pages/position/PositionDetailPage'), 'PositionDetailPage')
 const AttendanceDashboardPage = lazyPage(
   () => import('./pages/AttendanceDashboardPage'),
   'AttendanceDashboardPage',
@@ -34,6 +45,8 @@ const AttendanceDayDetailPage = lazyPage(
 )
 const ChangeAssignmentPage = lazyPage(() => import('./pages/ChangeAssignmentPage'), 'ChangeAssignmentPage')
 const AddMemberPage = lazyPage(() => import('./pages/AddMemberPage'), 'AddMemberPage')
+const ShiftsListPage = lazyPage(() => import('./pages/shift/ShiftsListPage'), 'ShiftsListPage')
+const ShiftDetailPage = lazyPage(() => import('./pages/shift/ShiftDetailPage'), 'ShiftDetailPage')
 
 /** Canonical path helpers — prefer these over hard-coded strings in pages. */
 export const workforceRoutes = {
@@ -50,6 +63,10 @@ export const workforceRoutes = {
   departmentNew: '/workforce/departments/new',
   departmentDetail: (id: string | number) => `/workforce/departments/${id}`,
   departmentDetailPath: '/workforce/departments/$departmentId',
+  positions: '/workforce/positions',
+  positionNew: '/workforce/positions/new',
+  positionDetail: (id: string | number) => `/workforce/positions/${id}`,
+  positionDetailPath: '/workforce/positions/$positionId',
   teams: '/projects/teams',
   teamNew: '/projects/teams/new',
   teamDetail: (id: string | number) => `/projects/teams/${id}`,
@@ -71,6 +88,10 @@ export const workforceRoutes = {
   attendanceRecordPath: '/workforce/attendance/$attendanceId',
   attendanceDay: (employmentId: string | number) => `/workforce/attendance/day/${employmentId}`,
   attendanceDayPath: '/workforce/attendance/day/$employmentId',
+  shifts: '/workforce/shifts',
+  shiftNew: '/workforce/shifts/new',
+  shiftDetail: (id: string | number) => `/workforce/shifts/${id}`,
+  shiftDetailPath: '/workforce/shifts/$shiftId',
 } as const
 
 export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
@@ -85,42 +106,87 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees',
+      beforeLoad: requireEmploymentView,
       component: EmployeesListPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees/new',
+      beforeLoad: requireEmploymentCreate,
       component: EmployeeCreatePage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees/$employeeId',
+      // Detail is CUSTOM owner-or-grant on the backend — action gate only here
+      beforeLoad: requireEmploymentView,
       component: EmployeeDetailPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees/$employeeId/assignment',
+      beforeLoad: requireEmploymentView,
       component: ChangeAssignmentPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees/$employeeId/bank-details',
+      beforeLoad: requireEmploymentView,
       component: EmployeeBankDetailsPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/departments',
+      beforeLoad: requireDepartmentView,
       component: DepartmentsListPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/departments/new',
+      beforeLoad: requireDepartmentCreate,
       component: DepartmentCreatePage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/departments/$departmentId',
+      beforeLoad: requireDepartmentView,
       component: DepartmentDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/positions',
+      beforeLoad: requireEmploymentView,
+      component: PositionsListPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/positions/new',
+      beforeLoad: requireEmploymentCreate,
+      component: PositionDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/positions/$positionId',
+      beforeLoad: requireEmploymentView,
+      component: PositionDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/shifts',
+      beforeLoad: requireView('shift'),
+      component: ShiftsListPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/shifts/new',
+      beforeLoad: requireView('shift'),
+      component: ShiftDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/shifts/$shiftId',
+      beforeLoad: requireView('shift'),
+      component: ShiftDetailPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
@@ -211,26 +277,31 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/departments/$departmentId/add-member',
+      beforeLoad: requireDepartmentUpdate,
       component: AddMemberPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance',
+      beforeLoad: requireAttendanceView,
       component: AttendanceDashboardPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance/employees',
+      beforeLoad: requireAttendanceView,
       component: AttendanceEmployeesPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance/roster',
+      beforeLoad: requireAttendanceView,
       component: WorkforceRosterPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance/day/$employmentId',
+      beforeLoad: requireAttendanceView,
       validateSearch: (search: Record<string, unknown>) => ({
         date: typeof search.date === 'string' ? search.date : undefined,
       }),
@@ -239,6 +310,7 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance/$attendanceId',
+      beforeLoad: requireAttendanceView,
       component: WorkforceAttendanceDetailPage,
     }),
   ]

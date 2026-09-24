@@ -48,4 +48,5 @@ class PreferenceService(BasePublicService):
             pref.is_enabled = data.is_enabled
 
         await self._commit()
+        await self._session.refresh(pref)
         return PreferenceResponse.model_validate(pref)

@@ -1,7 +1,7 @@
 """Location repository."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +16,7 @@ class LocationRepository(BaseRepository):
 
     async def get_by_id(
         self, location_id: int, *, include_archived: bool = False
-    ) -> Optional[Location]:
+    ) -> Location | None:
         stmt = select(Location).where(Location.id == location_id)
         if not include_archived:
             stmt = stmt.where(Location.is_archived.is_(False))
@@ -30,10 +30,3 @@ class LocationRepository(BaseRepository):
 
     async def list(self, *, include_archived: bool = False) -> Sequence[Location]:
         return await self.list_all(include_archived=include_archived)
-
-    async def get_by_code(self, code: str) -> Optional[Location]:
-        stmt = select(Location).where(
-            Location.code == code.strip().upper(),
-            Location.is_archived.is_(False),
-        )
-        return await self.scalar_one_or_none(stmt)

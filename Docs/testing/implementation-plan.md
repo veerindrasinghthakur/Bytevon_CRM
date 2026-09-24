@@ -153,7 +153,7 @@ All 9 are REMOVED after remediation and replaced by permanent regression tests.
 | SEC-003 | SECURITY_GATE_BLOCKING | Validate `X-Employment-Id` against JWT person→employments | Phase 1+ authz |
 | SEC-004 | SECURITY_GATE_BLOCKING | Apply `Depends(require_permission(...))` to all PROTECTED_ENDPOINTS per mapping | Phase 4+ |
 | SEC-005 | PRE-BROAD-TESTING_REQUIRED | Fix `department_router` import (`admin/routes.py:20`) | Admin module tests |
-| SEC-006 | PRE-BROAD-TESTING_REQUIRED | My Work real routes before stubs | My Work module tests |
+| SEC-006 | NOT-APPLICABLE (verified) | My Work stubs (`stubs/routes.py`) are NOT registered in the running app (0/278 inventory entries sourced from that file); no reorder needed. Dead-code removal may be proposed separately; does not block testing. | — |
 | SEC-007 | POST-GATE_NONBLOCKING | Super Admin enforcement per contract | Admin tests |
 | SEC-008 | POST-GATE_NONBLOCKING | Sensitive-field filtering per contract | Field tests |
 

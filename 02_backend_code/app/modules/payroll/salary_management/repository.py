@@ -1,8 +1,8 @@
 """Salary repository."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,15 +18,15 @@ class SalaryRepository(BaseRepository):
 
     async def get_salary_by_id(
         self, salary_id: int, *, with_items: bool = False
-    ) -> Optional[EmployeeSalary]:
+    ) -> EmployeeSalary | None:
         stmt = select(EmployeeSalary).where(EmployeeSalary.id == salary_id)
         if with_items:
             stmt = stmt.options(selectinload(EmployeeSalary.items))
         return await self.scalar_one_or_none(stmt)
 
     async def get_current_salary(
-        self, employment_id: int, *, as_of: Optional[date] = None
-    ) -> Optional[EmployeeSalary]:
+        self, employment_id: int, *, as_of: date | None = None
+    ) -> EmployeeSalary | None:
         as_of = as_of or date.today()
         stmt = (
             select(EmployeeSalary)

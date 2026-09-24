@@ -5,6 +5,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { workforceAttendanceStatusStyles } from '../schemas/enums'
 import { workforceRoutes } from '../routes'
@@ -15,6 +16,8 @@ export function WorkforceAttendanceDetailPage() {
   const params = useParams({ strict: false }) as { attendanceId?: string }
   const attendanceId = params.attendanceId
   const { data, isLoading, isError, error, refetch } = useAttendanceDetail(attendanceId)
+
+  useDeletedRedirect({ ready: !isLoading, data: data ?? null, error, listTo: workforceRoutes.attendance })
 
   if (isLoading) return <PageLoadingSkeleton />
   if (isError || !data) {

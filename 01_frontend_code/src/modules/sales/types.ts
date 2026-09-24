@@ -58,6 +58,7 @@ export interface Lead {
   platform?: string
   platformId?: number | null
   assignedEmploymentId?: number | null
+  autoCreateProject?: boolean
   tags?: string[]
   caseStudy?: string
   createdAt: string
@@ -75,6 +76,8 @@ export interface Client {
   sector?: string
   website?: string
   country: string
+  state?: string
+  city?: string
   email?: string
   phone?: string
   primaryContact?: string
@@ -193,6 +196,7 @@ export interface CreateLeadInput {
   assignedEmploymentId?: number | null
   notes?: string
   chatLink?: string
+  auto_create_project?: boolean
 }
 
 export type UpdateLeadInput = Partial<CreateLeadInput>

@@ -1,9 +1,13 @@
 import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  deleteTeam,
   getTeam,
+  getTeamMemberHistory,
   getTeamMembers,
   getTeamProjects,
+  removeTeamMember,
+  updateTeam,
 } from '../../api/team'
 import type {
   Team as ProjectsTeam,
@@ -11,6 +15,8 @@ import type {
   TeamProjectRow,
 } from '../../types'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { toast } from '@/shared/hooks/use-toast'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 
 /** UI team shape used by list/detail pages (string id for route params). */
 export type TeamUi = {
@@ -57,6 +63,7 @@ function toTeamUi(t: ProjectsTeam): TeamUi {
 export function useTeamDetail(teamIdParam: string | undefined) {
   const numericId = teamIdParam != null ? Number(teamIdParam) : NaN
   const enabled = Number.isFinite(numericId)
+  const qc = useQueryClient()
 
   const teamQuery = useQuery({
     queryKey: queryKeys.teams.detail(numericId),
@@ -67,6 +74,12 @@ export function useTeamDetail(teamIdParam: string | undefined) {
   const membersQuery = useQuery({
     queryKey: queryKeys.teams.members(numericId),
     queryFn: () => getTeamMembers(numericId),
+    enabled: enabled && teamQuery.isSuccess && teamQuery.data != null,
+  })
+
+  const historyQuery = useQuery({
+    queryKey: [...queryKeys.teams.members(numericId), 'history'],
+    queryFn: () => getTeamMemberHistory(numericId),
     enabled: enabled && teamQuery.isSuccess && teamQuery.data != null,
   })
 
@@ -82,20 +95,65 @@ export function useTeamDetail(teamIdParam: string | undefined) {
   )
 
   const members: TeamMemberRow[] = membersQuery.data ?? []
+  const history: TeamMemberRow[] = historyQuery.data ?? []
   const projects: TeamProjectRow[] = projectsQuery.data ?? []
+
+  const invalidateAll = () => {
+    void qc.invalidateQueries({ queryKey: queryKeys.teams.detail(numericId) })
+    void qc.invalidateQueries({ queryKey: queryKeys.teams.members(numericId) })
+    void qc.invalidateQueries({ queryKey: queryKeys.teams.projects(numericId) })
+    void qc.invalidateQueries({ queryKey: queryKeys.teams.all })
+  }
+
+  const removeMut = useMutation({
+    mutationFn: (employmentId: number) => removeTeamMember(numericId, employmentId),
+    onSuccess: () => {
+      toast.success('Member removed — kept in history')
+      invalidateAll()
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Could not remove member')),
+  })
+
+  const deleteMut = useMutation({
+    mutationFn: () => deleteTeam(numericId),
+    onSuccess: () => {
+      toast.success('Team deleted')
+      invalidateAll()
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Could not delete team')),
+  })
+
+  const changeHeadMut = useMutation({
+    mutationFn: (headEmploymentId: number) =>
+      updateTeam(numericId, { teamHeadEmploymentId: headEmploymentId }),
+    onSuccess: () => {
+      toast.success('Team head updated')
+      invalidateAll()
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Could not update team head')),
+  })
 
   return {
     teamId: enabled ? numericId : null,
     team,
     members,
+    history,
     projects,
     isLoading: teamQuery.isLoading,
     isError: teamQuery.isError || (!teamQuery.isLoading && team == null && enabled),
+    detailError: teamQuery.error ?? null,
     isMembersLoading: membersQuery.isLoading,
     isProjectsLoading: projectsQuery.isLoading,
+    removeMember: (employmentId: number) => removeMut.mutate(employmentId),
+    isRemoving: removeMut.isPending,
+    deleteTeam: () => deleteMut.mutate(),
+    isDeleting: deleteMut.isPending,
+    changeHead: (headEmploymentId: number) => changeHeadMut.mutate(headEmploymentId),
+    isChangingHead: changeHeadMut.isPending,
     refetch: () => {
       void teamQuery.refetch()
       void membersQuery.refetch()
+      void historyQuery.refetch()
       void projectsQuery.refetch()
     },
   }

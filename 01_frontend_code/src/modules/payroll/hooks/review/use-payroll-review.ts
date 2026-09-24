@@ -7,11 +7,15 @@ import {
   approvePayrollEmployee,
   getPayrollReview,
   payPayrollEmployee,
+  rejectPayroll,
 } from '../../api/review'
 
 export function usePayrollReview() {
-  const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
-  const id = employeeId ?? ''
+  const { payrollId, employeeId } = useParams({ strict: false }) as {
+    payrollId?: string
+    employeeId?: string
+  }
+  const id = payrollId ?? employeeId ?? ''
   const qc = useQueryClient()
   const [showPayModal, setShowPayModal] = useState(false)
   const [paymentRef, setPaymentRef] = useState('')
@@ -31,6 +35,10 @@ export function usePayrollReview() {
   })
   const payMut = useMutation({
     mutationFn: (ref?: string) => payPayrollEmployee(id, ref),
+    onSuccess: () => invalidate.payroll(qc),
+  })
+  const rejectMut = useMutation({
+    mutationFn: (reason: string) => rejectPayroll(id, reason),
     onSuccess: () => invalidate.payroll(qc),
   })
 
@@ -68,5 +76,14 @@ export function usePayrollReview() {
     refetch: query.refetch,
     approveMut,
     payMut,
+    rejectMut,
   }
+}
+
+export function useRejectPayroll() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => rejectPayroll(id, reason),
+    onSuccess: () => invalidate.payroll(qc),
+  })
 }

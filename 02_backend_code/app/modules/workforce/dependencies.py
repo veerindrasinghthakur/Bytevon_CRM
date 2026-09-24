@@ -7,10 +7,10 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.modules.workforce.employee.service import EmployeeService
 from app.modules.workforce.assignment.service import AssignmentService
-from app.modules.workforce.department.service import DepartmentService
 from app.modules.workforce.attendance.service import AttendanceService
+from app.modules.workforce.department.service import DepartmentService
+from app.modules.workforce.employee.service import EmployeeService
 
 
 def get_employee_service(

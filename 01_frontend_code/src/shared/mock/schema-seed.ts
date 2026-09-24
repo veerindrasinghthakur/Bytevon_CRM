@@ -28,7 +28,7 @@ import type {
   EmployeeSalaryItemRow,
   EmployeeBankAccountRow,
 } from '@/shared/schema'
-import { Action, EmploymentState, EmploymentType, ResourceName, ScopeName, WorkMode } from '@/shared/schema'
+import { Action, EmploymentState, EmploymentType, ScopeName, WorkMode } from '@/shared/schema'
 import type { CreateEmploymentSchemaInput } from '@/modules/workforce/schemas/employment'
 
 const now = '2026-01-15T10:00:00Z'
@@ -592,26 +592,26 @@ employments: [
   ] satisfies EmploymentAssignmentRow[],
 
   resources: [
-    { id: 1, name: ResourceName.EMPLOYMENT, description: 'Employees / employments', created_at: now },
-    { id: 2, name: ResourceName.DEPARTMENT, description: 'Departments', created_at: now },
-    { id: 3, name: ResourceName.LOCATION, description: 'Office locations', created_at: now },
-    { id: 4, name: ResourceName.ROLE, description: 'Roles & permissions', created_at: now },
-    { id: 5, name: ResourceName.USER, description: 'Login users', created_at: now },
-    { id: 6, name: ResourceName.LEAVE_REQUEST, description: 'Leave requests', created_at: now },
-    { id: 7, name: ResourceName.LEAVE_POLICY, description: 'Leave policies', created_at: now },
-    { id: 8, name: ResourceName.ATTENDANCE, description: 'Attendance', created_at: now },
-    { id: 9, name: ResourceName.PAYROLL, description: 'Payroll runs', created_at: now },
-    { id: 10, name: ResourceName.SALARY, description: 'Salary configuration', created_at: now },
-    { id: 11, name: ResourceName.PROJECT, description: 'Projects', created_at: now },
-    { id: 12, name: ResourceName.TASK, description: 'Tasks', created_at: now },
-    { id: 13, name: ResourceName.LEAD, description: 'Sales leads', created_at: now },
-    { id: 14, name: ResourceName.CLIENT, description: 'Clients', created_at: now },
-    { id: 15, name: ResourceName.APPROVAL, description: 'Approvals', created_at: now },
-    { id: 16, name: ResourceName.AUDIT, description: 'Audit logs', created_at: now },
-    { id: 17, name: ResourceName.NOTIFICATION, description: 'Notifications', created_at: now },
-    { id: 18, name: ResourceName.ORG_SETTINGS, description: 'Organization settings', created_at: now },
-    { id: 19, name: ResourceName.SHIFT, description: 'Shifts', created_at: now },
-    { id: 20, name: ResourceName.HOLIDAY, description: 'Holidays', created_at: now },
+    { id: 1, name: 'employment', description: 'Employees / employments', created_at: now },
+    { id: 2, name: 'department', description: 'Departments', created_at: now },
+    { id: 3, name: 'location', description: 'Office locations', created_at: now },
+    { id: 4, name: 'role', description: 'Roles & permissions', created_at: now },
+    { id: 5, name: 'user', description: 'Login users', created_at: now },
+    { id: 6, name: 'leave_request', description: 'Leave requests', created_at: now },
+    { id: 7, name: 'leave_policy', description: 'Leave policies', created_at: now },
+    { id: 8, name: 'attendance', description: 'Attendance', created_at: now },
+    { id: 9, name: 'payroll', description: 'Payroll runs', created_at: now },
+    { id: 10, name: 'salary', description: 'Salary configuration', created_at: now },
+    { id: 11, name: 'project', description: 'Projects', created_at: now },
+    { id: 12, name: 'task', description: 'Tasks', created_at: now },
+    { id: 13, name: 'lead', description: 'Sales leads', created_at: now },
+    { id: 14, name: 'client', description: 'Clients', created_at: now },
+    { id: 15, name: 'approval', description: 'Approvals', created_at: now },
+    { id: 16, name: 'audit', description: 'Audit logs', created_at: now },
+    { id: 17, name: 'notification', description: 'Notifications', created_at: now },
+    { id: 18, name: 'org_settings', description: 'Organization settings', created_at: now },
+    { id: 19, name: 'shift', description: 'Shifts', created_at: now },
+    { id: 20, name: 'holiday', description: 'Holidays', created_at: now },
   ] satisfies ResourceRow[],
 
   scopes: [

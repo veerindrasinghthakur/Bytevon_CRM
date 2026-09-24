@@ -28,6 +28,7 @@ export const profileDetailSchema = z.object({
   workType: z.string(),
   employmentId: z.number(),
   personId: z.number(),
+  employeeCode: z.string(),
   avatarUrl: z.string().nullable(),
   orgMail: z.string(),
   lastLoginAt: z.string(),

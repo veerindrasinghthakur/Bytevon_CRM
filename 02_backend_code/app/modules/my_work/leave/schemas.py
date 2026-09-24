@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -28,12 +27,14 @@ class LeaveRequest(BaseModel):
     reason: str
     status: str
     applied_on: date
-    approver: Optional[str] = None
-    half_day: Optional[str] = None
+    approver: str | None = None
+    approver_remarks: str | None = None
+    decided_on: date | None = None
+    half_day: str | None = None
 
 
 class LeaveListResponse(BaseModel):
-    items: List[LeaveRequest]
+    items: list[LeaveRequest]
     total: int
     page: int = 1
     pageSize: int = 20
@@ -46,9 +47,9 @@ class LeaveTypeOption(BaseModel):
 
 
 class ApplyLeaveContext(BaseModel):
-    holidays: List[dict]
-    leaveTypes: List[LeaveTypeOption]
-    balances: List[LeaveBalance]
+    holidays: list[dict]
+    leaveTypes: list[LeaveTypeOption]
+    balances: list[LeaveBalance]
 
 
 class CreateLeaveRequestInput(BaseModel):
@@ -56,7 +57,7 @@ class CreateLeaveRequestInput(BaseModel):
     from_date: date
     to_date: date
     reason: str
-    half_day: Optional[str] = None
+    half_day: str | None = None
 
 
 class LeaveCalculateInput(BaseModel):
@@ -70,6 +71,6 @@ class LeaveCalculateInput(BaseModel):
 
 class LeaveCalculateResult(BaseModel):
     day_cost: Decimal
-    balance_remaining: Optional[Decimal] = None
-    estimated_balance_after: Optional[Decimal] = None
-    holidays_in_range: List[dict] = Field(default_factory=list)
+    balance_remaining: Decimal | None = None
+    estimated_balance_after: Decimal | None = None
+    holidays_in_range: list[dict] = Field(default_factory=list)

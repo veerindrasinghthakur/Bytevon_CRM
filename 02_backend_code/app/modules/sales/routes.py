@@ -6,23 +6,24 @@ routers that bind /leads/{lead_id} or FastAPI parses the segment as int → 422.
 """
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends
 
+from app.core.authorization import require_permission
 from app.core.db.enums import LeadStatus
-from app.modules.sales.dependencies import SalesServiceDep
-from app.modules.sales.lead.routes import router as lead_router
-from app.modules.sales.client.routes import router as client_router
-from app.modules.sales.source.routes import router as source_router
 from app.modules.sales.activity.routes import router as activity_router
 from app.modules.sales.case_study.routes import router as case_study_router
+from app.modules.sales.client.routes import router as client_router
 from app.modules.sales.dashboard.routes import router as dashboard_router
+from app.modules.sales.dependencies import SalesServiceDep
+from app.modules.sales.lead.routes import router as lead_router
+from app.modules.sales.source.routes import router as source_router
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
 
 
-def _filter_lead_options(rows: list) -> dict[str, list[str]]:
+def _filter_lead_options(rows: list, *, sources: list[str] | None = None) -> dict[str, list[str]]:
     statuses = sorted(
         {(r.status.value if hasattr(r.status, "value") else str(r.status)) for r in rows}
     )
@@ -30,7 +31,8 @@ def _filter_lead_options(rows: list) -> dict[str, list[str]]:
         "statuses": ["Active", "Inactive"] + (statuses or list(LeadStatus.values())),
         "stages": statuses or list(LeadStatus.values()),
         "priorities": ["Critical", "High", "Medium", "Low"],
-        "sources": [
+        "sources": sources
+        or [
             "LinkedIn",
             "Website",
             "Referral",
@@ -42,16 +44,30 @@ def _filter_lead_options(rows: list) -> dict[str, list[str]]:
     }
 
 
-@router.get("/meta/lead-filter-options")
-@router.get("/leads/filter-options")
+@router.get("/meta/lead-filter-options", dependencies=[Depends(require_permission("lead", "VIEW", "ORGANIZATION"))])
+@router.get("/leads/filter-options", dependencies=[Depends(require_permission("lead", "VIEW", "ORGANIZATION"))])
 async def lead_filter_options(service: SalesServiceDep) -> dict[str, list[str]]:
     rows = await service.list_leads(limit=500)
-    return _filter_lead_options(rows)
+    try:
+        listed = await service.list_sources(include_archived=False)
+        items = listed.items if hasattr(listed, "items") else (listed or [])
+        live_sources = [s.name for s in items if getattr(s, "name", None)]
+    except Exception:
+        live_sources = []
+    return _filter_lead_options(rows, sources=live_sources or None)
 
 
-@router.get("/meta/client-filter-options")
-@router.get("/clients/filter-options")
+@router.get("/meta/client-filter-options", dependencies=[Depends(require_permission("lead", "VIEW", "ORGANIZATION"))])
+async def meta_client_filter_options(service: SalesServiceDep) -> dict[str, list[str]]:
+    return await _client_filter_options(service)
+
+
+@router.get("/clients/filter-options", dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
 async def client_filter_options(service: SalesServiceDep) -> dict[str, list[str]]:
+    return await _client_filter_options(service)
+
+
+async def _client_filter_options(service: SalesServiceDep) -> dict[str, list[str]]:
     rows = await service.list_clients(limit=500)
     industries = sorted({(r.industry or "").strip() for r in rows if r.industry})
     countries = sorted({(r.country or "").strip() for r in rows if r.country})
@@ -63,11 +79,11 @@ async def client_filter_options(service: SalesServiceDep) -> dict[str, list[str]
     }
 
 
-@router.get("/sales-representatives")
+@router.get("/sales-representatives", dependencies=[Depends(require_permission("employment", "VIEW", "ORGANIZATION"))])
 async def list_sales_reps(service: SalesServiceDep) -> dict[str, Any]:
     leads = await service.list_leads(limit=500)
     ids = sorted(
-        {l.assigned_employment_id for l in leads if l.assigned_employment_id is not None}
+        {lead.assigned_employment_id for lead in leads if lead.assigned_employment_id is not None}
     )
     items = [
         {

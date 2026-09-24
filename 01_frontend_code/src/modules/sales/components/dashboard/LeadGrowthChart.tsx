@@ -19,7 +19,7 @@ export function LeadGrowthChart({ monthlyGrowth, maxGrowth }: Props) {
           <div key={m.month} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
             <span className="text-[10px] font-semibold text-on-surface-variant">{m.leads}</span>
             <div
-              className="w-full rounded-t-md bg-secondary/80 hover:bg-secondary transition-colors min-h-[4px]"
+              className="w-full rounded-t-md bg-secondary hover:opacity-80 transition-opacity min-h-[4px]"
               style={{ height: `${(m.leads / max) * 100}%` }}
               title={`${m.month}: ${m.leads} leads`}
             />

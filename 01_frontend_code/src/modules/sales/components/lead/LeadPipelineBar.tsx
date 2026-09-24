@@ -7,7 +7,16 @@ import { stageStyles, PipelineStageValues, type PipelineStage } from '../../sche
 import type { UseMutationResult } from '@tanstack/react-query'
 import type { Lead } from '../../types'
 
-const FORWARD_STAGES = PipelineStageValues.filter((s) => s !== 'Lost') as PipelineStage[]
+/** Forward pipeline order (backend-driven). Closed/Lost are terminal side states. */
+const FORWARD_STAGES = [
+  'New',
+  'Contacted',
+  'Qualified',
+  'Proposal',
+  'Negotiation',
+  'Follow Up',
+  'Won',
+] as PipelineStage[]
 
 function nextPipelineStage(current: string): PipelineStage | null {
   const idx = FORWARD_STAGES.indexOf(current as PipelineStage)
@@ -34,10 +43,11 @@ export function LeadPipelineBar({ leadId, stage, updateLead, onRefetch }: Props)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [stageError, setStageError] = useState<string | null>(null)
   const [advancing, setAdvancing] = useState(false)
+  const [autoCreateProject, setAutoCreateProject] = useState(false)
 
   const currentIdx = PipelineStageValues.indexOf(stage as PipelineStage)
   const nextStage = nextPipelineStage(stage)
-  const isTerminal = stage === 'Won' || stage === 'Lost'
+  const isTerminal = stage === 'Won' || stage === 'Lost' || stage === 'Closed'
 
   const handleAdvanceStage = async () => {
     if (!nextStage) return
@@ -45,7 +55,7 @@ export function LeadPipelineBar({ leadId, stage, updateLead, onRefetch }: Props)
     setAdvancing(true)
     try {
       if (nextStage === 'Won') {
-        await changeLeadStage(leadId, 'Won')
+        await changeLeadStage(leadId, 'Won', { auto_create_project: autoCreateProject })
         await onRefetch()
       } else {
         await updateLead.mutateAsync({
@@ -85,6 +95,16 @@ export function LeadPipelineBar({ leadId, stage, updateLead, onRefetch }: Props)
                   Move from <span className="font-semibold text-on-surface">{stage}</span> to{' '}
                   <span className="font-semibold text-on-surface">{nextStage}</span>?
                 </p>
+                {nextStage === 'Won' && (
+                  <label className="flex items-center gap-2 text-body-sm text-on-surface w-full justify-end">
+                    <input
+                      type="checkbox"
+                      checked={autoCreateProject}
+                      onChange={(e) => setAutoCreateProject(e.target.checked)}
+                    />
+                    Create project on WON
+                  </label>
+                )}
                 <Button
                   variant="outline"
                   size="sm"

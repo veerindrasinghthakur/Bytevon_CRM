@@ -1,6 +1,8 @@
 import { useRouterState } from '@tanstack/react-router'
 import { SECONDARY_NAV } from '@/shared/components/layout/SecondarySidebar'
 import type { SecondaryNavGroup, SecondaryNavItem } from '@/shared/types'
+import { useRbac } from '@/shared/rbac'
+import { filterSecondaryNavItems } from '@/shared/rbac'
 
 export function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/sales')) return 'sales'
@@ -18,15 +20,14 @@ export function getActiveModule(pathname: string): string {
 }
 
 export function isSecondaryItemActive(pathname: string, to: string): boolean {
-  if (to === '/sales') {
+  if (to === '/sales/leads') {
     return (
-      pathname === '/sales' ||
       pathname === '/sales/leads' ||
       pathname.startsWith('/sales/leads/')
     )
   }
-  if (to === '/sales/dashboard') {
-    return pathname === '/sales/dashboard' || pathname === '/sales/activity'
+  if (to === '/sales') {
+    return pathname === '/sales' || pathname === '/sales/activity'
   }
   if (to === '/projects') return pathname === '/projects'
   if (to === '/projects/teams') {
@@ -59,6 +60,9 @@ export function isSecondaryItemActive(pathname: string, to: string): boolean {
   if (to === '/workforce/shifts') {
     return pathname.startsWith('/workforce/shifts') || pathname.startsWith('/admin/settings/shifts')
   }
+  if (to === '/workforce/positions') {
+    return pathname.startsWith('/workforce/positions') || pathname.startsWith('/admin/settings/positions')
+  }
   if (to === '/my-work/attendance') {
     return (
       pathname === '/my-work/attendance' ||
@@ -82,7 +86,11 @@ export function useSecondaryNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const moduleId = getActiveModule(pathname)
   const group: SecondaryNavGroup | undefined = SECONDARY_NAV[moduleId]
-  const items: SecondaryNavItem[] = (group?.items ?? []).filter((i) => i.visible !== false)
+  const { auth, isLoading } = useRbac()
+  const baseItems: SecondaryNavItem[] = (group?.items ?? []).filter((i) => i.visible !== false)
+  // While permissions load, fall back to the static visible flag so the
+  // sidebar never flashes empty on refresh. Once loaded, RBAC decides.
+  const items = isLoading ? baseItems : filterSecondaryNavItems(baseItems, auth)
 
   return {
     pathname,

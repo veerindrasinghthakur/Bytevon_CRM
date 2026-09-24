@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,33 +15,45 @@ class TeamRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def get_team_by_id(self, team_id: int) -> Optional[Team]:
-        stmt = select(Team).where(Team.id == team_id)
+    async def get_team_by_id(self, team_id: int) -> Team | None:
+        stmt = select(Team).where(
+            Team.id == team_id, Team.is_archived.is_(False)
+        )
         return await self.scalar_one_or_none(stmt)
 
     async def list_teams(self) -> Sequence[Team]:
-        stmt = select(Team).order_by(Team.name)
+        stmt = select(Team).where(Team.is_archived.is_(False)).order_by(Team.name)
         return (await self._session.execute(stmt)).scalars().all()
 
     async def get_active_member(
         self, team_id: int, employment_id: int
-    ) -> Optional[TeamMember]:
+    ) -> TeamMember | None:
         stmt = select(TeamMember).where(
             TeamMember.team_id == team_id,
             TeamMember.employment_id == employment_id,
-            TeamMember.left_at.is_(None),
+            TeamMember.is_member.is_(True),
         )
         return await self.scalar_one_or_none(stmt)
 
     async def list_active_members(self, team_id: int) -> Sequence[TeamMember]:
-        stmt = select(TeamMember).where(
-            TeamMember.team_id == team_id, TeamMember.left_at.is_(None)
+        stmt = (
+            select(TeamMember)
+            .where(TeamMember.team_id == team_id, TeamMember.is_member.is_(True))
+            .order_by(TeamMember.joined_at)
+        )
+        return (await self._session.execute(stmt)).scalars().all()
+
+    async def list_member_history(self, team_id: int) -> Sequence[TeamMember]:
+        stmt = (
+            select(TeamMember)
+            .where(TeamMember.team_id == team_id, TeamMember.is_member.is_(False))
+            .order_by(TeamMember.left_at.desc())
         )
         return (await self._session.execute(stmt)).scalars().all()
 
     async def count_active_members(self, team_id: int) -> int:
         stmt = select(func.count()).select_from(TeamMember).where(
             TeamMember.team_id == team_id,
-            TeamMember.left_at.is_(None),
+            TeamMember.is_member.is_(True),
         )
         return int((await self._session.execute(stmt)).scalar_one() or 0)

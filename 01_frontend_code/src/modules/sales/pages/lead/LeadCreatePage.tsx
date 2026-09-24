@@ -76,6 +76,7 @@ export function LeadCreatePage() {
       assignedEmploymentId: '',
       notes: '',
       chatLink: '',
+      autoCreateProject: false,
     },
   })
 
@@ -99,6 +100,7 @@ export function LeadCreatePage() {
         existing.assignedEmploymentId != null ? String(existing.assignedEmploymentId) : '',
       notes: existing.notes ?? '',
       chatLink: existing.chatLink ?? '',
+      autoCreateProject: false,
     })
   }, [existing, form])
 
@@ -171,6 +173,7 @@ export function LeadCreatePage() {
       assignedTo: employee?.fullName,
       notes: optTrim(data.notes),
       chatLink: optTrim(data.chatLink),
+      auto_create_project: data.autoCreateProject ?? false,
     }
     try {
       if (isEdit && params.leadId) {
@@ -246,6 +249,14 @@ export function LeadCreatePage() {
         />
         <LeadChatForm form={form} />
         <LeadNotesForm form={form} />
+        <label className="flex items-center gap-2 text-body-sm text-on-surface max-w-4xl">
+          <input
+            type="checkbox"
+            checked={form.watch('autoCreateProject') ?? false}
+            onChange={(e) => form.setValue('autoCreateProject', e.target.checked)}
+          />
+          Create project on WON
+        </label>
         <LeadFormActions
           isEdit={isEdit}
           saving={saving}

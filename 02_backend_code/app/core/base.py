@@ -12,7 +12,6 @@ Aligned with Complete_Final_Schema.md and architecture conventions:
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Optional
 
 from sqlalchemy import (
     Boolean,
@@ -21,7 +20,6 @@ from sqlalchemy import (
     Identity,
     Integer,
     MetaData,
-    Text,
     func,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -103,7 +101,7 @@ class AuditActorMixin:
     No actor_type column per locked architecture decision.
     """
 
-    created_by: Mapped[Optional[int]] = mapped_column(
+    created_by: Mapped[int | None] = mapped_column(
         Integer,
         nullable=True,
         comment="Employment ID who created this record (or SYSTEM_EMPLOYMENT_ID)",
@@ -113,7 +111,7 @@ class AuditActorMixin:
 class ChangedByMixin:
     """changed_by only (common on master + history tables)."""
 
-    changed_by: Mapped[Optional[int]] = mapped_column(
+    changed_by: Mapped[int | None] = mapped_column(
         Integer,
         nullable=True,
         comment="Employment ID who last changed this record (or SYSTEM_EMPLOYMENT_ID)",
@@ -121,7 +119,7 @@ class ChangedByMixin:
 
 
 class ArchiveMixin:
-    """Soft-archive support. Prefer archive over hard DELETE."""
+    """Canonical soft-delete support. DELETE sets is_archived=true; never hard-delete business records."""
 
     is_archived: Mapped[bool] = mapped_column(
         Boolean,
@@ -131,13 +129,13 @@ class ArchiveMixin:
         comment="Whether this record has been archived",
     )
 
-    archived_at: Mapped[Optional[datetime]] = mapped_column(
+    archived_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
         comment="Archive timestamp",
     )
 
-    archived_by: Mapped[Optional[int]] = mapped_column(
+    archived_by: Mapped[int | None] = mapped_column(
         Integer,
         nullable=True,
         comment="Employment ID who archived this record",
@@ -156,7 +154,7 @@ class EffectiveDatingMixin:
         comment="Date from which this version becomes effective",
     )
 
-    effective_to: Mapped[Optional[date]] = mapped_column(
+    effective_to: Mapped[date | None] = mapped_column(
         Date,
         nullable=True,
         comment="Date until which this version is effective (NULL = current)",

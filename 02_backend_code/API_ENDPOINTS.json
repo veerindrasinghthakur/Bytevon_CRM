@@ -1822,6 +1822,149 @@
       }
     },
     {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/kpis",
+      "operation": "payroll_kpis",
+      "response_model": "dict",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/period",
+      "operation": "payroll_period",
+      "response_model": "dict",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/activity",
+      "operation": "payroll_activity",
+      "response_model": "list[dict]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/monthly-summary",
+      "operation": "monthly_summary",
+      "response_model": "dict",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/employees",
+      "operation": "list_payroll_employees",
+      "response_model": "dict",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/history",
+      "operation": "payroll_history",
+      "response_model": "list[dict]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/employees/{employment_id}/history",
+      "operation": "employee_payroll_history",
+      "response_model": "list[dict]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/run/checks",
+      "operation": "run_checks",
+      "response_model": "list[dict]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/run/preview",
+      "operation": "run_preview",
+      "response_model": "dict",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "POST",
+      "path": "/payroll/run",
+      "operation": "run_payroll",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "POST",
+      "path": "/payroll/{payroll_id}/reject",
+      "operation": "reject_payroll",
+      "response_model": "MonthlyPayrollResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
       "module": "rbac",
       "tag": "RBAC",
       "method": "GET",

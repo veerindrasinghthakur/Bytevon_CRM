@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
@@ -29,12 +30,17 @@ function Icon({ name, className }: { name: string; className?: string }) {
 export function TeamTopView({
   team,
   activeTab,
+  onDelete,
+  isDeleting,
 }: {
   team: TeamUi
   activeTab: 'overview' | 'members' | 'projects'
+  onDelete?: () => void
+  isDeleting?: boolean
 }) {
   const navigate = useNavigate()
   const t = team
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const tabs = TEAM_TABS.map((tab) => ({
     ...tab,
@@ -73,18 +79,6 @@ export function TeamTopView({
         <div className="flex gap-2 flex-wrap">
           <Button
             variant="outline"
-            leftIcon={<Icon name="edit" />}
-            onClick={() =>
-              safeNavigate(navigate, {
-                to: projectRoutes.teamEditPath,
-                params: { teamId: t.id },
-              })
-            }
-          >
-            Edit Team
-          </Button>
-          <Button
-            variant="outline"
             leftIcon={<Icon name="person_add" />}
             onClick={() =>
               safeNavigate(navigate, {
@@ -105,8 +99,36 @@ export function TeamTopView({
               })
             }
           >
-            Assign to Project
+            Assign Project
           </Button>
+          <Button
+            variant="outline"
+            leftIcon={<Icon name="edit" />}
+            onClick={() =>
+              safeNavigate(navigate, {
+                to: projectRoutes.teamEditPath,
+                params: { teamId: t.id },
+              })
+            }
+          >
+            Edit
+          </Button>
+          {onDelete &&
+            (!confirmDelete ? (
+              <Button variant="outline" leftIcon={<Icon name="delete" />} onClick={() => setConfirmDelete(true)}>
+                Delete
+              </Button>
+            ) : (
+              <span className="inline-flex items-center gap-2 text-body-sm">
+                <span className="text-on-surface-variant">Delete this team?</span>
+                <Button variant="outline" size="sm" disabled={isDeleting} onClick={onDelete}>
+                  {isDeleting ? 'Deleting…' : 'Confirm'}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
+                  Cancel
+                </Button>
+              </span>
+            ))}
         </div>
       </div>
 

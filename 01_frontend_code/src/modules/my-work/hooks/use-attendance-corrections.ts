@@ -2,6 +2,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { toast } from '@/shared/hooks/use-toast'
 import {
   listAttendanceCorrections,
   listApproverDirectory,
@@ -113,6 +115,10 @@ export function useAttendanceCorrections() {
       void invalidate.myWorkCorrections(qc)
       setModalOpen(false)
       setReason('')
+      toast.success('Correction submitted')
+    },
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err, 'Could not submit the correction'))
     },
   })
 
@@ -121,6 +127,7 @@ export function useAttendanceCorrections() {
     const approver = approvers.find((a) => a.id === approverId)
     if (!row || !reason.trim() || !approver) return
     mutation.mutate({
+      attendanceDayId: row.id,
       date: row.date,
       originalStatus: row.status,
       requestedCheckIn: checkIn,

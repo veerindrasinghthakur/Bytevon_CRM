@@ -6,9 +6,9 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { useHolidayCalendars } from '../../hooks/settings/use-settings'
-import { createHolidayCalendar, archiveHolidayCalendar } from '../../api/organization'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { useHolidayCalendars, useRestoreHolidayCalendar } from '../../hooks/settings/use-settings'
+import { createHolidayCalendar, deleteHolidayCalendar } from '../../api/organization'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
 
@@ -36,12 +36,14 @@ export function HolidayCalendarsPage() {
     },
   })
 
-  const archiveMut = useMutation({
-    mutationFn: (id: number) => archiveHolidayCalendar(id),
+  const deleteMut = useMutation({
+    mutationFn: (id: number) => deleteHolidayCalendar(id),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: queryKeys.organization.holidays.all() })
     },
   })
+
+  const restoreMut = useRestoreHolidayCalendar()
 
   if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
@@ -123,15 +125,29 @@ export function HolidayCalendarsPage() {
             </div>
             <p className="mt-3 text-body-sm text-on-surface-variant">View holidays inside this calendar →</p>
             {!c.is_archived && (
-              <div className="mt-3 flex justify-end">
-                <ArchiveButton
+              <div className="mt-3 flex justify-end" onClick={(e) => e.preventDefault()}>
+                <DeleteButton
+                  iconOnly
                   entityLabel={c.name}
-                  mode="archive"
-                  label="Archive"
-                  size="sm"
-                  isLoading={archiveMut.isPending}
-                  onConfirm={() => archiveMut.mutateAsync(c.id)}
+                  isLoading={deleteMut.isPending}
+                  onConfirm={() => deleteMut.mutateAsync(c.id)}
                 />
+              </div>
+            )}
+            {c.is_archived && (
+              <div className="mt-3 flex justify-end" onClick={(e) => e.preventDefault()}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-secondary text-secondary hover:bg-secondary/10"
+                  leftIcon={
+                    <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                  }
+                  isLoading={restoreMut.isPending}
+                  onClick={() => restoreMut.mutate(c.id)}
+                >
+                  Restore
+                </Button>
               </div>
             )}
           </Link>

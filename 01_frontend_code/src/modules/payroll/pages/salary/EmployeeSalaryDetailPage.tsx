@@ -4,11 +4,14 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { useSalaryDetail } from '../../hooks/salary/use-salary-detail'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 
 /** Single employee gross-salary view. Revise + history links. */
 export function EmployeeSalaryDetailPage() {
   const navigate = useNavigate()
-  const { emp, structure, gross, formatMoney, isLoading } = useSalaryDetail()
+  const { emp, structure, gross, formatMoney, isLoading, detailError } = useSalaryDetail()
+
+  useDeletedRedirect({ ready: !isLoading, data: emp, error: detailError, listTo: payrollRoutes.salary })
 
   if (isLoading) {
     return <div className="p-8 text-body-md text-on-surface-variant">Loading salary…</div>

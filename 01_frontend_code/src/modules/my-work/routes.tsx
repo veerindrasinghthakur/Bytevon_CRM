@@ -5,6 +5,17 @@
 import { createRoute } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
+import { requirePermission, requireView } from '@/shared/rbac/require-permission'
+
+/**
+ * My Work is self-service — pages open on the variable grant
+ * (action on the resource at whatever scope the user holds);
+ * the backend scope-filters every record server-side.
+ */
+const requireSelfView = (resource: string) => () => requireView(resource)
+/** Submit pages need the CREATE action — at whatever scope the user holds. */
+const requireSelfCreate = (resource: string) => () =>
+  requirePermission({ action: 'CREATE', resource })
 
 const MyWorkOverviewPage = lazyPage(() => import('./pages/overview/MyWorkOverviewPage'), 'MyWorkOverviewPage')
 const MyAttendancePage = lazyPage(() => import('./pages/attendance/MyAttendancePage'), 'MyAttendancePage')
@@ -57,22 +68,103 @@ export const profileRoutes = {
 
 export function createMyWorkRoutes(appLayoutRoute: AnyRoute) {
   return [
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work', component: MyWorkOverviewPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/break', component: TakeABreakPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/attendance', component: MyAttendancePage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/attendance/mark', component: MarkAttendancePage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/attendance/corrections', component: AttendanceCorrectionsPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/attendance/$attendanceId', component: AttendanceDetailPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/leave', component: MyLeavePage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/leave/apply', component: ApplyLeavePage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/leave/$leaveId', component: LeaveDetailPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/tasks', component: MyTasksPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/tasks/new', component: MyTaskCreatePage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/tasks/$taskId', component: MyTaskDetailPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/approvals', component: MyApprovalsPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/approvals/$requestId', component: MyApprovalDetailPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/requests', component: MyRequestsPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/bank-details', component: MyBankDetailsPage }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work',
+      beforeLoad: requireSelfView('attendance'),
+      component: MyWorkOverviewPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/break',
+      beforeLoad: requireSelfCreate('attendance'),
+      component: TakeABreakPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/attendance',
+      beforeLoad: requireSelfView('attendance'),
+      component: MyAttendancePage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/attendance/mark',
+      beforeLoad: requireSelfCreate('attendance'),
+      component: MarkAttendancePage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/attendance/corrections',
+      beforeLoad: requireSelfCreate('attendance'),
+      component: AttendanceCorrectionsPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/attendance/$attendanceId',
+      beforeLoad: requireSelfView('attendance'),
+      component: AttendanceDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/leave',
+      beforeLoad: requireSelfView('leave_request'),
+      component: MyLeavePage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/leave/apply',
+      beforeLoad: requireSelfCreate('leave_request'),
+      component: ApplyLeavePage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/leave/$leaveId',
+      beforeLoad: requireSelfView('leave_request'),
+      component: LeaveDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/tasks',
+      beforeLoad: requireSelfView('task'),
+      component: MyTasksPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/tasks/new',
+      beforeLoad: requireSelfCreate('task'),
+      component: MyTaskCreatePage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/tasks/$taskId',
+      beforeLoad: requireSelfView('task'),
+      component: MyTaskDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/approvals',
+      beforeLoad: requireSelfView('approval'),
+      component: MyApprovalsPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/approvals/$requestId',
+      beforeLoad: requireSelfView('approval'),
+      component: MyApprovalDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/requests',
+      beforeLoad: requireSelfView('leave_request'),
+      component: MyRequestsPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/my-work/bank-details',
+      beforeLoad: requireSelfView('employment'),
+      component: MyBankDetailsPage,
+    }),
+    // Profile pages use backend authenticated-account checks — no RBAC grant needed.
     createRoute({ getParentRoute: () => appLayoutRoute, path: '/profile', component: ProfilePage }),
     createRoute({ getParentRoute: () => appLayoutRoute, path: '/profile/sessions', component: ActiveSessionsPage }),
     createRoute({ getParentRoute: () => appLayoutRoute, path: '/profile/change-password', component: ChangePasswordPage }),

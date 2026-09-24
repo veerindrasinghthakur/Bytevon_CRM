@@ -6,6 +6,7 @@ export {
   useLead,
   useCreateLead,
   useUpdateLead,
+  useDeleteLead,
   useLeadsList,
 } from './lead/use-leads'
 
@@ -14,6 +15,8 @@ export {
   useClient,
   useCreateClient,
   useUpdateClient,
+  useArchiveClient,
+  useClientContacts,
   useClientsList,
 } from './client/use-clients'
 

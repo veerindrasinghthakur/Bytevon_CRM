@@ -30,12 +30,22 @@ export type AdminRoleStatus = 'Active' | 'Archived'
 export type AdminRoleCategory = 'Core Role' | 'Operational' | 'Financial' | 'Standard'
 export type SecurityEventStatus = 'Success' | 'Blocked' | 'Warning'
 
+export interface RoleGrantDetail {
+  key: string
+  resource: string
+  action: string
+  scope: string
+  permission_id: number
+  scope_id: number
+}
+
 export interface AdminRole {
   id: string
   name: string
   description: string
   usersCount: number
   permissions: string[]
+  permissionDetails?: RoleGrantDetail[]
   status: AdminRoleStatus
   category: AdminRoleCategory
   coveragePct: number
@@ -81,6 +91,26 @@ export interface LeaveTypeSettingRow {
   days: string
   eligibility: string
   eligibilityStyle: string
+}
+
+/** Leave type master row — GET /leave/types (FK target for policies/requests). */
+export interface LeaveTypeRow {
+  id: number
+  code: string
+  name: string
+  description: string | null
+  is_paid: boolean
+  requires_approval: boolean
+  requires_document: boolean
+  allow_half_day: boolean
+  allow_hourly: boolean
+  is_encashable: boolean
+  default_annual_entitlement: number
+  is_active: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
 }
 
 export interface LeavePolicyRow {

@@ -1,10 +1,15 @@
 """Employee payroll routes — employees list + bank accounts."""
 from __future__ import annotations
 
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Header, Query, status
+from fastapi import APIRouter, Depends, Query, status
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.authorization import AuthContext, enforce_owner_or_grant, require_permission
+from app.core.database import get_db_session
+from app.core.serialization import enforce_sensitive_write, filter_sensitive_fields
 from app.modules.payroll.dependencies import EmployeePayrollServiceDep
 from app.modules.payroll.employee_payroll.schemas import (
     BankAccountCreate,
@@ -12,20 +17,37 @@ from app.modules.payroll.employee_payroll.schemas import (
 )
 
 router = APIRouter(prefix="/payroll", tags=["Payroll — Employee"])
-ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
 
-@router.get("/employees")
+async def _filtered_bank_response(
+    response: BankAccountResponse,
+    *,
+    auth: AuthContext,
+    session: AsyncSession,
+) -> dict:
+    payload = jsonable_encoder(response)
+    return await filter_sensitive_fields(
+        payload, resource="salary", auth=auth, session=session
+    )
+
+
+@router.get("/employees", dependencies=[Depends(require_permission("payroll", "VIEW", "ORGANIZATION"))])
 async def list_payroll_employees(
     service: EmployeePayrollServiceDep,
-    year: Optional[int] = Query(None),
-    month: Optional[int] = Query(None),
+    year: int | None = Query(None),
+    month: int | None = Query(None),
     page: int = Query(1, ge=1),
     pageSize: int = Query(20, ge=1, le=200),
-    search: Optional[str] = Query(None),
+    search: str | None = Query(None),
+    status: str | None = Query(None, description="Filter by payroll status"),
 ) -> dict[str, Any]:
     return await service.list_employees(
-        year=year, month=month, page=page, page_size=pageSize, search=search
+        year=year,
+        month=month,
+        page=page,
+        page_size=pageSize,
+        search=search,
+        status=status,
     )
 
 
@@ -37,23 +59,37 @@ async def list_payroll_employees(
 async def add_bank_account(
     body: BankAccountCreate,
     service: EmployeePayrollServiceDep,
-    actor: ActorHeader = None,
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+    auth: Annotated[AuthContext, Depends(require_permission("salary", "CREATE", "ORGANIZATION"))],
 ) -> BankAccountResponse:
-    return await service.add_bank_account(body, actor_employment_id=actor)
+    await enforce_sensitive_write(
+        body.model_dump(mode="json"), resource="salary", auth=auth, session=session
+    )
+    return await service.add_bank_account(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/bank-accounts/{employment_id}", response_model=list[BankAccountResponse])
+@router.get("/bank-accounts/{employment_id}")
 async def list_bank_accounts(
-    employment_id: int, service: EmployeePayrollServiceDep
-) -> list[BankAccountResponse]:
-    return await service.list_bank_accounts(employment_id)
+    employment_id: int,
+    service: EmployeePayrollServiceDep,
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+    # TODO(ScopeResolver): was CUSTOM; scope-union = owner OR ≥ DEPARTMENT via enforce_owner_or_grant
+    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "SELF", union=True))],
+) -> list[dict]:
+    enforce_owner_or_grant(auth, "salary", "VIEW", owner_employment_id=employment_id)
+    rows = await service.list_bank_accounts(employment_id)
+    return [await _filtered_bank_response(r, auth=auth, session=session) for r in rows]
 
 
 @router.get(
     "/bank-accounts/{employment_id}/primary",
-    response_model=BankAccountResponse,
 )
 async def get_primary_bank(
-    employment_id: int, service: EmployeePayrollServiceDep
-) -> BankAccountResponse:
-    return await service.get_primary_bank(employment_id)
+    employment_id: int,
+    service: EmployeePayrollServiceDep,
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "SELF", union=True))],
+) -> dict:
+    enforce_owner_or_grant(auth, "salary", "VIEW", owner_employment_id=employment_id)
+    row = await service.get_primary_bank(employment_id)
+    return await _filtered_bank_response(row, auth=auth, session=session)

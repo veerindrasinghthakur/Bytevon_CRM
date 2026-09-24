@@ -1,4 +1,5 @@
 /** Central enum-style maps for my-work — semantic tokens only (no raw palette utilities). */
+import { taskStatusSchema } from './task'
 
 export const priorityClass: Record<string, string> = {
   Critical: 'status-badge status-error',
@@ -13,6 +14,7 @@ export const statusDot: Record<string, string> = {
   'Not Started': 'bg-outline',
   Completed: 'bg-secondary',
   Blocked: 'bg-[var(--color-warning-amber)]',
+  Cancelled: 'bg-outline-variant',
 }
 
 /** Leave / approval request status pills */
@@ -61,12 +63,15 @@ export const LEAVE_STATUS_OPTIONS = [
   { value: 'Cancelled', label: 'Cancelled' },
 ]
 
-/** Leave type filter options (LeaveHistoryTab). */
+/** Leave type filter options — labels match the self-service mapping; the live
+ * catalog comes from GET /my-work/leave/types (leave_types master). */
 export const LEAVE_TYPE_OPTIONS = [
   { value: 'All', label: 'All Types' },
   { value: 'Casual', label: 'Casual' },
   { value: 'Sick', label: 'Sick' },
   { value: 'Earned', label: 'Earned' },
+  { value: 'Maternity', label: 'Maternity' },
+  { value: 'Paternity', label: 'Paternity' },
   { value: 'Unpaid', label: 'Unpaid' },
   { value: 'Comp Off', label: 'Comp Off' },
 ]
@@ -98,5 +103,11 @@ export const REQUEST_FILTERS = [
   'Approved',
   'Rejected',
 ] as const
+
+/** Task status dropdown options — derived from taskStatusSchema (single source). */
+export const TASK_STATUS_OPTIONS = [
+  { value: 'All', label: 'All status' },
+  ...taskStatusSchema.options.map((s) => ({ value: s, label: s })),
+]
 
 export type TaskFilter = 'open' | 'inProgress' | 'high' | null

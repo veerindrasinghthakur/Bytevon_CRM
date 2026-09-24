@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -24,7 +23,7 @@ class EmployeeSalaryCreate(BaseModel):
     employment_id: int
     effective_from: date
     gross_salary: Decimal = Field(..., ge=0)
-    items: List[SalaryItemInput] = Field(default_factory=list)
+    items: list[SalaryItemInput] = Field(default_factory=list)
 
 
 class EmployeeSalaryItemResponse(BaseModel):
@@ -36,7 +35,7 @@ class EmployeeSalaryItemResponse(BaseModel):
     amount: Decimal
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None
 
 
 class EmployeeSalaryResponse(BaseModel):
@@ -44,9 +43,9 @@ class EmployeeSalaryResponse(BaseModel):
     id: int
     employment_id: int
     effective_from: date
-    effective_to: Optional[date]
+    effective_to: date | None
     gross_salary: Decimal
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
-    items: List[EmployeeSalaryItemResponse] = Field(default_factory=list)
+    changed_by: int | None
+    items: list[EmployeeSalaryItemResponse] = Field(default_factory=list)

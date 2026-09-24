@@ -24,6 +24,10 @@ export const employmentFormSchema = z.object({
   bankName: z.string().optional().or(z.literal('')),
   accountNumber: z.string().optional().or(z.literal('')),
   ifsc: z.string().optional().or(z.literal('')),
+  createLogin: z.boolean().optional().default(false),
+  loginEmail: z.string().email('Enter a valid email').optional().or(z.literal('')),
+  loginTemporaryPassword: z.string().optional().or(z.literal('')),
+  loginRoleId: z.string().optional().or(z.literal('')),
 })
 
 export type EmploymentFormInput = z.infer<typeof employmentFormSchema>
@@ -50,6 +54,10 @@ export const emptyEmploymentForm = (): EmploymentFormInput => ({
   bankName: '',
   accountNumber: '',
   ifsc: '',
+  createLogin: false,
+  loginEmail: '',
+  loginTemporaryPassword: '',
+  loginRoleId: '',
 })
 
 /** Profile fields editable on Employee detail. */
@@ -99,6 +107,10 @@ export function toCreateEmploymentInput(form: EmploymentFormInput): CreateEmploy
     positionId: Number(form.positionId),
     locationId: Number(form.locationId),
     shiftId: Number(form.shiftId),
+    create_login: form.createLogin ?? false,
+    login_email: form.loginEmail?.trim?.() || null,
+    login_temporary_password: form.loginTemporaryPassword?.trim?.() || null,
+    login_role_id: form.loginRoleId ? Number(form.loginRoleId) : null,
     bank,
   }
 }

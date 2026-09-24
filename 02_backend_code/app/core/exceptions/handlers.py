@@ -17,6 +17,16 @@ from app.core.security.exceptions import SecurityException
 logger = logging.getLogger(__name__)
 
 
+def _json_safe(value: object) -> object:
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, dict):
+        return {str(k): _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    return str(value)
+
+
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppException)
     async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
@@ -55,7 +65,8 @@ def register_exception_handlers(app: FastAPI) -> None:
                 "error": {
                     "code": "validation_error",
                     "message": "Request validation failed",
-                    "details": exc.errors(),
+                    # exc.errors() may carry non-serializable ctx (e.g. ValueError).
+                    "details": _json_safe(exc.errors()),
                 }
             },
         )

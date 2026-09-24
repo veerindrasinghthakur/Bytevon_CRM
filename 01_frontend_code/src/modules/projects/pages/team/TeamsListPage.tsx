@@ -8,6 +8,7 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import {
   QuickSection,
   QuickStat,
@@ -20,6 +21,7 @@ import { useTeamsList } from '../../hooks/team/use-teams'
 import type { Team } from '../../types'
 import { projectRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
 import { cn } from '@/shared/lib/cn'
 import { TeamStatusOptions } from '../../enums'
 
@@ -79,6 +81,7 @@ export function TeamsListPage() {
     totalCount,
     isLoading,
     isError,
+    error,
     refetch,
     search,
     setSearch,
@@ -86,7 +89,6 @@ export function TeamsListPage() {
     setStatus,
     dateFilter,
     setDateFilter,
-    resetFilters,
   } = useTeamsList()
 
   const openTeamOverview = (t: Team) => {
@@ -114,14 +116,16 @@ export function TeamsListPage() {
         description="Manage cross-functional teams and their project assignments."
         actions={
           <div className="flex gap-2 flex-wrap">
-            <ExportButton resource="team" query={search} filenameStem="teams" />
-            <Button
-              variant="primary"
-              leftIcon={<Icon name="add" />}
-              onClick={() => safeNavigate(navigate, { to: projectRoutes.teamNew })}
-            >
-              New Team
-            </Button>
+            <ExportButton resource="project" query={search} filenameStem="teams" />
+            <Can action="CREATE" resource="project">
+              <Button
+                variant="primary"
+                leftIcon={<Icon name="add" />}
+                onClick={() => safeNavigate(navigate, { to: projectRoutes.teamNew })}
+              >
+                New Team
+              </Button>
+            </Can>
           </div>
         }
       />
@@ -165,7 +169,7 @@ export function TeamsListPage() {
             minWidthClass="min-w-[140px]"
           />
           <DateRangeFilter
-            value={{ from: dateFilter?.from, to: dateFilter?.to }}
+            value={{ from: dateFilter?.from ?? '', to: dateFilter?.to ?? '' }}
             onChange={setDateFilter}
             label="Date"
             placeholder="Date"
@@ -182,7 +186,7 @@ export function TeamsListPage() {
           <div className="p-6">
             <ErrorState
               title="Failed to load teams"
-              description="We could not load the teams list."
+              description={getApiErrorMessage(error, 'We could not load the teams list.')}
               onRetry={() => void refetch()}
             />
           </div>
@@ -197,7 +201,10 @@ export function TeamsListPage() {
                   <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Head</th>
                   <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Members</th>
                   <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Projects</th>
+                  {/* Actions column hidden — row click opens quick view → full record.
+                      Restore the block below when row actions return.
                   <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase text-right">Actions</th>
+                  */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
@@ -224,6 +231,7 @@ export function TeamsListPage() {
                     </td>
                     <td className="px-6 py-4">{t.memberCount}</td>
                     <td className="px-6 py-4">{t.projectCount}</td>
+                    {/* Quick-view button hidden with the Actions column — row click still opens it.
                     <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         type="button"
@@ -234,6 +242,7 @@ export function TeamsListPage() {
                         <Icon name="visibility" className="text-lg" />
                       </button>
                     </td>
+                    */}
                   </tr>
                 ))}
               </tbody>

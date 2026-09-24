@@ -16,6 +16,8 @@ import {
 } from '../api/my-work'
 import { myWorkRoutes } from '../routes'
 import { emptyLeaveForm, leaveFormSchema, type LeaveFormValues } from '../types'
+import { toast } from '@/shared/hooks/use-toast'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 
 function toISO(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
@@ -27,6 +29,14 @@ function todayISO() {
 }
 
 export const leaveTypeIcons: Record<string, string> = {
+  CASUAL: 'sunny',
+  SICK: 'medical_services',
+  EARNED: 'event_available',
+  LOSS_OF_PAY: 'money_off',
+  COMP_OFF: 'swap_horiz',
+  MATERNITY: 'child_care',
+  PATERNITY: 'family_restroom',
+  // Legacy display-label keys (back-compat for old cached contexts).
   Casual: 'sunny',
   Sick: 'medical_services',
   Earned: 'event_available',
@@ -105,19 +115,28 @@ export function useApplyLeave() {
     mutationFn: submitLeaveRequest,
     onSuccess: () => {
       void invalidate.myWorkLeave(qc)
+      toast.success('Leave request submitted')
       safeNavigate(navigate, { to: myWorkRoutes.leave })
+    },
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err, 'Could not submit the leave request'))
     },
   })
 
   const onSubmit = async (data: LeaveFormValues) => {
     void files
-    await submitMut.mutateAsync({
-      type: data.type,
-      from: data.from,
-      to: data.to,
-      reason: data.reason,
-      halfDay: data.halfDay,
-    })
+    try {
+      await submitMut.mutateAsync({
+        type: data.type,
+        from: data.from,
+        to: data.to,
+        reason: data.reason,
+        halfDay: data.halfDay,
+      })
+    } catch {
+      // Rejection is already surfaced via onError toast; swallow here so
+      // react-hook-form doesn't raise an uncaught promise rejection.
+    }
   }
 
   const handleSaveDraft = () => {

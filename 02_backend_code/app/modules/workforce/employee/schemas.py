@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -16,10 +15,10 @@ class MessageResponse(BaseModel):
 class PersonCreate(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
-    date_of_birth: Optional[date] = None
-    personal_email: Optional[EmailStr] = None
-    personal_phone: Optional[str] = Field(None, max_length=20)
-    address: Optional[str] = None
+    date_of_birth: date | None = None
+    personal_email: EmailStr | None = None
+    personal_phone: str | None = Field(None, max_length=20)
+    address: str | None = None
 
     @field_validator("personal_email", mode="before")
     @classmethod
@@ -30,12 +29,12 @@ class PersonCreate(BaseModel):
 
 
 class PersonUpdate(BaseModel):
-    first_name: Optional[str] = Field(None, min_length=1, max_length=100)
-    last_name: Optional[str] = Field(None, min_length=1, max_length=100)
-    date_of_birth: Optional[date] = None
-    personal_email: Optional[EmailStr] = None
-    personal_phone: Optional[str] = Field(None, max_length=20)
-    address: Optional[str] = None
+    first_name: str | None = Field(None, min_length=1, max_length=100)
+    last_name: str | None = Field(None, min_length=1, max_length=100)
+    date_of_birth: date | None = None
+    personal_email: EmailStr | None = None
+    personal_phone: str | None = Field(None, max_length=20)
+    address: str | None = None
 
     @field_validator("personal_email", mode="before")
     @classmethod
@@ -51,10 +50,10 @@ class PersonResponse(BaseModel):
     id: int
     first_name: str
     last_name: str
-    date_of_birth: Optional[date] = None
-    personal_email: Optional[str] = None
-    personal_phone: Optional[str] = None
-    address: Optional[str] = None
+    date_of_birth: date | None = None
+    personal_email: str | None = None
+    personal_phone: str | None = None
+    address: str | None = None
     is_anonymized: bool = False
     created_at: datetime
     updated_at: datetime
@@ -62,10 +61,12 @@ class PersonResponse(BaseModel):
 
 class PositionCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
+    department_id: int | None = Field(None, description="Owning department; null = unassigned")
 
 
 class PositionUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=150)
+    name: str | None = Field(None, min_length=1, max_length=150)
+    department_id: int | None = Field(None, description="Owning department; null clears")
 
 
 class PositionResponse(BaseModel):
@@ -73,6 +74,7 @@ class PositionResponse(BaseModel):
 
     id: int
     name: str
+    department_id: int | None = None
     is_archived: bool
     created_at: datetime
     updated_at: datetime
@@ -84,15 +86,21 @@ class EmploymentCreate(BaseModel):
     employment_type: EmploymentType
     joining_date: date
     initial_state: EmploymentState = EmploymentState.ONBOARDING
-    initial_state_reason: Optional[str] = None
-    department_id: Optional[int] = None
-    position_id: Optional[int] = None
-    location_id: Optional[int] = None
-    shift_id: Optional[int] = None
-    work_mode: Optional[WorkMode] = None
-    assignment_change_reason: Optional[str] = Field(
+    initial_state_reason: str | None = None
+    department_id: int | None = None
+    position_id: int | None = None
+    location_id: int | None = None
+    shift_id: int | None = None
+    work_mode: WorkMode | None = None
+    assignment_change_reason: str | None = Field(
         None, description="Required if any assignment fields are provided"
     )
+    # Q9: explicit opt-in login provisioning (default false; employment and
+    # login remain separate concepts).
+    create_login: bool = False
+    login_email: EmailStr | None = None
+    login_temporary_password: str | None = Field(None, min_length=8, max_length=128)
+    login_role_id: int | str | None = None
 
 
 class EmployeeCreate(BaseModel):
@@ -100,21 +108,26 @@ class EmployeeCreate(BaseModel):
 
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
-    date_of_birth: Optional[date] = None
-    personal_email: Optional[EmailStr] = None
-    personal_phone: Optional[str] = Field(None, max_length=20)
-    address: Optional[str] = None
-    employee_code: Optional[str] = Field(None, min_length=1, max_length=50)
+    date_of_birth: date | None = None
+    personal_email: EmailStr | None = None
+    personal_phone: str | None = Field(None, max_length=20)
+    address: str | None = None
+    employee_code: str | None = Field(None, min_length=1, max_length=50)
     employment_type: EmploymentType
     joining_date: date
     initial_state: EmploymentState = EmploymentState.ONBOARDING
-    initial_state_reason: Optional[str] = None
-    department_id: Optional[int] = None
-    position_id: Optional[int] = None
-    location_id: Optional[int] = None
-    shift_id: Optional[int] = None
-    work_mode: Optional[WorkMode] = None
-    assignment_change_reason: Optional[str] = None
+    initial_state_reason: str | None = None
+    department_id: int | None = None
+    position_id: int | None = None
+    location_id: int | None = None
+    shift_id: int | None = None
+    work_mode: WorkMode | None = None
+    assignment_change_reason: str | None = None
+    # Q9: explicit opt-in login provisioning (default false).
+    create_login: bool = False
+    login_email: EmailStr | None = None
+    login_temporary_password: str | None = Field(None, min_length=8, max_length=128)
+    login_role_id: int | str | None = None
 
     @field_validator("personal_email", mode="before")
     @classmethod
@@ -132,8 +145,30 @@ class EmployeeCreate(BaseModel):
 
 
 class EmploymentUpdate(BaseModel):
-    employment_type: Optional[EmploymentType] = None
-    employee_code: Optional[str] = Field(None, min_length=1, max_length=50)
+    employment_type: EmploymentType | None = None
+    employee_code: str | None = Field(None, min_length=1, max_length=50)
+
+
+class RehireRequest(BaseModel):
+    """Q7: rehire a separated employment (same Person, new Employment row)."""
+
+    employee_code: str = Field(..., min_length=1, max_length=50)
+    employment_type: EmploymentType
+    joining_date: date
+    initial_state: EmploymentState = EmploymentState.ONBOARDING
+    initial_state_reason: str | None = None
+    department_id: int | None = None
+    position_id: int | None = None
+    location_id: int | None = None
+    shift_id: int | None = None
+    work_mode: WorkMode | None = None
+    assignment_change_reason: str | None = None
+    # Q7: reactivate the person's existing login where appropriate.
+    reactivate_login: bool = True
+    create_login: bool = False
+    login_email: EmailStr | None = None
+    login_temporary_password: str | None = Field(None, min_length=8, max_length=128)
+    login_role_id: int | str | None = None
 
 
 class EmploymentResponse(BaseModel):
@@ -147,7 +182,17 @@ class EmploymentResponse(BaseModel):
     joining_date: date
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int] = None
+    changed_by: int | None = None
+    # Current-assignment display fields (joined; optional for back-compat).
+    person_name: str | None = None
+    department_id: int | None = None
+    department_name: str | None = None
+    position_id: int | None = None
+    position_name: str | None = None
+    location_id: int | None = None
+    location_name: str | None = None
+    shift_id: int | None = None
+    shift_name: str | None = None
 
 
 class EmploymentAssignmentResponse(BaseModel):
@@ -155,16 +200,16 @@ class EmploymentAssignmentResponse(BaseModel):
 
     id: int
     employment_id: int
-    department_id: Optional[int] = None
-    position_id: Optional[int] = None
-    location_id: Optional[int] = None
-    shift_id: Optional[int] = None
+    department_id: int | None = None
+    position_id: int | None = None
+    location_id: int | None = None
+    shift_id: int | None = None
     work_mode: WorkMode
     effective_from: date
-    effective_to: Optional[date] = None
+    effective_to: date | None = None
     change_reason: str
     created_at: datetime
-    changed_by: Optional[int] = None
+    changed_by: int | None = None
 
 
 class EmploymentStateHistoryResponse(BaseModel):
@@ -172,15 +217,15 @@ class EmploymentStateHistoryResponse(BaseModel):
 
     id: int
     employment_id: int
-    previous_state: Optional[EmploymentState] = None
+    previous_state: EmploymentState | None = None
     new_state: EmploymentState
     effective_date: date
-    reason: Optional[str] = None
+    reason: str | None = None
     created_at: datetime
-    changed_by: Optional[int] = None
+    changed_by: int | None = None
 
 
 class EmploymentDetailResponse(EmploymentResponse):
-    current_assignment: Optional[EmploymentAssignmentResponse] = None
-    recent_state_history: List[EmploymentStateHistoryResponse] = Field(default_factory=list)
-    person: Optional[PersonResponse] = None
+    current_assignment: EmploymentAssignmentResponse | None = None
+    recent_state_history: list[EmploymentStateHistoryResponse] = Field(default_factory=list)
+    person: PersonResponse | None = None

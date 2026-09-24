@@ -1,7 +1,7 @@
 /**
  * Admin org masters barrel — re-exports domain APIs + settings.
  * Prefer importing from domain files (location, shift, …) in new code.
- * All real API paths are under /admin/*.
+ * Shift masters moved to workforce (paths under /workforce/shifts).
  */
 export { asList } from './_org-helpers'
 export {
@@ -9,6 +9,8 @@ export {
   getLocation,
   createLocation,
   updateLocation,
+  deleteLocation,
+  restoreLocation,
   archiveLocation,
   type LocationCreateInput,
 } from './location'
@@ -17,8 +19,10 @@ export {
   getShift,
   createShift,
   updateShift,
+  deleteShift,
+  restoreShift,
   archiveShift,
-} from './shift'
+} from '@/modules/workforce/api/shift'
 export {
   getWorkingWeeks,
   createWorkingWeek,
@@ -30,6 +34,9 @@ export {
   getHolidayCalendar,
   createHolidayCalendar,
   updateHolidayCalendar,
+  deleteHolidayCalendar,
+  restoreCalendar,
+  restoreHolidayCalendar,
   archiveHolidayCalendar,
   getHolidays,
   createHoliday,
@@ -41,9 +48,11 @@ export {
   getPosition,
   createPosition,
   updatePosition,
+  deletePosition,
+  restorePosition,
   archivePosition,
 } from './position'
-export { getSchemaDepartments } from './department'
+export { listDepartments as getSchemaDepartments } from '@/modules/workforce/api/departments'
 
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'

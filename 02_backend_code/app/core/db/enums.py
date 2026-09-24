@@ -10,7 +10,7 @@ from __future__ import annotations
 from enum import Enum
 
 
-class StrEnum(str, Enum):
+class StrEnum(str, Enum):  # noqa: UP042 -- intentional backport: adds values() helper used by sales routes; stdlib StrEnum lacks it
     def __str__(self) -> str:
         return self.value
 
@@ -143,6 +143,23 @@ class LeaveType(StrEnum):
     COMP_OFF = "COMP_OFF"
 
 
+# Single source for display labels — edit here only when leave types change.
+LEAVE_TYPE_LABELS: dict[str, str] = {
+    LeaveType.CASUAL: "Casual",
+    LeaveType.SICK: "Sick",
+    LeaveType.EARNED: "Earned",
+    LeaveType.MATERNITY: "Maternity",
+    LeaveType.PATERNITY: "Paternity",
+    LeaveType.LOSS_OF_PAY: "Unpaid",
+    LeaveType.COMP_OFF: "Comp Off",
+}
+
+
+def leave_type_label(code: str | LeaveType) -> str:
+    key = code.value if isinstance(code, LeaveType) else str(code)
+    return LEAVE_TYPE_LABELS.get(key, key.replace("_", " ").title())
+
+
 class LeaveRequestStatus(StrEnum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
@@ -153,6 +170,7 @@ class LeaveRequestStatus(StrEnum):
 class LeaveLedgerTransactionType(StrEnum):
     ENTITLEMENT = "ENTITLEMENT"
     ACCRUAL = "ACCRUAL"
+    HOLD = "HOLD"
     CONSUMPTION = "CONSUMPTION"
     CARRY_FORWARD = "CARRY_FORWARD"
     ADJUSTMENT = "ADJUSTMENT"

@@ -10,6 +10,8 @@ import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { EntitySearch } from '@/shared/components/forms/EntitySearch'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
+import { Can } from '@/shared/rbac'
 import { useTaskDetail } from '../../hooks/task/use-task-detail'
 import { TaskStatusBadge, TaskPriorityLabel } from '../../components/task/TaskStatusBadge'
 import { TaskDetailSidebar } from '../../components/task/TaskDetailSidebar'
@@ -24,6 +26,7 @@ export function TaskDetailPage() {
     task,
     isLoading,
     isError,
+    detailError,
     refetch,
     isEditing,
     form,
@@ -41,6 +44,8 @@ export function TaskDetailPage() {
     teamId,
     needsTeam,
   } = useTaskDetail(Number.isFinite(id) ? id : undefined)
+
+  useDeletedRedirect({ ready: !isLoading, data: task, error: detailError, listTo: projectRoutes.tasks })
 
   useEffect(() => {
     if (search.edit === '1' && task && !isEditing) startEditing()
@@ -106,7 +111,9 @@ export function TaskDetailPage() {
               <TaskPriorityLabel priority={task.priority} />
               <TaskStatusBadge status={task.status} />
               <div className="flex items-center gap-2">
-                <EditButton onClick={startEditing} />
+                <Can action="UPDATE" resource="task">
+                  <EditButton onClick={startEditing} />
+                </Can>
                 <RefreshButton iconOnly onClick={() => refetch()} size="md" />
               </div>
             </div>

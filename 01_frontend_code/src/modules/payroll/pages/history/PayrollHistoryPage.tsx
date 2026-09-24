@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { queryKeys } from '@/shared/lib/query-keys'
 import { formatMoney } from '@/shared/mock/data/payroll'
-import { listOrgPayrollHistory } from '../../api/history'
-import { getPayrollEmployee } from '../../api/monthly'
+import { usePayrollHistory, useHistoryEmployee } from '../../hooks/history/use-payroll-history'
 import { payrollHistoryStatusStyles } from '../../schemas/enums'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
@@ -16,12 +13,9 @@ export function PayrollHistoryPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
 
-  const historyQuery = useQuery({
-    queryKey: [...queryKeys.payroll.runs({ scope: 'org-history' }), search],
-    queryFn: () => listOrgPayrollHistory(search || undefined),
-  })
+  const historyQuery = usePayrollHistory(search)
 
-  const records = historyQuery.data ?? []
+  const records = historyQuery.records
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -98,6 +92,7 @@ function HistoryRow({
 }: {
   record: {
     id: string
+    payrollId?: string
     period: string
     employeeId: string
     paidOn: string
@@ -107,11 +102,7 @@ function HistoryRow({
   }
   navigate: ReturnType<typeof useNavigate>
 }) {
-  const empQuery = useQuery({
-    queryKey: queryKeys.payroll.employees.detail(record.employeeId),
-    queryFn: () => getPayrollEmployee(record.employeeId),
-    staleTime: 60_000,
-  })
+  const empQuery = useHistoryEmployee(record.employeeId)
   const emp = empQuery.data
 
   return (
@@ -148,7 +139,7 @@ function HistoryRow({
             onClick={() =>
               safeNavigate(navigate, {
                 to: payrollRoutes.payslipPath,
-                params: { employeeId: record.employeeId },
+                params: { payrollId: record.payrollId ?? record.id },
               })
             }
           >

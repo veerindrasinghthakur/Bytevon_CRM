@@ -5,8 +5,11 @@ import { formatMoney } from '@/shared/mock/data/payroll'
 import { getPayslip } from '../../api/payslip'
 
 export function usePayslip() {
-  const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
-  const id = employeeId ?? ''
+  const { payrollId, employeeId } = useParams({ strict: false }) as {
+    payrollId?: string
+    employeeId?: string
+  }
+  const id = payrollId ?? employeeId ?? ''
 
   const query = useQuery({
     queryKey: queryKeys.payroll.payslip(id),

@@ -1,7 +1,12 @@
 import { useMemo } from 'react'
 import { Button } from '@/shared/components/ui/Button'
-import { leaveRequests } from '../../data/mock'
 import { useLeaveCalculations } from '../../hooks/useLeaveCalculations'
+import type { LeaveHistoryRow } from '../../types'
+
+type CalendarLeave = Pick<
+  LeaveHistoryRow,
+  'id' | 'type' | 'from' | 'to' | 'status' | 'reason'
+>
 
 function toISO(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
@@ -12,14 +17,22 @@ function todayISO() {
   return toISO(n.getFullYear(), n.getMonth(), n.getDate())
 }
 
+function formatHoliday(iso: string, name: string) {
+  const d = new Date(iso + 'T12:00:00')
+  if (Number.isNaN(d.getTime())) return name || iso
+  return `${d.toLocaleString('default', { month: 'short' })} ${d.getDate()}, ${d.getFullYear()}`
+}
+
 export function LeaveCalendarTab({
   calMonth,
   setCalMonth,
   totalRemaining,
+  requests,
 }: {
   calMonth: Date
   setCalMonth: (d: Date) => void
   totalRemaining: number
+  requests: CalendarLeave[]
 }) {
   const { holidays } = useLeaveCalculations()
   const cy = calMonth.getFullYear()
@@ -29,13 +42,21 @@ export function LeaveCalendarTab({
   const monthLabel = calMonth.toLocaleString('default', { month: 'long', year: 'numeric' })
   const today = todayISO()
 
+  const nextHoliday = useMemo(() => {
+    const upcoming = Object.entries(holidays)
+      .filter(([iso]) => iso >= today)
+      .sort(([a], [b]) => (a < b ? -1 : 1))[0]
+    if (!upcoming) return null
+    return formatHoliday(upcoming[0], upcoming[1])
+  }, [holidays, today])
+
   const calendarCells = useMemo(() => {
     const cells: {
       day: number | null
       iso: string | null
       weekend: boolean
       holiday?: string
-      leaves: typeof leaveRequests
+      leaves: CalendarLeave[]
       isToday: boolean
     }[] = []
     for (let i = 0; i < firstDow; i++) {
@@ -44,7 +65,7 @@ export function LeaveCalendarTab({
     for (let d = 1; d <= daysInMonth; d++) {
       const iso = toISO(cy, cm, d)
       const dow = new Date(cy, cm, d).getDay()
-      const leaves = leaveRequests.filter(
+      const leaves = requests.filter(
         (r) =>
           (r.status === 'Approved' || r.status === 'Pending') && iso >= r.from && iso <= r.to,
       )
@@ -213,7 +234,7 @@ export function LeaveCalendarTab({
           <div>
             <p className="text-label-sm text-on-surface-variant">Your pending</p>
             <p className="text-headline-md font-bold text-on-background">
-              {leaveRequests.filter((r) => r.status === 'Pending').length} request(s)
+              {requests.filter((r) => r.status === 'Pending').length} request(s)
             </p>
           </div>
         </div>
@@ -232,7 +253,7 @@ export function LeaveCalendarTab({
           </div>
           <div>
             <p className="text-label-sm text-on-surface-variant">Next holiday</p>
-            <p className="text-headline-md font-bold text-on-background">Aug 15, 2026</p>
+            <p className="text-headline-md font-bold text-on-background">{nextHoliday ?? '—'}</p>
           </div>
         </div>
       </div>

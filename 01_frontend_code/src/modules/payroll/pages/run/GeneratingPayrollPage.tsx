@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { payrollRoutes } from '../../routes'
+import { getRunPayrollPreview } from '../../api/run'
 import { cn } from '@/shared/lib/cn'
 
 const STEPS = [
@@ -12,12 +14,36 @@ const STEPS = [
 
 export function GeneratingPayrollPage() {
   const navigate = useNavigate()
-  const [pct, setPct] = useState(0)
+  const search = useSearch({ strict: false }) as { year?: number | string; month?: number | string }
+  const now = new Date()
+  const year = Number(search.year ?? now.getFullYear())
+  const month = Number(search.month ?? now.getMonth() + 1)
 
+  // Poll the real run preview until calculated rows for the period appear.
+  const previewQuery = useQuery({
+    queryKey: ['payroll', 'run', 'verify', year, month],
+    queryFn: () => getRunPayrollPreview({ year, month }),
+    refetchInterval: (query) =>
+      query.state.data?.employees?.length ? false : 2000,
+    retry: 1,
+  })
+  const employeeCount = previewQuery.data?.employees.length
+  const done = (employeeCount ?? 0) > 0
+  const failed = previewQuery.isError
+
+  const [pct, setPct] = useState(12)
   useEffect(() => {
+    if (done) {
+      setPct(100)
+      const t = setTimeout(
+        () => safeNavigate(navigate, { to: payrollRoutes.monthly }),
+        1200,
+      )
+      return () => clearTimeout(t)
+    }
     const t = setTimeout(() => setPct(68), 400)
     return () => clearTimeout(t)
-  }, [])
+  }, [done, navigate])
 
   const circumference = 2 * Math.PI * 54
   const offset = circumference - (pct / 100) * circumference
@@ -89,11 +115,24 @@ export function GeneratingPayrollPage() {
         </div>
 
         <h2 className="text-headline-lg font-semibold text-on-background mb-2 animate-pulse">
-          Generating Monthly Payroll...
+          {failed
+            ? 'Payroll run needs attention'
+            : done
+              ? 'Payroll generated'
+              : 'Generating Monthly Payroll...'}
         </h2>
         <p className="text-body-md text-on-surface-variant max-w-md mx-auto mb-8">
-          Calculating earnings, deductions, and tax contributions for{' '}
-          <span className="font-bold text-on-surface">142</span> employees.
+          {failed ? (
+            <>Could not verify generated rows for this period. You can retry from Run Payroll.</>
+          ) : (
+            <>
+              Calculating earnings, deductions, and tax contributions for{' '}
+              <span className="font-bold text-on-surface">
+                {employeeCount ?? '…'}
+              </span>{' '}
+              employees.
+            </>
+          )}
         </p>
 
         <div className="w-full bg-surface-container-low rounded-lg p-6 border border-outline-variant/50 text-left">

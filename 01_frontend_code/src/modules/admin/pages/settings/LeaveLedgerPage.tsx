@@ -1,16 +1,11 @@
 import { useParams } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/shared/lib/cn'
-import { listLeaveLedger } from '../../api/leave'
-import { queryKeys } from '@/shared/lib/query-keys'
+import { useLeaveLedger } from '../../hooks/leave/use-leave-ledger'
 
 export function LeaveLedgerPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
 
-  const { data: ledger = [], isLoading } = useQuery({
-    queryKey: queryKeys.admin.leave.ledger({ employeeId: employeeId ?? 'all' }),
-    queryFn: () => listLeaveLedger(employeeId),
-  })
+  const { ledger, isLoading } = useLeaveLedger(employeeId)
 
   return (
     <div className="space-y-6 animate-fade-in">

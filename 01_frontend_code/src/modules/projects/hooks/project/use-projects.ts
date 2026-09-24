@@ -174,7 +174,7 @@ export function useProjectsList() {
     filterDefaults: FILTER_DEFAULTS,
   })
 
-  const { data, isLoading, isFetching, isError, refetch } = useProjects({
+  const { data, isLoading, isFetching, isError, error, refetch } = useProjects({
     search: controls.debouncedSearch.trim() || undefined,
     status: controls.filters.status || undefined,
     page: controls.page,
@@ -215,6 +215,7 @@ export function useProjectsList() {
     isLoading,
     isFetching,
     isError,
+    error,
     refetch,
     selection,
   }

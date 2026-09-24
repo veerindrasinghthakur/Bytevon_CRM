@@ -28,6 +28,10 @@ export interface AuthUser {
   /** Schema employment PK for RBAC + My Work */
   employmentId: number
   personId: number
+  /** Backend login PK — required for X-Login-Id account endpoints */
+  loginId: number
+  /** Backend session PK for THIS DEVICE - used to mark/revoke sessions */
+  sessionId?: number | null
 }
 
 export interface AuthSession {

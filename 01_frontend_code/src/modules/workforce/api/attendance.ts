@@ -23,10 +23,40 @@ import type {
   TodayAttendanceRow,
 } from '../types'
 
-export async function getAttendanceDashboard(): Promise<AttendanceDashboardData> {
+export async function getAttendanceDashboard(params?: {
+  employment_id?: number
+  from_date?: string
+  to_date?: string
+  year?: number
+  month?: number
+}): Promise<AttendanceDashboardData> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<AttendanceDashboardData>('/attendance/dashboard')
-    return data
+    // Scope-based aggregate (SELF default, drill-down via employment_id).
+    const { data } = await apiClient.get<{
+      totals?: { present?: number; absent?: number; half?: number; onLeave?: number }
+      rates?: { attendancePct?: number }
+      hours?: { worked?: number }
+      week?: Array<{ date?: string; status?: string; minutes?: number }>
+      corrections?: { pending?: number; total?: number }
+    }>('/dashboard/attendance', { params })
+    const totals = data.totals ?? {}
+    const week = Array.isArray(data.week) ? data.week : []
+    return {
+      kpis: [
+        { key: 'present', label: 'Present', value: Number(totals.present ?? 0), hint: '', icon: 'check_circle' },
+        { key: 'absent', label: 'Absent', value: Number(totals.absent ?? 0), hint: '', icon: 'cancel' },
+        { key: 'attendancePct', label: 'Attendance %', value: Number(data.rates?.attendancePct ?? 0), hint: '', icon: 'percent' },
+        { key: 'worked', label: 'Hours worked', value: Number(data.hours?.worked ?? 0), hint: '', icon: 'schedule' },
+      ],
+      weekly: week.map((d) => ({
+        day: String(d.date ?? ''),
+        thisWeek: d.status === 'PRESENT' ? 1 : 0,
+        lastWeek: 0,
+      })),
+      recentCheckIns: [],
+      today: [],
+      corrections: [],
+    } as unknown as AttendanceDashboardData
   }
   await delay()
   return {
@@ -44,7 +74,7 @@ export async function listTodayAttendance(params?: {
 }): Promise<{ items: TodayAttendanceRow[]; total: number }> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ items: TodayAttendanceRow[]; total: number }>(
-      '/attendance/today',
+      '/workforce/attendance/today',
       { params },
     )
     return data
@@ -68,7 +98,7 @@ export async function getAttendanceById(attendanceId: string): Promise<Attendanc
   if (!env.useMockApi) {
     try {
       const { data } = await apiClient.get<AttendanceDetailData>(
-        `/attendance/days/${attendanceId}`,
+        `/workforce/attendance/days/${attendanceId}`,
       )
       return data
     } catch {
@@ -87,7 +117,7 @@ export async function getAttendanceDayDetail(
 ): Promise<AttendanceDayDetailData> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<AttendanceDayDetailData>(
-      `/attendance/days/by-employment/${employmentId}`,
+      `/workforce/attendance/days/by-employment/${employmentId}`,
       { params: { date } },
     )
     return data
@@ -113,48 +143,113 @@ export async function listAttendanceCorrections(): Promise<CorrectionRow[]> {
   return seedCorrections.map((c) => ({ ...c }))
 }
 
-export async function deleteWorkingWeek(id: number): Promise<void> {
-  if (!env.useMockApi) {
-    await apiClient.delete(`/organization/working-weeks/${id}`)
-    return
-  }
-  // await delay()
-  // const db = getDb()
-  // db.schema_working_weeks = db.schema_working_weeks.filter((w) => w.id !== id)
+export interface AttendanceDayRow {
+  id: number
+  employment_id: number
+  shift_id: number | null
+  attendance_date: string
+  status: string
+  working_hours: number | null
 }
 
-export async function archiveHolidayCalendar(id: number): Promise<void> {
+/** Org-wide day rows in [from_date, to_date] (backend range endpoint). */
+export async function listDaysInRange(
+  fromDate: string,
+  toDate: string,
+): Promise<AttendanceDayRow[]> {
   if (!env.useMockApi) {
-    await apiClient.post(`/organization/holiday-calendars/${id}/archive`)
-    return
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+      '/workforce/attendance/days/by-date-range',
+      { params: { from_date: fromDate, to_date: toDate } },
+    )
+    return (Array.isArray(data) ? data : []).map((r) => ({
+      id: Number(r.id),
+      employment_id: Number(r.employment_id),
+      shift_id: r.shift_id != null ? Number(r.shift_id) : null,
+      attendance_date: String(r.attendance_date ?? '').slice(0, 10),
+      status: String(r.status ?? ''),
+      working_hours: r.working_hours != null ? Number(r.working_hours) : null,
+    }))
   }
   await delay()
-  // const db = getDb()
-  // const calendar = db.schema_holiday_calendars.find((c) => c.id === id)
-  // if (calendar) {
-  //   calendar.is_archived = true
-  // }
+  // Mock: project today's seed rows onto the requested dates.
+  const days: string[] = []
+  for (let d = new Date(`${fromDate}T00:00:00`); d <= new Date(`${toDate}T00:00:00`); d.setDate(d.getDate() + 1)) {
+    days.push(d.toISOString().slice(0, 10))
+  }
+  return days.flatMap((day, di) =>
+    seedToday.map((r, i) => ({
+      id: di * 100 + i + 1,
+      employment_id: i + 1,
+      shift_id: null,
+      attendance_date: day,
+      status: r.status,
+      working_hours: r.hours && r.hours !== '—' ? Number.parseFloat(r.hours) || null : null,
+    })),
+  )
 }
 
-export async function deleteHoliday(id: number): Promise<void> {
-  if (!env.useMockApi) {
-    await apiClient.delete(`/organization/holidays/${id}`)
-    return
-  }
-  // await delay()
-  // const db = getDb()
-  // db.schema_holidays = db.schema_holidays.filter((h) => h.id !== id)
+export interface PendingCorrection {
+  id: number
+  attendance_day_id: number
+  employment_id: number | null
+  employment_name: string | null
+  attendance_date: string | null
+  requested_check_in: string | null
+  requested_check_out: string | null
+  reason: string
+  approval_request_id: number | null
+  status: string
+  created_at: string
 }
 
-export async function archiveLocation(id: number): Promise<void> {
+/** Org-wide pending corrections (backend pending endpoint). */
+export async function listPendingCorrections(): Promise<PendingCorrection[]> {
   if (!env.useMockApi) {
-    await apiClient.post(`/organization/locations/${id}/archive`)
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+      '/workforce/attendance/corrections/pending',
+    )
+    return (Array.isArray(data) ? data : []).map((r) => ({
+      id: Number(r.id),
+      attendance_day_id: Number(r.attendance_day_id),
+      employment_id: r.employment_id != null ? Number(r.employment_id) : null,
+      employment_name: (r.employment_name as string | undefined) ?? null,
+      attendance_date: r.attendance_date ? String(r.attendance_date).slice(0, 10) : null,
+      requested_check_in: (r.requested_check_in as string | undefined) ?? null,
+      requested_check_out: (r.requested_check_out as string | undefined) ?? null,
+      reason: String(r.reason ?? ''),
+      approval_request_id:
+        r.approval_request_id != null ? Number(r.approval_request_id) : null,
+      status: String(r.status ?? ''),
+      created_at: String(r.created_at ?? ''),
+    }))
+  }
+  await delay()
+  return seedCorrections.map((c, i) => ({
+    id: Number(c.id.replace(/\D/g, '')) || i + 1,
+    attendance_day_id: i + 1,
+    employment_id: i + 1,
+    employment_name: c.name,
+    attendance_date: null,
+    requested_check_in: null,
+    requested_check_out: null,
+    reason: c.note,
+    approval_request_id: null,
+    status: 'PENDING',
+    created_at: new Date().toISOString(),
+  }))
+}
+
+/** Approve / reject a correction via its linked approval request. */
+export async function decideCorrection(
+  approvalRequestId: number,
+  decision: 'approve' | 'reject',
+): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(`/approvals/${approvalRequestId}/${decision}`, {})
     return
   }
-  // await delay()
-  // const db = getDb()
-  // const location = db.schema_locations.find((l) => l.id === id)
-  // if (location) {
-  //   location.is_archived = true
-  // }
+  await delay(300)
 }
+
+

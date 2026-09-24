@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +15,7 @@ class TaskRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def get_task_by_id(self, task_id: int) -> Optional[Task]:
+    async def get_task_by_id(self, task_id: int) -> Task | None:
         stmt = select(Task).where(Task.id == task_id)
         return await self.scalar_one_or_none(stmt)
 
@@ -26,8 +26,8 @@ class TaskRepository(BaseRepository):
     async def list_all_tasks(
         self,
         *,
-        project_id: Optional[int] = None,
-        project_ids: Optional[Sequence[int]] = None,
+        project_id: int | None = None,
+        project_ids: Sequence[int] | None = None,
         limit: int = 200,
         offset: int = 0,
     ) -> Sequence[Task]:
@@ -60,7 +60,7 @@ class TaskRepository(BaseRepository):
 
     async def get_time_entry(
         self, task_id: int, employment_id: int, work_date
-    ) -> Optional[TaskTimeEntry]:
+    ) -> TaskTimeEntry | None:
         stmt = select(TaskTimeEntry).where(
             TaskTimeEntry.task_id == task_id,
             TaskTimeEntry.employment_id == employment_id,

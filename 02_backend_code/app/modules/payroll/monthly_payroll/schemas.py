@@ -3,9 +3,8 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.core.db.enums import PayrollItemType, PayrollStatus, SalaryItemType
 
@@ -24,13 +23,13 @@ class PayrollCalculateRequest(BaseModel):
     employment_id: int
     year: int = Field(..., ge=2000, le=2100)
     month: int = Field(..., ge=1, le=12)
-    adjustments: List[SalaryItemInput] = Field(default_factory=list)
+    adjustments: list[SalaryItemInput] = Field(default_factory=list)
 
 
 class PayrollPaymentRequest(BaseModel):
     payment_method: str = Field(..., min_length=1, max_length=50)
-    payment_reference: Optional[str] = None
-    payment_date: Optional[date] = None
+    payment_reference: str | None = None
+    payment_date: date | None = None
 
 
 class MonthlyPayrollItemResponse(BaseModel):
@@ -40,12 +39,14 @@ class MonthlyPayrollItemResponse(BaseModel):
     name: str
     type: PayrollItemType
     amount: Decimal
-    description: Optional[str]
+    description: str | None
 
 
 class MonthlyPayrollResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    # Alias of id for list/history consumers (review/payslip routes use payroll_id).
+    payroll_id: int | None = Field(default=None)
     employment_id: int
     year: int
     month: int
@@ -54,12 +55,18 @@ class MonthlyPayrollResponse(BaseModel):
     total_deductions: Decimal
     net_salary: Decimal
     status: PayrollStatus
-    payment_method: Optional[str]
-    payment_reference: Optional[str]
-    payment_date: Optional[date]
-    payable_days: Optional[Decimal]
-    lop_days: Optional[Decimal]
+    payment_method: str | None
+    payment_reference: str | None
+    payment_date: date | None
+    payable_days: Decimal | None
+    lop_days: Decimal | None
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
-    items: List[MonthlyPayrollItemResponse] = Field(default_factory=list)
+    changed_by: int | None
+    items: list[MonthlyPayrollItemResponse] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _fill_payroll_id(self) -> "MonthlyPayrollResponse":
+        if self.payroll_id is None:
+            self.payroll_id = self.id
+        return self

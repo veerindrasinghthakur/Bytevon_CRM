@@ -1,0 +1,4945 @@
+{
+ "api_prefix": "/api/v1",
+ "counts": {
+  "TOTAL_ENDPOINTS": 276,
+  "PUBLIC_BY_DESIGN": 9,
+  "JWT_ENFORCED": 267,
+  "OPTIONAL_AUTH": 0,
+  "NONE_ENFORCED": 0,
+  "WRITE_ENDPOINTS": 142,
+  "DUPLICATE_ROUTES": 0,
+  "LIVE_OPENAPI_TOTAL": 278,
+  "PUBLIC_ENDPOINTS": 9,
+  "PROTECTED_ENDPOINTS": 267
+ },
+ "endpoints": [
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/audit/archive",
+   "full_path": "/api/v1/admin/audit/archive",
+   "stub_shadowed": false,
+   "handler": "archive_old_logs",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/audit/routes.py",
+   "source_line": 59,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_audit_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ArchiveResult",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/audit/logs",
+   "full_path": "/api/v1/admin/audit/logs",
+   "stub_shadowed": false,
+   "handler": "list_logs",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/audit/routes.py",
+   "source_line": 30,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_audit_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/audit/logs",
+   "full_path": "/api/v1/admin/audit/logs",
+   "stub_shadowed": false,
+   "handler": "create_log",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/audit/routes.py",
+   "source_line": 25,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_audit_create_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "Optional",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/audit/logs/{log_id}",
+   "full_path": "/api/v1/admin/audit/logs/{log_id}",
+   "stub_shadowed": false,
+   "handler": "get_log",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/audit/routes.py",
+   "source_line": 54,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_audit_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "AuditLogResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/employments-without-login",
+   "full_path": "/api/v1/admin/employments-without-login",
+   "stub_shadowed": false,
+   "handler": "list_employments_without_login",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 55,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/holiday-calendars",
+   "full_path": "/api/v1/admin/holiday-calendars",
+   "stub_shadowed": false,
+   "handler": "get_holiday_calendars",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "source_line": 26,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_holiday_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/holiday-calendars",
+   "full_path": "/api/v1/admin/holiday-calendars",
+   "stub_shadowed": false,
+   "handler": "create_calendar",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "source_line": 22,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_holiday_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "HolidayCalendarResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/admin/holiday-calendars/holidays/{holiday_id}",
+   "full_path": "/api/v1/admin/holiday-calendars/holidays/{holiday_id}",
+   "stub_shadowed": false,
+   "handler": "delete_holiday",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "source_line": 54,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_holiday_delete_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/admin/holiday-calendars/holidays/{holiday_id}",
+   "full_path": "/api/v1/admin/holiday-calendars/holidays/{holiday_id}",
+   "stub_shadowed": false,
+   "handler": "update_holiday",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "source_line": 50,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_holiday_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "HolidayResponse",
+   "status_code": null
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/admin/holiday-calendars/{calendar_id}",
+   "full_path": "/api/v1/admin/holiday-calendars/{calendar_id}",
+   "stub_shadowed": false,
+   "handler": "delete_holiday_calendar",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "source_line": 46,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_holiday_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": 200
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/holiday-calendars/{calendar_id}",
+   "full_path": "/api/v1/admin/holiday-calendars/{calendar_id}",
+   "stub_shadowed": false,
+   "handler": "get_holiday_calendar",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "source_line": 30,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_holiday_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "HolidayCalendarResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/admin/holiday-calendars/{calendar_id}",
+   "full_path": "/api/v1/admin/holiday-calendars/{calendar_id}",
+   "stub_shadowed": false,
+   "handler": "update_holiday_calendar",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "source_line": 34,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_holiday_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "HolidayCalendarResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/holiday-calendars/{calendar_id}/holidays",
+   "full_path": "/api/v1/admin/holiday-calendars/{calendar_id}/holidays",
+   "stub_shadowed": false,
+   "handler": "get_holidays",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "source_line": 46,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_holiday_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/holiday-calendars/{calendar_id}/holidays",
+   "full_path": "/api/v1/admin/holiday-calendars/{calendar_id}/holidays",
+   "stub_shadowed": false,
+   "handler": "create_holiday",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "source_line": 42,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_holiday_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "HolidayResponse",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/holiday-calendars/{calendar_id}/restore",
+   "full_path": "/api/v1/admin/holiday-calendars/{calendar_id}/restore",
+   "stub_shadowed": false,
+   "handler": "restore_holiday_calendar",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "source_line": 56,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_holiday_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "HolidayCalendarResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/locations",
+   "full_path": "/api/v1/admin/locations",
+   "stub_shadowed": false,
+   "handler": "list_locations",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/location/routes.py",
+   "source_line": 24,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_location_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/locations",
+   "full_path": "/api/v1/admin/locations",
+   "stub_shadowed": false,
+   "handler": "create_location",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/location/routes.py",
+   "source_line": 20,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_location_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "LocationResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/admin/locations/{location_id}",
+   "full_path": "/api/v1/admin/locations/{location_id}",
+   "stub_shadowed": false,
+   "handler": "delete_location",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/location/routes.py",
+   "source_line": 42,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_location_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": 200
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/locations/{location_id}",
+   "full_path": "/api/v1/admin/locations/{location_id}",
+   "stub_shadowed": false,
+   "handler": "get_location",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/location/routes.py",
+   "source_line": 28,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_location_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LocationResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/admin/locations/{location_id}",
+   "full_path": "/api/v1/admin/locations/{location_id}",
+   "stub_shadowed": false,
+   "handler": "update_location",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/location/routes.py",
+   "source_line": 32,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_location_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "LocationResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/locations/{location_id}/restore",
+   "full_path": "/api/v1/admin/locations/{location_id}/restore",
+   "stub_shadowed": false,
+   "handler": "restore_location",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/location/routes.py",
+   "source_line": 52,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_location_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LocationResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/settings",
+   "full_path": "/api/v1/admin/settings",
+   "stub_shadowed": false,
+   "handler": "get_settings",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/settings/routes.py",
+   "source_line": 18,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_org_settings_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "OrganizationSettingsResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/admin/settings",
+   "full_path": "/api/v1/admin/settings",
+   "stub_shadowed": false,
+   "handler": "upsert_settings",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/settings/routes.py",
+   "source_line": 22,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_org_settings_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "OrganizationSettingsResponse",
+   "status_code": null
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/admin/settings",
+   "full_path": "/api/v1/admin/settings",
+   "stub_shadowed": false,
+   "handler": "upsert_settings",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/settings/routes.py",
+   "source_line": 22,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_org_settings_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "OrganizationSettingsResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/shifts",
+   "full_path": "/api/v1/admin/shifts",
+   "stub_shadowed": false,
+   "handler": "list_shifts",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/shift/routes.py",
+   "source_line": 22,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/shifts",
+   "full_path": "/api/v1/admin/shifts",
+   "stub_shadowed": false,
+   "handler": "create_shift",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/shift/routes.py",
+   "source_line": 18,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ShiftResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/admin/shifts/{shift_id}",
+   "full_path": "/api/v1/admin/shifts/{shift_id}",
+   "stub_shadowed": false,
+   "handler": "delete_shift",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/shift/routes.py",
+   "source_line": 37,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": 200
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/shifts/{shift_id}",
+   "full_path": "/api/v1/admin/shifts/{shift_id}",
+   "stub_shadowed": false,
+   "handler": "get_shift",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/shift/routes.py",
+   "source_line": 26,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ShiftResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/admin/shifts/{shift_id}",
+   "full_path": "/api/v1/admin/shifts/{shift_id}",
+   "stub_shadowed": false,
+   "handler": "update_shift",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/shift/routes.py",
+   "source_line": 30,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ShiftResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/shifts/{shift_id}/restore",
+   "full_path": "/api/v1/admin/shifts/{shift_id}/restore",
+   "stub_shadowed": false,
+   "handler": "restore_shift",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/shift/routes.py",
+   "source_line": 47,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ShiftResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/users",
+   "full_path": "/api/v1/admin/users",
+   "stub_shadowed": false,
+   "handler": "list_users",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 31,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "AdminUserListResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users",
+   "full_path": "/api/v1/admin/users",
+   "stub_shadowed": false,
+   "handler": "create_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 65,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "AdminUserDetailResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/admin/users/{login_id}",
+   "full_path": "/api/v1/admin/users/{login_id}",
+   "stub_shadowed": false,
+   "handler": "delete_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 114,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_delete_custom"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/users/{login_id}",
+   "full_path": "/api/v1/admin/users/{login_id}",
+   "stub_shadowed": false,
+   "handler": "get_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 60,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "AdminUserDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/admin/users/{login_id}",
+   "full_path": "/api/v1/admin/users/{login_id}",
+   "stub_shadowed": false,
+   "handler": "update_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 72,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_update_custom"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "AdminUserDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users/{login_id}/activate",
+   "full_path": "/api/v1/admin/users/{login_id}/activate",
+   "stub_shadowed": false,
+   "handler": "activate_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 86,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users/{login_id}/archive",
+   "full_path": "/api/v1/admin/users/{login_id}/archive",
+   "stub_shadowed": false,
+   "handler": "archive_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 107,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users/{login_id}/deactivate",
+   "full_path": "/api/v1/admin/users/{login_id}/deactivate",
+   "stub_shadowed": false,
+   "handler": "deactivate_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 79,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users/{login_id}/lock",
+   "full_path": "/api/v1/admin/users/{login_id}/lock",
+   "stub_shadowed": false,
+   "handler": "lock_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 93,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users/{login_id}/restore",
+   "full_path": "/api/v1/admin/users/{login_id}/restore",
+   "stub_shadowed": false,
+   "handler": "restore_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 146,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users/{login_id}/unlock",
+   "full_path": "/api/v1/admin/users/{login_id}/unlock",
+   "stub_shadowed": false,
+   "handler": "unlock_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "source_line": 100,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_user_unlock_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/working-weeks",
+   "full_path": "/api/v1/admin/working-weeks",
+   "stub_shadowed": false,
+   "handler": "list_working_weeks",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/working_week/routes.py",
+   "source_line": 22,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/working-weeks",
+   "full_path": "/api/v1/admin/working-weeks",
+   "stub_shadowed": false,
+   "handler": "create_working_week",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/working_week/routes.py",
+   "source_line": 18,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "WorkingWeekResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/working-weeks/current",
+   "full_path": "/api/v1/admin/working-weeks/current",
+   "stub_shadowed": false,
+   "handler": "get_current_working_week",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/working_week/routes.py",
+   "source_line": 26,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "WorkingWeekResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/working-weeks/{working_week_id}",
+   "full_path": "/api/v1/admin/working-weeks/{working_week_id}",
+   "stub_shadowed": false,
+   "handler": "get_working_week",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/working_week/routes.py",
+   "source_line": 30,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "WorkingWeekResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/working-weeks/{working_week_id}/archive",
+   "full_path": "/api/v1/admin/working-weeks/{working_week_id}/archive",
+   "stub_shadowed": false,
+   "handler": "archive_working_week",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/working_week/routes.py",
+   "source_line": 34,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_shift_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/approvals/approvers",
+   "full_path": "/api/v1/approvals/approvers",
+   "stub_shadowed": false,
+   "handler": "list_approvers",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/request/routes.py",
+   "source_line": 141,
+   "auth_requirement": "PUBLIC_BY_DESIGN",
+   "auth_dependencies": [
+    "require_approval_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/approvals/kpis",
+   "full_path": "/api/v1/approvals/kpis",
+   "stub_shadowed": false,
+   "handler": "approval_kpis",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/request/routes.py",
+   "source_line": 58,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/approvals/my-requests",
+   "full_path": "/api/v1/approvals/my-requests",
+   "stub_shadowed": false,
+   "handler": "list_my_requests",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/request/routes.py",
+   "source_line": 109,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_view_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/approvals/pending",
+   "full_path": "/api/v1/approvals/pending",
+   "stub_shadowed": false,
+   "handler": "list_pending",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/request/routes.py",
+   "source_line": 85,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/approvals/requests",
+   "full_path": "/api/v1/approvals/requests",
+   "stub_shadowed": false,
+   "handler": "list_requests",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/request/routes.py",
+   "source_line": 162,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/approvals/requests",
+   "full_path": "/api/v1/approvals/requests",
+   "stub_shadowed": false,
+   "handler": "create_request",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/request/routes.py",
+   "source_line": 149,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ApprovalRequestResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/approvals/requests/by-reference/{request_type}/{reference_id}",
+   "full_path": "/api/v1/approvals/requests/by-reference/{request_type}/{reference_id}",
+   "stub_shadowed": false,
+   "handler": "get_request_by_reference",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/request/routes.py",
+   "source_line": 190,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ApprovalRequestDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/approvals/requests/{request_id}",
+   "full_path": "/api/v1/approvals/requests/{request_id}",
+   "stub_shadowed": false,
+   "handler": "get_request",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/request/routes.py",
+   "source_line": 182,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ApprovalRequestDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/approvals/requests/{request_id}/approve",
+   "full_path": "/api/v1/approvals/requests/{request_id}/approve",
+   "stub_shadowed": false,
+   "handler": "approve",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/approval_action/routes.py",
+   "source_line": 85,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_approve_department"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ApprovalRequestDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/approvals/requests/{request_id}/cancel",
+   "full_path": "/api/v1/approvals/requests/{request_id}/cancel",
+   "stub_shadowed": false,
+   "handler": "cancel",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/approval_action/routes.py",
+   "source_line": 111,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_update_custom"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ApprovalRequestDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/approvals/requests/{request_id}/comment",
+   "full_path": "/api/v1/approvals/requests/{request_id}/comment",
+   "stub_shadowed": false,
+   "handler": "comment",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/approval_action/routes.py",
+   "source_line": 124,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_update_custom"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ApprovalActionResponse",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/approvals/requests/{request_id}/reject",
+   "full_path": "/api/v1/approvals/requests/{request_id}/reject",
+   "stub_shadowed": false,
+   "handler": "reject",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/approval_action/routes.py",
+   "source_line": 98,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_approve_department"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ApprovalRequestDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/approvals/{request_id}",
+   "full_path": "/api/v1/approvals/{request_id}",
+   "stub_shadowed": false,
+   "handler": "get_request_ui",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/request/routes.py",
+   "source_line": 202,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/approvals/{request_id}/approve",
+   "full_path": "/api/v1/approvals/{request_id}/approve",
+   "stub_shadowed": false,
+   "handler": "approve_ui",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/approval_action/routes.py",
+   "source_line": 61,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_approve_department"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/approvals/{request_id}/reject",
+   "full_path": "/api/v1/approvals/{request_id}/reject",
+   "stub_shadowed": false,
+   "handler": "reject_ui",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/approvals/approval_action/routes.py",
+   "source_line": 73,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_approve_department"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/audit/archive",
+   "full_path": "/api/v1/audit/archive",
+   "stub_shadowed": false,
+   "handler": "archive_old_logs",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/audit/routes.py",
+   "source_line": 59,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_audit_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ArchiveResult",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/audit/logs",
+   "full_path": "/api/v1/audit/logs",
+   "stub_shadowed": false,
+   "handler": "list_logs",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/audit/routes.py",
+   "source_line": 30,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_audit_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/audit/logs",
+   "full_path": "/api/v1/audit/logs",
+   "stub_shadowed": false,
+   "handler": "create_log",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/audit/routes.py",
+   "source_line": 25,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_audit_create_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "Optional",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/audit/logs/{log_id}",
+   "full_path": "/api/v1/audit/logs/{log_id}",
+   "stub_shadowed": false,
+   "handler": "get_log",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/audit/routes.py",
+   "source_line": 54,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_audit_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "AuditLogResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/change-password",
+   "full_path": "/api/v1/auth/change-password",
+   "stub_shadowed": false,
+   "handler": "change_password",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/auth/routes.py",
+   "source_line": 69,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "get_current_login"
+   ],
+   "headers": [
+    "X-Login-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/forgot-password",
+   "full_path": "/api/v1/auth/forgot-password",
+   "stub_shadowed": false,
+   "handler": "forgot_password",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/auth/routes.py",
+   "source_line": 82,
+   "auth_requirement": "PUBLIC_BY_DESIGN",
+   "auth_dependencies": [],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/login",
+   "full_path": "/api/v1/auth/login",
+   "stub_shadowed": false,
+   "handler": "login",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/auth/routes.py",
+   "source_line": 25,
+   "auth_requirement": "PUBLIC_BY_DESIGN",
+   "auth_dependencies": [],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LoginResponse",
+   "status_code": 200
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/logout",
+   "full_path": "/api/v1/auth/logout",
+   "stub_shadowed": false,
+   "handler": "logout",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/auth/routes.py",
+   "source_line": 53,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "get_current_login"
+   ],
+   "headers": [
+    "X-Login-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/refresh",
+   "full_path": "/api/v1/auth/refresh",
+   "stub_shadowed": false,
+   "handler": "refresh",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/auth/routes.py",
+   "source_line": 41,
+   "auth_requirement": "PUBLIC_BY_DESIGN",
+   "auth_dependencies": [],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "TokenPairResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/reset-password",
+   "full_path": "/api/v1/auth/reset-password",
+   "stub_shadowed": false,
+   "handler": "reset_password",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/auth/routes.py",
+   "source_line": 94,
+   "auth_requirement": "PUBLIC_BY_DESIGN",
+   "auth_dependencies": [],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/auth/sessions",
+   "full_path": "/api/v1/auth/sessions",
+   "stub_shadowed": false,
+   "handler": "list_sessions",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/auth/routes.py",
+   "source_line": 106,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "get_current_login"
+   ],
+   "headers": [
+    "X-Login-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/dashboard/executive",
+   "full_path": "/api/v1/dashboard/executive",
+   "stub_shadowed": false,
+   "handler": "executive_dashboard",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/dashboard/routes.py",
+   "source_line": 11,
+   "auth_requirement": "PUBLIC_BY_DESIGN",
+   "auth_dependencies": [
+    "require_employment_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leave/apply-context/{employment_id}",
+   "full_path": "/api/v1/leave/apply-context/{employment_id}",
+   "stub_shadowed": false,
+   "handler": "get_apply_context",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/ledger/routes.py",
+   "source_line": 63,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ApplyLeaveContextResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leave/balances/{employment_id}",
+   "full_path": "/api/v1/leave/balances/{employment_id}",
+   "stub_shadowed": false,
+   "handler": "get_balances",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/ledger/routes.py",
+   "source_line": 52,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LeaveBalanceResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/leave/calculate",
+   "full_path": "/api/v1/leave/calculate",
+   "stub_shadowed": false,
+   "handler": "calculate_leave_days",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/ledger/routes.py",
+   "source_line": 80,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LeaveCalculateResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/leave/ledger",
+   "full_path": "/api/v1/leave/ledger",
+   "stub_shadowed": false,
+   "handler": "post_ledger_entry",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/ledger/routes.py",
+   "source_line": 24,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "LeaveLedgerResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leave/ledger/{employment_id}",
+   "full_path": "/api/v1/leave/ledger/{employment_id}",
+   "stub_shadowed": false,
+   "handler": "list_ledger",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/ledger/routes.py",
+   "source_line": 37,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leave/policies",
+   "full_path": "/api/v1/leave/policies",
+   "stub_shadowed": false,
+   "handler": "list_policies",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/policy/routes.py",
+   "source_line": 31,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_policy_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/leave/policies",
+   "full_path": "/api/v1/leave/policies",
+   "stub_shadowed": false,
+   "handler": "create_policy",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/policy/routes.py",
+   "source_line": 18,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_policy_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "LeavePolicyResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leave/policies/current/{leave_type}",
+   "full_path": "/api/v1/leave/policies/current/{leave_type}",
+   "stub_shadowed": false,
+   "handler": "get_current_policy",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/policy/routes.py",
+   "source_line": 39,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_policy_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LeavePolicyResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leave/requests",
+   "full_path": "/api/v1/leave/requests",
+   "stub_shadowed": false,
+   "handler": "list_requests",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/request/routes.py",
+   "source_line": 30,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/leave/requests",
+   "full_path": "/api/v1/leave/requests",
+   "stub_shadowed": false,
+   "handler": "submit_request",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/request/routes.py",
+   "source_line": 17,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_create_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "LeaveRequestResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leave/requests/{request_id}",
+   "full_path": "/api/v1/leave/requests/{request_id}",
+   "stub_shadowed": false,
+   "handler": "get_request",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/request/routes.py",
+   "source_line": 46,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LeaveRequestResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/leave/requests/{request_id}/cancel",
+   "full_path": "/api/v1/leave/requests/{request_id}/cancel",
+   "stub_shadowed": false,
+   "handler": "cancel_request",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/request/routes.py",
+   "source_line": 54,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_update_custom"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "LeaveRequestResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/leave/requests/{request_id}/request-cancel",
+   "full_path": "/api/v1/leave/requests/{request_id}/request-cancel",
+   "stub_shadowed": false,
+   "handler": "request_approved_cancel",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/request/routes.py",
+   "source_line": 72,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_update_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ApprovalRequestResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/approvals",
+   "full_path": "/api/v1/my-work/approvals",
+   "stub_shadowed": true,
+   "handler": "list_my_approvals",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/approvals/routes.py",
+   "source_line": 25,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_view_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ApprovalListResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/approvers",
+   "full_path": "/api/v1/my-work/approvers",
+   "stub_shadowed": false,
+   "handler": "list_approvers",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/attendance/routes.py",
+   "source_line": 125,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/my-work/attendance/breaks/start",
+   "full_path": "/api/v1/my-work/attendance/breaks/start",
+   "stub_shadowed": false,
+   "handler": "my_start_break",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/attendance/routes.py",
+   "source_line": 51,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_create_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "BreakResponse",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/my-work/attendance/breaks/{break_id}/end",
+   "full_path": "/api/v1/my-work/attendance/breaks/{break_id}/end",
+   "stub_shadowed": false,
+   "handler": "my_end_break",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/attendance/routes.py",
+   "source_line": 64,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_create_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "BreakResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/attendance/correction-candidates",
+   "full_path": "/api/v1/my-work/attendance/correction-candidates",
+   "stub_shadowed": false,
+   "handler": "correction_candidates",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/attendance/routes.py",
+   "source_line": 114,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/attendance/corrections",
+   "full_path": "/api/v1/my-work/attendance/corrections",
+   "stub_shadowed": false,
+   "handler": "list_corrections",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/attendance/routes.py",
+   "source_line": 102,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "CorrectionListResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/attendance/days",
+   "full_path": "/api/v1/my-work/attendance/days",
+   "stub_shadowed": false,
+   "handler": "my_days",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/attendance/routes.py",
+   "source_line": 74,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/my-work/attendance/punch",
+   "full_path": "/api/v1/my-work/attendance/punch",
+   "stub_shadowed": false,
+   "handler": "my_punch",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/attendance/routes.py",
+   "source_line": 31,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_create_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "PunchResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/attendance/today-info",
+   "full_path": "/api/v1/my-work/attendance/today-info",
+   "stub_shadowed": false,
+   "handler": "today_info",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/attendance/routes.py",
+   "source_line": 86,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "TodayInfoResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/attendance/week-hours",
+   "full_path": "/api/v1/my-work/attendance/week-hours",
+   "stub_shadowed": false,
+   "handler": "week_hours",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/attendance/routes.py",
+   "source_line": 94,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "WeekHoursResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/leave",
+   "full_path": "/api/v1/my-work/leave",
+   "stub_shadowed": true,
+   "handler": "list_leave_requests",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/leave/routes.py",
+   "source_line": 34,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_view_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LeaveListResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/my-work/leave",
+   "full_path": "/api/v1/my-work/leave",
+   "stub_shadowed": true,
+   "handler": "submit_leave_request",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/leave/routes.py",
+   "source_line": 82,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_create_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LeaveRequest",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/leave/apply-context",
+   "full_path": "/api/v1/my-work/leave/apply-context",
+   "stub_shadowed": true,
+   "handler": "leave_apply_context",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/leave/routes.py",
+   "source_line": 65,
+   "auth_requirement": "PUBLIC_BY_DESIGN",
+   "auth_dependencies": [
+    "require_leave_request_view_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ApplyLeaveContext",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/leave/balances",
+   "full_path": "/api/v1/my-work/leave/balances",
+   "stub_shadowed": true,
+   "handler": "leave_balances",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/leave/routes.py",
+   "source_line": 52,
+   "auth_requirement": "PUBLIC_BY_DESIGN",
+   "auth_dependencies": [
+    "require_leave_request_view_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/my-work/leave/calculate",
+   "full_path": "/api/v1/my-work/leave/calculate",
+   "stub_shadowed": true,
+   "handler": "calculate_leave_days",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/leave/routes.py",
+   "source_line": 73,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_leave_request_view_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LeaveCalculateResult",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/leave/types",
+   "full_path": "/api/v1/my-work/leave/types",
+   "stub_shadowed": true,
+   "handler": "leave_types",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/leave/routes.py",
+   "source_line": 60,
+   "auth_requirement": "PUBLIC_BY_DESIGN",
+   "auth_dependencies": [
+    "require_leave_request_view_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/requests",
+   "full_path": "/api/v1/my-work/requests",
+   "stub_shadowed": true,
+   "handler": "list_my_requests",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/requests/routes.py",
+   "source_line": 25,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_approval_view_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "RequestListResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/my-work/tasks",
+   "full_path": "/api/v1/my-work/tasks",
+   "stub_shadowed": true,
+   "handler": "list_my_tasks",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/tasks/routes.py",
+   "source_line": 25,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_task_view_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MyTaskListResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/archive-read",
+   "full_path": "/api/v1/notifications/archive-read",
+   "stub_shadowed": false,
+   "handler": "archive_read",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/center/routes.py",
+   "source_line": 100,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_update_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/channels",
+   "full_path": "/api/v1/notifications/channels",
+   "stub_shadowed": false,
+   "handler": "list_channels",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/settings/routes.py",
+   "source_line": 12,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/compose",
+   "full_path": "/api/v1/notifications/compose",
+   "stub_shadowed": false,
+   "handler": "compose",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/compose/routes.py",
+   "source_line": 44,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_create_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/drafts",
+   "full_path": "/api/v1/notifications/drafts",
+   "stub_shadowed": false,
+   "handler": "save_draft",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/compose/routes.py",
+   "source_line": 65,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_create_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/inbox",
+   "full_path": "/api/v1/notifications/inbox",
+   "stub_shadowed": false,
+   "handler": "list_inbox",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/center/routes.py",
+   "source_line": 17,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/inbox/all",
+   "full_path": "/api/v1/notifications/inbox/all",
+   "stub_shadowed": false,
+   "handler": "list_inbox_all",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/center/routes.py",
+   "source_line": 30,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/inbox/unread-count",
+   "full_path": "/api/v1/notifications/inbox/unread-count",
+   "stub_shadowed": false,
+   "handler": "unread_count",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/center/routes.py",
+   "source_line": 38,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/inbox/{notification_id}/archive",
+   "full_path": "/api/v1/notifications/inbox/{notification_id}/archive",
+   "stub_shadowed": false,
+   "handler": "archive",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/center/routes.py",
+   "source_line": 82,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_update_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "NotificationResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/inbox/{notification_id}/read",
+   "full_path": "/api/v1/notifications/inbox/{notification_id}/read",
+   "stub_shadowed": false,
+   "handler": "mark_read",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/center/routes.py",
+   "source_line": 46,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_update_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "NotificationResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/notify",
+   "full_path": "/api/v1/notifications/notify",
+   "stub_shadowed": false,
+   "handler": "notify",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/compose/routes.py",
+   "source_line": 20,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_create_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "Optional",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/notify/bulk",
+   "full_path": "/api/v1/notifications/notify/bulk",
+   "stub_shadowed": false,
+   "handler": "notify_bulk",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/compose/routes.py",
+   "source_line": 32,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_create_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/preferences",
+   "full_path": "/api/v1/notifications/preferences",
+   "stub_shadowed": false,
+   "handler": "list_preferences",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/preference/routes.py",
+   "source_line": 19,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/notifications/preferences",
+   "full_path": "/api/v1/notifications/preferences",
+   "stub_shadowed": false,
+   "handler": "set_preference",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/preference/routes.py",
+   "source_line": 27,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_update_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "PreferenceResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/read-all",
+   "full_path": "/api/v1/notifications/read-all",
+   "stub_shadowed": false,
+   "handler": "mark_all_read",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/center/routes.py",
+   "source_line": 64,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_update_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/sent",
+   "full_path": "/api/v1/notifications/sent",
+   "stub_shadowed": false,
+   "handler": "list_sent",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/sent/routes.py",
+   "source_line": 12,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "SentListResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/templates",
+   "full_path": "/api/v1/notifications/templates",
+   "stub_shadowed": false,
+   "handler": "list_templates",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/template/routes.py",
+   "source_line": 33,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/templates",
+   "full_path": "/api/v1/notifications/templates",
+   "stub_shadowed": false,
+   "handler": "create_template",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/template/routes.py",
+   "source_line": 20,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "NotificationTemplateResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/templates/{template_id}",
+   "full_path": "/api/v1/notifications/templates/{template_id}",
+   "stub_shadowed": false,
+   "handler": "get_template",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/template/routes.py",
+   "source_line": 41,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "NotificationTemplateResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/notifications/templates/{template_id}",
+   "full_path": "/api/v1/notifications/templates/{template_id}",
+   "stub_shadowed": false,
+   "handler": "update_template",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/template/routes.py",
+   "source_line": 49,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "NotificationTemplateResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/triggers",
+   "full_path": "/api/v1/notifications/triggers",
+   "stub_shadowed": false,
+   "handler": "list_triggers",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/template/routes.py",
+   "source_line": 64,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/{notification_id}/archive",
+   "full_path": "/api/v1/notifications/{notification_id}/archive",
+   "stub_shadowed": false,
+   "handler": "archive_short",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/center/routes.py",
+   "source_line": 91,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_update_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "NotificationResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/notifications/{notification_id}/read",
+   "full_path": "/api/v1/notifications/{notification_id}/read",
+   "stub_shadowed": false,
+   "handler": "mark_read_short",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/notifications/center/routes.py",
+   "source_line": 55,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_notification_update_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "NotificationResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll",
+   "full_path": "/api/v1/payroll",
+   "stub_shadowed": false,
+   "handler": "list_payrolls",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/monthly_payroll/routes.py",
+   "source_line": 27,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/activity",
+   "full_path": "/api/v1/payroll/activity",
+   "stub_shadowed": false,
+   "handler": "payroll_activity",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/dashboard/routes.py",
+   "source_line": 27,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/payroll/bank-accounts",
+   "full_path": "/api/v1/payroll/bank-accounts",
+   "stub_shadowed": false,
+   "handler": "add_bank_account",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/employee_payroll/routes.py",
+   "source_line": 32,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_salary_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "BankAccountResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/bank-accounts/{employment_id}",
+   "full_path": "/api/v1/payroll/bank-accounts/{employment_id}",
+   "stub_shadowed": false,
+   "handler": "list_bank_accounts",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/employee_payroll/routes.py",
+   "source_line": 45,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_salary_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/bank-accounts/{employment_id}/primary",
+   "full_path": "/api/v1/payroll/bank-accounts/{employment_id}/primary",
+   "stub_shadowed": false,
+   "handler": "get_primary_bank",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/employee_payroll/routes.py",
+   "source_line": 52,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_salary_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "BankAccountResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/payroll/calculate",
+   "full_path": "/api/v1/payroll/calculate",
+   "stub_shadowed": false,
+   "handler": "calculate_payroll",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/monthly_payroll/routes.py",
+   "source_line": 18,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MonthlyPayrollResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/employees",
+   "full_path": "/api/v1/payroll/employees",
+   "stub_shadowed": false,
+   "handler": "list_payroll_employees",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/employee_payroll/routes.py",
+   "source_line": 18,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/history",
+   "full_path": "/api/v1/payroll/history",
+   "stub_shadowed": false,
+   "handler": "payroll_history",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/history/routes.py",
+   "source_line": 13,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/kpis",
+   "full_path": "/api/v1/payroll/kpis",
+   "stub_shadowed": false,
+   "handler": "payroll_kpis",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/dashboard/routes.py",
+   "source_line": 13,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/monthly-summary",
+   "full_path": "/api/v1/payroll/monthly-summary",
+   "stub_shadowed": false,
+   "handler": "monthly_summary",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/dashboard/routes.py",
+   "source_line": 35,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/period",
+   "full_path": "/api/v1/payroll/period",
+   "stub_shadowed": false,
+   "handler": "payroll_period",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/dashboard/routes.py",
+   "source_line": 22,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/payroll/run",
+   "full_path": "/api/v1/payroll/run",
+   "stub_shadowed": false,
+   "handler": "run_payroll",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/payroll_run/routes.py",
+   "source_line": 29,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": 202
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/run/checks",
+   "full_path": "/api/v1/payroll/run/checks",
+   "stub_shadowed": false,
+   "handler": "run_checks",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/payroll_run/routes.py",
+   "source_line": 15,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/run/preview",
+   "full_path": "/api/v1/payroll/run/preview",
+   "stub_shadowed": false,
+   "handler": "run_preview",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/payroll_run/routes.py",
+   "source_line": 20,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/payroll/salaries",
+   "full_path": "/api/v1/payroll/salaries",
+   "stub_shadowed": false,
+   "handler": "create_salary",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/salary_management/routes.py",
+   "source_line": 19,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_salary_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "EmployeeSalaryResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/salaries/current/{employment_id}",
+   "full_path": "/api/v1/payroll/salaries/current/{employment_id}",
+   "stub_shadowed": false,
+   "handler": "get_current_salary",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/salary_management/routes.py",
+   "source_line": 28,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_salary_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "EmployeeSalaryResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/salaries/{employment_id}",
+   "full_path": "/api/v1/payroll/salaries/{employment_id}",
+   "stub_shadowed": false,
+   "handler": "list_salaries",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/salary_management/routes.py",
+   "source_line": 37,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_salary_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/payroll/{payroll_id}",
+   "full_path": "/api/v1/payroll/{payroll_id}",
+   "stub_shadowed": false,
+   "handler": "get_payroll",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/payslip/routes.py",
+   "source_line": 28,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MonthlyPayrollResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/payroll/{payroll_id}/approve",
+   "full_path": "/api/v1/payroll/{payroll_id}/approve",
+   "stub_shadowed": false,
+   "handler": "approve_payroll",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/review/routes.py",
+   "source_line": 15,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_approve_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MonthlyPayrollResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/payroll/{payroll_id}/pay",
+   "full_path": "/api/v1/payroll/{payroll_id}/pay",
+   "stub_shadowed": false,
+   "handler": "mark_paid",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/payslip/routes.py",
+   "source_line": 18,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MonthlyPayrollResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/payroll/{payroll_id}/reject",
+   "full_path": "/api/v1/payroll/{payroll_id}/reject",
+   "stub_shadowed": false,
+   "handler": "reject_payroll",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/review/routes.py",
+   "source_line": 29,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_payroll_approve_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MonthlyPayrollResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/profile/activity",
+   "full_path": "/api/v1/profile/activity",
+   "stub_shadowed": false,
+   "handler": "profile_activity",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/profile/routes.py",
+   "source_line": 40,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ProfileActivityResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/profile/me",
+   "full_path": "/api/v1/profile/me",
+   "stub_shadowed": false,
+   "handler": "get_me",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/profile/routes.py",
+   "source_line": 21,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_self"
+   ],
+   "headers": [
+    "X-Employment-Id",
+    "X-Login-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ProfileMeResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/profile/me",
+   "full_path": "/api/v1/profile/me",
+   "stub_shadowed": false,
+   "handler": "update_me",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/profile/routes.py",
+   "source_line": 32,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_update_self"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/profile/sessions",
+   "full_path": "/api/v1/profile/sessions",
+   "stub_shadowed": false,
+   "handler": "profile_sessions",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/my_work/profile/routes.py",
+   "source_line": 48,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "get_current_login"
+   ],
+   "headers": [
+    "X-Login-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/",
+   "full_path": "/api/v1/projects/",
+   "stub_shadowed": false,
+   "handler": "list_projects",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/project/routes.py",
+   "source_line": 31,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/",
+   "full_path": "/api/v1/projects/",
+   "stub_shadowed": false,
+   "handler": "create_project",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/project/routes.py",
+   "source_line": 24,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ProjectResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/document-types",
+   "full_path": "/api/v1/projects/document-types",
+   "stub_shadowed": false,
+   "handler": "list_document_types",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 41,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/document-types",
+   "full_path": "/api/v1/projects/document-types",
+   "stub_shadowed": false,
+   "handler": "create_document_type",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 28,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "DocumentTypeResponse",
+   "status_code": 201
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/projects/document-types/{type_id}",
+   "full_path": "/api/v1/projects/document-types/{type_id}",
+   "stub_shadowed": false,
+   "handler": "update_document_type",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 49,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "DocumentTypeResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/document-types/{type_id}/archive",
+   "full_path": "/api/v1/projects/document-types/{type_id}/archive",
+   "stub_shadowed": false,
+   "handler": "archive_document_type",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 59,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/documents",
+   "full_path": "/api/v1/projects/documents",
+   "stub_shadowed": false,
+   "handler": "create_document",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 68,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "DocumentDetailResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/documents/{document_id}",
+   "full_path": "/api/v1/projects/documents/{document_id}",
+   "stub_shadowed": false,
+   "handler": "get_document",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 81,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "DocumentDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/documents/{document_id}/archive",
+   "full_path": "/api/v1/projects/documents/{document_id}/archive",
+   "stub_shadowed": false,
+   "handler": "archive_document",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 102,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/documents/{document_id}/links",
+   "full_path": "/api/v1/projects/documents/{document_id}/links",
+   "stub_shadowed": false,
+   "handler": "list_links_for_document",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 133,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/documents/{document_id}/versions",
+   "full_path": "/api/v1/projects/documents/{document_id}/versions",
+   "stub_shadowed": false,
+   "handler": "add_version",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 88,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "DocumentVersionResponse",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/links",
+   "full_path": "/api/v1/projects/links",
+   "stub_shadowed": false,
+   "handler": "link_document",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 111,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "DocumentLinkResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/links/by-entity",
+   "full_path": "/api/v1/projects/links/by-entity",
+   "stub_shadowed": false,
+   "handler": "list_links_for_entity",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/document/routes.py",
+   "source_line": 124,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_document_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/notes",
+   "full_path": "/api/v1/projects/notes",
+   "stub_shadowed": false,
+   "handler": "list_notes",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/note/routes.py",
+   "source_line": 24,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_note_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/notes",
+   "full_path": "/api/v1/projects/notes",
+   "stub_shadowed": false,
+   "handler": "create_note",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/note/routes.py",
+   "source_line": 17,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_note_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "NoteResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/notes/{note_id}",
+   "full_path": "/api/v1/projects/notes/{note_id}",
+   "stub_shadowed": false,
+   "handler": "get_note",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/note/routes.py",
+   "source_line": 33,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_note_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "NoteResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/projects/notes/{note_id}",
+   "full_path": "/api/v1/projects/notes/{note_id}",
+   "stub_shadowed": false,
+   "handler": "update_note",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/note/routes.py",
+   "source_line": 38,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_note_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "NoteResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/projects/{project_id}/tasks",
+   "full_path": "/api/v1/projects/projects/{project_id}/tasks",
+   "stub_shadowed": false,
+   "handler": "list_project_tasks",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/task/routes.py",
+   "source_line": 90,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/tasks",
+   "full_path": "/api/v1/projects/tasks",
+   "stub_shadowed": false,
+   "handler": "list_all_tasks",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/task/routes.py",
+   "source_line": 34,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_task_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/tasks",
+   "full_path": "/api/v1/projects/tasks",
+   "stub_shadowed": false,
+   "handler": "create_task",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/task/routes.py",
+   "source_line": 23,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_task_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "TaskResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/tasks/{task_id}",
+   "full_path": "/api/v1/projects/tasks/{task_id}",
+   "stub_shadowed": false,
+   "handler": "get_task",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/task/routes.py",
+   "source_line": 52,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_task_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "TaskResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/projects/tasks/{task_id}",
+   "full_path": "/api/v1/projects/tasks/{task_id}",
+   "stub_shadowed": false,
+   "handler": "update_task",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/task/routes.py",
+   "source_line": 57,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_task_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "TaskResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/tasks/{task_id}/time-entries",
+   "full_path": "/api/v1/projects/tasks/{task_id}/time-entries",
+   "stub_shadowed": false,
+   "handler": "list_time_entries",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/task/routes.py",
+   "source_line": 80,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_task_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/teams",
+   "full_path": "/api/v1/projects/teams",
+   "stub_shadowed": false,
+   "handler": "list_teams",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/team/routes.py",
+   "source_line": 31,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/teams",
+   "full_path": "/api/v1/projects/teams",
+   "stub_shadowed": false,
+   "handler": "create_team",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/team/routes.py",
+   "source_line": 24,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "TeamResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/teams/{team_id}",
+   "full_path": "/api/v1/projects/teams/{team_id}",
+   "stub_shadowed": false,
+   "handler": "get_team",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/team/routes.py",
+   "source_line": 36,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "TeamResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/projects/teams/{team_id}",
+   "full_path": "/api/v1/projects/teams/{team_id}",
+   "stub_shadowed": false,
+   "handler": "update_team",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/team/routes.py",
+   "source_line": 41,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "TeamResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/teams/{team_id}/members",
+   "full_path": "/api/v1/projects/teams/{team_id}/members",
+   "stub_shadowed": false,
+   "handler": "list_team_members",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/team/routes.py",
+   "source_line": 80,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/teams/{team_id}/members",
+   "full_path": "/api/v1/projects/teams/{team_id}/members",
+   "stub_shadowed": false,
+   "handler": "add_team_member",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/team/routes.py",
+   "source_line": 51,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "TeamMemberResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/projects/teams/{team_id}/members/{employment_id}",
+   "full_path": "/api/v1/projects/teams/{team_id}/members/{employment_id}",
+   "stub_shadowed": false,
+   "handler": "remove_team_member",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/team/routes.py",
+   "source_line": 65,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_delete_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/projects/time-entries",
+   "full_path": "/api/v1/projects/time-entries",
+   "stub_shadowed": false,
+   "handler": "create_time_entry",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/task/routes.py",
+   "source_line": 67,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_task_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "TimeEntryResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/{project_id}",
+   "full_path": "/api/v1/projects/{project_id}",
+   "stub_shadowed": false,
+   "handler": "get_project",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/project/routes.py",
+   "source_line": 60,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ProjectDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/projects/{project_id}",
+   "full_path": "/api/v1/projects/{project_id}",
+   "stub_shadowed": false,
+   "handler": "update_project",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/project/routes.py",
+   "source_line": 67,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ProjectDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/projects/{project_id}/teams",
+   "full_path": "/api/v1/projects/{project_id}/teams",
+   "stub_shadowed": false,
+   "handler": "list_teams_for_project",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/project/routes.py",
+   "source_line": 43,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_project_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/rbac/employments/{employment_id}/effective-permissions",
+   "full_path": "/api/v1/rbac/employments/{employment_id}/effective-permissions",
+   "stub_shadowed": false,
+   "handler": "get_effective_permissions",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 186,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "EffectivePermissionsResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/rbac/employments/{employment_id}/roles",
+   "full_path": "/api/v1/rbac/employments/{employment_id}/roles",
+   "stub_shadowed": false,
+   "handler": "list_roles_for_employment",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 175,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/rbac/employments/{employment_id}/roles",
+   "full_path": "/api/v1/rbac/employments/{employment_id}/roles",
+   "stub_shadowed": false,
+   "handler": "assign_role",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 144,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "EmployeeRoleResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/rbac/employments/{employment_id}/roles/{role_id}",
+   "full_path": "/api/v1/rbac/employments/{employment_id}/roles/{role_id}",
+   "stub_shadowed": false,
+   "handler": "unassign_role",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 160,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_delete_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/rbac/permissions",
+   "full_path": "/api/v1/rbac/permissions",
+   "stub_shadowed": false,
+   "handler": "list_permissions",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 40,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/rbac/resources",
+   "full_path": "/api/v1/rbac/resources",
+   "stub_shadowed": false,
+   "handler": "list_resources",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 35,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/rbac/roles",
+   "full_path": "/api/v1/rbac/roles",
+   "stub_shadowed": false,
+   "handler": "list_roles",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 74,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "RoleListResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/rbac/roles",
+   "full_path": "/api/v1/rbac/roles",
+   "stub_shadowed": false,
+   "handler": "create_role",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 61,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "RoleResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/rbac/roles/{role_id}",
+   "full_path": "/api/v1/rbac/roles/{role_id}",
+   "stub_shadowed": false,
+   "handler": "delete_role",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 105,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_delete_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/rbac/roles/{role_id}",
+   "full_path": "/api/v1/rbac/roles/{role_id}",
+   "stub_shadowed": false,
+   "handler": "get_role",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 90,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "RoleDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/rbac/roles/{role_id}",
+   "full_path": "/api/v1/rbac/roles/{role_id}",
+   "stub_shadowed": false,
+   "handler": "update_role",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 95,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "RoleResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/rbac/roles/{role_id}/permissions",
+   "full_path": "/api/v1/rbac/roles/{role_id}/permissions",
+   "stub_shadowed": false,
+   "handler": "grant_permission",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 114,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "RolePermissionResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/rbac/roles/{role_id}/permissions/{permission_id}/scopes/{scope_id}",
+   "full_path": "/api/v1/rbac/roles/{role_id}/permissions/{permission_id}/scopes/{scope_id}",
+   "stub_shadowed": false,
+   "handler": "revoke_permission",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 128,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_delete_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/rbac/roles/{role_id}/restore",
+   "full_path": "/api/v1/rbac/roles/{role_id}/restore",
+   "stub_shadowed": false,
+   "handler": "restore_role",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 113,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "RoleResponse",
+   "status_code": 201
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/rbac/roles/{role_id}/sensitive-fields",
+   "full_path": "/api/v1/rbac/roles/{role_id}/sensitive-fields",
+   "stub_shadowed": false,
+   "handler": "set_sensitive_field_permission",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 197,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "RoleSensitiveFieldPermissionResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/rbac/scopes",
+   "full_path": "/api/v1/rbac/scopes",
+   "stub_shadowed": false,
+   "handler": "list_scopes",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 48,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/rbac/sensitive-fields",
+   "full_path": "/api/v1/rbac/sensitive-fields",
+   "stub_shadowed": false,
+   "handler": "list_sensitive_fields",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "source_line": 53,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_role_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/activity",
+   "full_path": "/api/v1/sales/activity",
+   "stub_shadowed": false,
+   "handler": "list_activity",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/activity/routes.py",
+   "source_line": 13,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/analytics",
+   "full_path": "/api/v1/sales/analytics",
+   "stub_shadowed": false,
+   "handler": "analytics",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/dashboard/routes.py",
+   "source_line": 18,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/case-studies",
+   "full_path": "/api/v1/sales/case-studies",
+   "stub_shadowed": false,
+   "handler": "list_case_studies",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/case_study/routes.py",
+   "source_line": 14,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/sales/case-studies",
+   "full_path": "/api/v1/sales/case-studies",
+   "stub_shadowed": false,
+   "handler": "create_case_study",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/case_study/routes.py",
+   "source_line": 24,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_create_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/clients",
+   "full_path": "/api/v1/sales/clients",
+   "stub_shadowed": false,
+   "handler": "list_clients",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/client/routes.py",
+   "source_line": 31,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/sales/clients",
+   "full_path": "/api/v1/sales/clients",
+   "stub_shadowed": false,
+   "handler": "create_client",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/client/routes.py",
+   "source_line": 22,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ClientResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/clients/filter-options",
+   "full_path": "/api/v1/sales/clients/filter-options",
+   "stub_shadowed": false,
+   "handler": "client_filter_options",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/routes.py",
+   "source_line": 52,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/clients/{client_id}",
+   "full_path": "/api/v1/sales/clients/{client_id}",
+   "stub_shadowed": false,
+   "handler": "get_client",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/client/routes.py",
+   "source_line": 41,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "ClientResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/sales/clients/{client_id}",
+   "full_path": "/api/v1/sales/clients/{client_id}",
+   "stub_shadowed": false,
+   "handler": "update_client",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/client/routes.py",
+   "source_line": 46,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ClientResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/sales/clients/{client_id}/archive",
+   "full_path": "/api/v1/sales/clients/{client_id}/archive",
+   "stub_shadowed": false,
+   "handler": "archive_client",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/client/routes.py",
+   "source_line": 56,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/clients/{client_id}/contacts",
+   "full_path": "/api/v1/sales/clients/{client_id}/contacts",
+   "stub_shadowed": false,
+   "handler": "list_contacts",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/client/routes.py",
+   "source_line": 65,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/sales/clients/{client_id}/contacts",
+   "full_path": "/api/v1/sales/clients/{client_id}/contacts",
+   "stub_shadowed": false,
+   "handler": "add_contact",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/client/routes.py",
+   "source_line": 70,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "ContactResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/dashboard",
+   "full_path": "/api/v1/sales/dashboard",
+   "stub_shadowed": false,
+   "handler": "dashboard_metrics",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/dashboard/routes.py",
+   "source_line": 13,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/leads",
+   "full_path": "/api/v1/sales/leads",
+   "stub_shadowed": false,
+   "handler": "list_leads",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/lead/routes.py",
+   "source_line": 32,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/sales/leads",
+   "full_path": "/api/v1/sales/leads",
+   "stub_shadowed": false,
+   "handler": "create_lead",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/lead/routes.py",
+   "source_line": 23,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "LeadResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/leads/filter-options",
+   "full_path": "/api/v1/sales/leads/filter-options",
+   "stub_shadowed": false,
+   "handler": "lead_filter_options",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/routes.py",
+   "source_line": 45,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/leads/{lead_id}",
+   "full_path": "/api/v1/sales/leads/{lead_id}",
+   "stub_shadowed": false,
+   "handler": "get_lead",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/lead/routes.py",
+   "source_line": 48,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "LeadResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/sales/leads/{lead_id}",
+   "full_path": "/api/v1/sales/leads/{lead_id}",
+   "stub_shadowed": false,
+   "handler": "update_lead",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/lead/routes.py",
+   "source_line": 53,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "LeadResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/sales/leads/{lead_id}/status",
+   "full_path": "/api/v1/sales/leads/{lead_id}/status",
+   "stub_shadowed": false,
+   "handler": "change_lead_status",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/lead/routes.py",
+   "source_line": 63,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": null,
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/meta/client-filter-options",
+   "full_path": "/api/v1/sales/meta/client-filter-options",
+   "stub_shadowed": false,
+   "handler": "meta_client_filter_options",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/routes.py",
+   "source_line": 52,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/meta/lead-filter-options",
+   "full_path": "/api/v1/sales/meta/lead-filter-options",
+   "stub_shadowed": false,
+   "handler": "lead_filter_options",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/routes.py",
+   "source_line": 45,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/metrics/dashboard",
+   "full_path": "/api/v1/sales/metrics/dashboard",
+   "stub_shadowed": false,
+   "handler": "metrics_dashboard_legacy",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/dashboard/routes.py",
+   "source_line": 24,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_lead_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/platforms",
+   "full_path": "/api/v1/sales/platforms",
+   "stub_shadowed": false,
+   "handler": "list_platforms",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/source/routes.py",
+   "source_line": 67,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/sales/platforms",
+   "full_path": "/api/v1/sales/platforms",
+   "stub_shadowed": false,
+   "handler": "create_platform",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/source/routes.py",
+   "source_line": 62,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "SourceResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/sales-representatives",
+   "full_path": "/api/v1/sales/sales-representatives",
+   "stub_shadowed": false,
+   "handler": "list_sales_reps",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/routes.py",
+   "source_line": 66,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "dict",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/sources",
+   "full_path": "/api/v1/sales/sources",
+   "stub_shadowed": false,
+   "handler": "list_sources",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/source/routes.py",
+   "source_line": 29,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/sales/sources",
+   "full_path": "/api/v1/sales/sources",
+   "stub_shadowed": false,
+   "handler": "create_source",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/source/routes.py",
+   "source_line": 20,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "SourceResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/sales/sources/{source_id}",
+   "full_path": "/api/v1/sales/sources/{source_id}",
+   "stub_shadowed": false,
+   "handler": "delete_source",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/source/routes.py",
+   "source_line": 54,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": 200
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/sales/sources/{source_id}",
+   "full_path": "/api/v1/sales/sources/{source_id}",
+   "stub_shadowed": false,
+   "handler": "get_source",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/source/routes.py",
+   "source_line": 37,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "SourceResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/sales/sources/{source_id}",
+   "full_path": "/api/v1/sales/sources/{source_id}",
+   "stub_shadowed": false,
+   "handler": "update_source",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/source/routes.py",
+   "source_line": 42,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "SourceResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/sales/sources/{source_id}/restore",
+   "full_path": "/api/v1/sales/sources/{source_id}/restore",
+   "stub_shadowed": false,
+   "handler": "restore_source",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/source/routes.py",
+   "source_line": 73,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_client_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "SourceResponse",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/attendance/breaks/start",
+   "full_path": "/api/v1/workforce/attendance/breaks/start",
+   "stub_shadowed": false,
+   "handler": "start_break",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 128,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_create_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "BreakResponse",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/attendance/breaks/{break_id}/end",
+   "full_path": "/api/v1/workforce/attendance/breaks/{break_id}/end",
+   "stub_shadowed": false,
+   "handler": "end_break",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 141,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_create_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "BreakResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/attendance/corrections",
+   "full_path": "/api/v1/workforce/attendance/corrections",
+   "stub_shadowed": false,
+   "handler": "submit_correction",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 63,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_create_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "CorrectionResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/attendance/corrections/{correction_id}",
+   "full_path": "/api/v1/workforce/attendance/corrections/{correction_id}",
+   "stub_shadowed": false,
+   "handler": "get_correction",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 76,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "CorrectionResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/attendance/days/by-employment/{employment_id}",
+   "full_path": "/api/v1/workforce/attendance/days/by-employment/{employment_id}",
+   "stub_shadowed": false,
+   "handler": "list_days",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 50,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/attendance/days/{day_id}",
+   "full_path": "/api/v1/workforce/attendance/days/{day_id}",
+   "stub_shadowed": false,
+   "handler": "get_day",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 45,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "AttendanceDayDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/attendance/punch",
+   "full_path": "/api/v1/workforce/attendance/punch",
+   "stub_shadowed": false,
+   "handler": "punch",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 31,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_create_self"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "PunchResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}",
+   "full_path": "/api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}",
+   "stub_shadowed": false,
+   "handler": "get_monthly_summary",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 83,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MonthlySummaryResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/lock",
+   "full_path": "/api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/lock",
+   "stub_shadowed": false,
+   "handler": "lock_monthly_summary",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 112,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MonthlySummaryResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/rebuild",
+   "full_path": "/api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/rebuild",
+   "stub_shadowed": false,
+   "handler": "rebuild_monthly_summary",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 96,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MonthlySummaryResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/unlock",
+   "full_path": "/api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/unlock",
+   "stub_shadowed": false,
+   "handler": "unlock_monthly_summary",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "source_line": 148,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_attendance_unlock_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MonthlySummaryResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/departments",
+   "full_path": "/api/v1/workforce/departments",
+   "stub_shadowed": false,
+   "handler": "list_departments",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "source_line": 30,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_department_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/departments",
+   "full_path": "/api/v1/workforce/departments",
+   "stub_shadowed": false,
+   "handler": "create_department",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "source_line": 23,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_department_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "DepartmentResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/workforce/departments/{department_id}",
+   "full_path": "/api/v1/workforce/departments/{department_id}",
+   "stub_shadowed": false,
+   "handler": "delete_department",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "source_line": 57,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_department_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": 200
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/departments/{department_id}",
+   "full_path": "/api/v1/workforce/departments/{department_id}",
+   "stub_shadowed": false,
+   "handler": "get_department",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "source_line": 37,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_department_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "DepartmentResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/workforce/departments/{department_id}",
+   "full_path": "/api/v1/workforce/departments/{department_id}",
+   "stub_shadowed": false,
+   "handler": "update_department",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "source_line": 44,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_department_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "DepartmentResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/departments/{department_id}/assign",
+   "full_path": "/api/v1/workforce/departments/{department_id}/assign",
+   "stub_shadowed": false,
+   "handler": "assign",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "source_line": 84,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_department_update_department"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/departments/{department_id}/employees",
+   "full_path": "/api/v1/workforce/departments/{department_id}/employees",
+   "stub_shadowed": false,
+   "handler": "list_department_employees",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "source_line": 61,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_department_view_department"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "DepartmentEmployeeListResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/departments/{department_id}/employees-available",
+   "full_path": "/api/v1/workforce/departments/{department_id}/employees-available",
+   "stub_shadowed": false,
+   "handler": "list_available",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "source_line": 74,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_department_view_department"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/departments/{department_id}/remove",
+   "full_path": "/api/v1/workforce/departments/{department_id}/remove",
+   "stub_shadowed": false,
+   "handler": "remove",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "source_line": 96,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_department_update_department"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/departments/{department_id}/restore",
+   "full_path": "/api/v1/workforce/departments/{department_id}/restore",
+   "stub_shadowed": false,
+   "handler": "restore_department",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "source_line": 72,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_department_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "DepartmentResponse",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/employees",
+   "full_path": "/api/v1/workforce/employees",
+   "stub_shadowed": false,
+   "handler": "create_employee",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 90,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "EmploymentDetailResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/employments",
+   "full_path": "/api/v1/workforce/employments",
+   "stub_shadowed": false,
+   "handler": "list_employments",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 113,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/employments",
+   "full_path": "/api/v1/workforce/employments",
+   "stub_shadowed": false,
+   "handler": "create_employment",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 102,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "EmploymentDetailResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/employments/by-person/{person_id}",
+   "full_path": "/api/v1/workforce/employments/by-person/{person_id}",
+   "stub_shadowed": false,
+   "handler": "list_employments_by_person",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 123,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/employments/{employment_id}",
+   "full_path": "/api/v1/workforce/employments/{employment_id}",
+   "stub_shadowed": false,
+   "handler": "get_employment",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 130,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "EmploymentDetailResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/workforce/employments/{employment_id}",
+   "full_path": "/api/v1/workforce/employments/{employment_id}",
+   "stub_shadowed": false,
+   "handler": "update_employment",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 137,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_update_custom"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "EmploymentResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/employments/{employment_id}/assignments",
+   "full_path": "/api/v1/workforce/employments/{employment_id}/assignments",
+   "stub_shadowed": false,
+   "handler": "list_assignments",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/assignment/routes.py",
+   "source_line": 73,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/employments/{employment_id}/assignments",
+   "full_path": "/api/v1/workforce/employments/{employment_id}/assignments",
+   "stub_shadowed": false,
+   "handler": "create_assignment",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/assignment/routes.py",
+   "source_line": 47,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "EmploymentAssignmentResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/employments/{employment_id}/assignments/current",
+   "full_path": "/api/v1/workforce/employments/{employment_id}/assignments/current",
+   "stub_shadowed": false,
+   "handler": "get_current_assignment",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/assignment/routes.py",
+   "source_line": 61,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "EmploymentAssignmentResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/employments/{employment_id}/rehire",
+   "full_path": "/api/v1/workforce/employments/{employment_id}/rehire",
+   "stub_shadowed": false,
+   "handler": "rehire_employment",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 193,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_create_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "EmploymentDetailResponse",
+   "status_code": 201
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/employments/{employment_id}/state",
+   "full_path": "/api/v1/workforce/employments/{employment_id}/state",
+   "stub_shadowed": false,
+   "handler": "change_state",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/assignment/routes.py",
+   "source_line": 21,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_update_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "EmploymentStateHistoryResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/employments/{employment_id}/state-history",
+   "full_path": "/api/v1/workforce/employments/{employment_id}/state-history",
+   "stub_shadowed": false,
+   "handler": "list_state_history",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/assignment/routes.py",
+   "source_line": 35,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/persons",
+   "full_path": "/api/v1/workforce/persons",
+   "stub_shadowed": false,
+   "handler": "list_persons",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 36,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/persons",
+   "full_path": "/api/v1/workforce/persons",
+   "stub_shadowed": false,
+   "handler": "create_person",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 29,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "PersonResponse",
+   "status_code": 201
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/persons/{person_id}",
+   "full_path": "/api/v1/workforce/persons/{person_id}",
+   "stub_shadowed": false,
+   "handler": "get_person",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 45,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "PersonResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/workforce/persons/{person_id}",
+   "full_path": "/api/v1/workforce/persons/{person_id}",
+   "stub_shadowed": false,
+   "handler": "update_person",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 50,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_update_custom"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "PersonResponse",
+   "status_code": null
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/positions",
+   "full_path": "/api/v1/workforce/positions",
+   "stub_shadowed": false,
+   "handler": "list_positions",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 64,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "list",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/positions",
+   "full_path": "/api/v1/workforce/positions",
+   "stub_shadowed": false,
+   "handler": "create_position",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 57,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_create_organization"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "PositionResponse",
+   "status_code": 201
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/workforce/positions/{position_id}",
+   "full_path": "/api/v1/workforce/positions/{position_id}",
+   "stub_shadowed": false,
+   "handler": "delete_position",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 107,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "MessageResponse",
+   "status_code": 200
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/workforce/positions/{position_id}",
+   "full_path": "/api/v1/workforce/positions/{position_id}",
+   "stub_shadowed": false,
+   "handler": "get_position",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 71,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_view_custom"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "PositionResponse",
+   "status_code": null
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/workforce/positions/{position_id}",
+   "full_path": "/api/v1/workforce/positions/{position_id}",
+   "stub_shadowed": false,
+   "handler": "update_position",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 76,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_update_custom"
+   ],
+   "headers": [
+    "X-Employment-Id"
+   ],
+   "duplicate_route": false,
+   "response_model": "PositionResponse",
+   "status_code": null
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/positions/{position_id}/restore",
+   "full_path": "/api/v1/workforce/positions/{position_id}/restore",
+   "stub_shadowed": false,
+   "handler": "restore_position",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "source_line": 126,
+   "auth_requirement": "JWT_ENFORCED",
+   "auth_dependencies": [
+    "require_employment_update_organization"
+   ],
+   "headers": [],
+   "duplicate_route": false,
+   "response_model": "PositionResponse",
+   "status_code": 201
+  }
+ ],
+ "note": "auth_requirement is machine-derived from route dependencies. NONE_ENFORCED = no JWT/auth dependency on the route (P0 finding)."
+}

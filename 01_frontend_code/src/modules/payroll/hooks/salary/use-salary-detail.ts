@@ -29,5 +29,6 @@ export function useSalaryDetail() {
     gross,
     formatMoney,
     isLoading: empQuery.isLoading || structureQuery.isLoading,
+    detailError: empQuery.error ?? null,
   }
 }

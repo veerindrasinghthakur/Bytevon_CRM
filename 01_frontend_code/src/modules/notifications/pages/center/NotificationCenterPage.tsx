@@ -1,13 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { ResourceName } from '@/shared/schema'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { useNotificationCenter } from '../../hooks/center/use-notification-center'
 import type { AppNotification } from '../../types'
 import { notificationStatusDotClass } from '../../schemas/enums'
 import { notificationRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
 import { NotificationQuickContent } from '../../components/center/NotificationQuickContent'
 import { NotificationCard } from '../../components/center/NotificationCard'
 import { CenterKpiCards } from '../../components/center/CenterKpiCards'
@@ -59,7 +59,7 @@ export function NotificationCenterPage() {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <ExportButton
-            resource={ResourceName.NOTIFICATION}
+            resource={'notification'}
             query={c.query}
             filters={{
               type: c.typeFilter,
@@ -94,14 +94,16 @@ export function NotificationCenterPage() {
           >
             Archive Read
           </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => safeNavigate(navigate, { to: notificationRoutes.compose })}
-          >
-            Compose
-          </Button>
+          <Can action="CREATE" resource="notification" minScope="SELF">
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+              onClick={() => safeNavigate(navigate, { to: notificationRoutes.compose })}
+            >
+              Compose
+            </Button>
+          </Can>
         </div>
       </div>
 
@@ -135,7 +137,7 @@ export function NotificationCenterPage() {
             Cancel
           </Button>
           <ExportButton
-            resource={ResourceName.NOTIFICATION}
+            resource={'notification'}
             selectedIds={Array.from(c.selectedIds)}
             filenameStem="notifications-selected"
             label="Export selected"

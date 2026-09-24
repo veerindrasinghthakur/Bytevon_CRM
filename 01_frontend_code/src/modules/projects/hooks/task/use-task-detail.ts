@@ -167,6 +167,7 @@ export function useTaskDetail(taskId: number | undefined) {
     task,
     isLoading: query.isLoading,
     isError: query.isError,
+    detailError: query.error ?? null,
     refetch: () => void query.refetch(),
     isEditing,
     form,

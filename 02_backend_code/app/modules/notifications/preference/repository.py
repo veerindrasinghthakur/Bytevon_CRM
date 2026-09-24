@@ -1,7 +1,7 @@
 """Preference repository."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,7 @@ class PreferenceRepository(BaseRepository):
 
     async def get_preference(
         self, employment_id: int, channel: NotificationChannel
-    ) -> Optional[NotificationPreference]:
+    ) -> NotificationPreference | None:
         stmt = select(NotificationPreference).where(
             NotificationPreference.employment_id == employment_id,
             NotificationPreference.channel == channel,

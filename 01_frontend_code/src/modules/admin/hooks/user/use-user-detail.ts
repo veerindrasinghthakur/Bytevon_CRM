@@ -11,12 +11,13 @@ import { myAdminRoutes } from '../../routes'
 import { uploadAvatar } from '@/modules/my-work/api/profile'
 import {
   activateUser,
-  archiveUserCredentials,
+  deleteUserCredentials,
   deactivateUser,
   getUserLogin,
   listDepartments,
   listRoles,
   lockUser,
+  restoreUserCredentials,
   unlockUser,
   updateUserLogin,
 } from '../../api/users'
@@ -59,6 +60,8 @@ export function useUserDetail(userId?: string) {
   })
 
   const display = detailQuery.data?.display
+  const isArchived =
+    detailQuery.data?.isArchived === true || display?.isArchived === true
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
 
   const [status, setStatus] = useState<AdminUserStatus>('Active')
@@ -181,8 +184,8 @@ export function useUserDetail(userId?: string) {
     },
   })
 
-  const hardArchiveMutation = useMutation({
-    mutationFn: () => archiveUserCredentials(loginId),
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteUserCredentials(loginId),
     onSuccess: async () => {
       setActionError(null)
       await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
@@ -190,7 +193,23 @@ export function useUserDetail(userId?: string) {
       safeNavigate(navigate, { to: myAdminRoutes.usersList })
     },
     onError: (e: unknown) => {
-      setActionError(getApiErrorMessage(e, 'Could not archive credentials'))
+      setActionError(getApiErrorMessage(e, 'Could not delete user'))
+    },
+  })
+
+  // Deprecated alias
+  const hardArchiveMutation = deleteMutation
+
+  const restoreMutation = useMutation({
+    mutationFn: () => restoreUserCredentials(loginId),
+    onSuccess: async () => {
+      setActionError(null)
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.users.withoutLogin() })
+      await detailQuery.refetch()
+    },
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not restore user'))
     },
   })
 
@@ -254,11 +273,13 @@ export function useUserDetail(userId?: string) {
   return {
     isLoading: detailQuery.isLoading,
     isError: detailQuery.isError,
+    detailError: detailQuery.error ?? null,
     loadError: detailQuery.isError
       ? getApiErrorMessage(detailQuery.error, 'Could not load user')
       : null,
     refetch: () => void detailQuery.refetch(),
     display,
+    isArchived,
     form,
     status,
     avatarUrl,
@@ -280,7 +301,9 @@ export function useUserDetail(userId?: string) {
     lockMutation,
     deactivateMutation,
     activateMutation,
+    deleteMutation,
     hardArchiveMutation,
+    restoreMutation,
     resetMutation,
     onAvatarPick,
     actionError,

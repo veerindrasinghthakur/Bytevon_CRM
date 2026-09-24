@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -57,7 +56,7 @@ class RBACService(BasePublicService):
         return [ResourceResponse.model_validate(r) for r in rows]
 
     async def list_permissions(
-        self, *, resource_id: Optional[int] = None
+        self, *, resource_id: int | None = None
     ) -> list[PermissionResponse]:
         rows = await self._repo.list_permissions(resource_id=resource_id)
         return [PermissionResponse.model_validate(r) for r in rows]
@@ -67,12 +66,12 @@ class RBACService(BasePublicService):
         return [ScopeResponse.model_validate(r) for r in rows]
 
     async def list_sensitive_fields(
-        self, *, resource_id: Optional[int] = None
+        self, *, resource_id: int | None = None
     ) -> list[SensitiveFieldResponse]:
         rows = await self._repo.list_sensitive_fields(resource_id=resource_id)
         return [SensitiveFieldResponse.model_validate(r) for r in rows]
 
-    async def _resolve_default_scope_id(self, scope_id: Optional[int]) -> int:
+    async def _resolve_default_scope_id(self, scope_id: int | None) -> int:
         if scope_id is not None:
             scope = await self._repo.get_scope_by_id(scope_id)
             if scope is None:
@@ -89,10 +88,10 @@ class RBACService(BasePublicService):
     async def _grant_permission_ids(
         self,
         role_id: int,
-        permission_ids: List[int],
+        permission_ids: list[int],
         *,
         scope_id: int,
-        actor_employment_id: Optional[int],
+        actor_employment_id: int | None,
         replace: bool = False,
     ) -> None:
         if replace:
@@ -162,7 +161,7 @@ class RBACService(BasePublicService):
         )
 
     async def create_role(
-        self, data: RoleCreate, *, actor_employment_id: Optional[int] = None
+        self, data: RoleCreate, *, actor_employment_id: int | None = None
     ) -> RoleResponse:
         existing = await self._repo.get_role_by_name(data.name)
         if existing:
@@ -188,9 +187,16 @@ class RBACService(BasePublicService):
         await self._audit("role.created", role.id, actor_employment_id)
         return RoleResponse.model_validate(role)
 
-    async def get_role(self, role_id: int) -> RoleDetailResponse:
-        role = await self._repo.get_role_by_id(role_id, with_details=True)
+    async def get_role(
+        self, role_id: int, *, include_archived: bool = False
+    ) -> RoleDetailResponse:
+        """Q15: archived hidden by default; history views opt in."""
+        role = await self._repo.get_role_by_id(
+            role_id, with_details=True, include_archived=True
+        )
         if role is None:
+            raise NotFoundError("Role not found")
+        if bool(getattr(role, "is_archived", False)) and not include_archived:
             raise NotFoundError("Role not found")
         users_count = await self._repo.count_employments_with_role(role_id)
         return self._build_role_detail(role, users_count=users_count)
@@ -198,12 +204,12 @@ class RBACService(BasePublicService):
     async def list_roles(
         self,
         *,
-        search: Optional[str] = None,
-        category: Optional[str] = None,
+        search: str | None = None,
+        category: str | None = None,
         page: int = 1,
         page_size: int = 20,
     ) -> RoleListResponse:
-        is_system_role: Optional[bool] = None
+        is_system_role: bool | None = None
         if category:
             c = category.strip().lower()
             if c in ("core role", "core"):
@@ -245,7 +251,7 @@ class RBACService(BasePublicService):
         return RoleListResponse(items=items, total=total, page=page, pageSize=page_size)
 
     async def update_role(
-        self, role_id: int, data: RoleUpdate, *, actor_employment_id: Optional[int] = None
+        self, role_id: int, data: RoleUpdate, *, actor_employment_id: int | None = None
     ) -> RoleResponse:
         role = await self._repo.get_role_by_id(role_id)
         if role is None:
@@ -274,10 +280,12 @@ class RBACService(BasePublicService):
         return RoleResponse.model_validate(role)
 
     async def delete_role(
-        self, role_id: int, *, actor_employment_id: Optional[int] = None
+        self, role_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
-        role = await self._repo.get_role_by_id(role_id)
-        if role is None:
+        from datetime import UTC, datetime
+
+        role = await self._repo.get_role_by_id(role_id, include_archived=True)
+        if role is None or bool(getattr(role, "is_archived", False)):
             raise NotFoundError("Role not found")
         if role.is_system_role:
             raise DomainError("Cannot delete a system role")
@@ -286,17 +294,43 @@ class RBACService(BasePublicService):
             raise DomainError(
                 f"Role is still assigned to {assigned} employment(s); unassign first"
             )
-        await self._session.delete(role)
+        role.is_archived = True
+        role.archived_at = datetime.now(UTC)
+        if hasattr(role, "archived_by"):
+            role.archived_by = actor_employment_id
         await self._commit()
         await self._audit("role.deleted", role_id, actor_employment_id)
         return MessageResponse(message="Role deleted")
+
+    async def restore_role(
+        self, role_id: int, *, actor_employment_id: int | None = None
+    ) -> RoleResponse:
+        """Q16: restore an archived role (Q6: 409 when the name is taken)."""
+        role = await self._repo.get_role_by_id(role_id, include_archived=True)
+        if role is None:
+            raise NotFoundError("Role not found")
+        if not bool(getattr(role, "is_archived", False)):
+            raise DomainError("Role is not archived")
+        clash = await self._repo.get_role_by_name(role.name)
+        if clash is not None and clash.id != role_id:
+            raise ConflictError(
+                f"Cannot restore: role '{role.name}' already exists"
+            )
+        role.is_archived = False
+        role.archived_at = None
+        if hasattr(role, "archived_by"):
+            role.archived_by = None
+        role.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("role.restored", role_id, actor_employment_id)
+        return RoleResponse.model_validate(role)
 
     async def grant_permission(
         self,
         role_id: int,
         data: RolePermissionGrant,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> RolePermissionResponse:
         role = await self._repo.get_role_by_id(role_id)
         if role is None:
@@ -329,7 +363,7 @@ class RBACService(BasePublicService):
         permission_id: int,
         scope_id: int,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MessageResponse:
         role = await self._repo.get_role_by_id(role_id)
         if role is None:
@@ -349,7 +383,7 @@ class RBACService(BasePublicService):
         employment_id: int,
         data: AssignRoleRequest,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> EmployeeRoleResponse:
         role = await self._repo.get_role_by_id(data.role_id)
         if role is None:
@@ -372,7 +406,7 @@ class RBACService(BasePublicService):
         employment_id: int,
         role_id: int,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MessageResponse:
         role = await self._repo.get_role_by_id(role_id)
         if role is None:
@@ -402,7 +436,7 @@ class RBACService(BasePublicService):
         role_id: int,
         data: RoleSensitiveFieldPermissionSet,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> RoleSensitiveFieldPermissionResponse:
         role = await self._repo.get_role_by_id(role_id)
         if role is None:
@@ -443,7 +477,6 @@ class RBACService(BasePublicService):
             "DEPARTMENT": 3,
             "LOCATION": 4,
             "ORGANIZATION": 5,
-            "CUSTOM": 0,
         }
         ACTION_KEYS = (
             "view",

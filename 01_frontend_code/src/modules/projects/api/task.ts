@@ -99,7 +99,12 @@ function mapApiTask(row: Record<string, unknown>): Task {
       undefined,
     assigneeName: assigneeName || undefined,
     assigneeEmploymentId,
+    startDate: (row.start_date as string | null | undefined) ?? (row.startDate as string | null) ?? null,
     dueDate: (row.due_date as string | null | undefined) ?? (row.dueDate as string | null) ?? null,
+    estimatedHours:
+      row.estimated_hours != null && Number.isFinite(Number(row.estimated_hours))
+        ? Number(row.estimated_hours)
+        : ((row.estimatedHours as number | null | undefined) ?? null),
     createdAt: String(row.created_at ?? row.createdAt ?? new Date().toISOString()),
   }
 }
@@ -121,6 +126,7 @@ function asTask(row: TaskRow): Task {
     projectName: row.projectName ?? undefined,
     assigneeName: resolvedName || undefined,
     assigneeEmploymentId: employmentId,
+    startDate: row.startDate ?? null,
     dueDate: row.dueDate ?? null,
     createdAt: row.createdAt,
   }
@@ -266,6 +272,9 @@ export async function createTask(input: {
   projectName?: string
   assigneeName?: string
   assigneeEmploymentId?: number | null
+  startDate?: string
+  dueDate?: string
+  estimatedHours?: number
 }): Promise<Task> {
   if (!env.useMockApi) {
     if (input.projectId == null) {
@@ -278,6 +287,12 @@ export async function createTask(input: {
       priority: toBackendPriority(input.priority ?? 'MEDIUM'),
       status: 'TODO',
       assignee_employment_id: input.assigneeEmploymentId ?? null,
+      start_date: input.startDate || null,
+      due_date: input.dueDate || null,
+      estimated_hours:
+        input.estimatedHours != null && Number.isFinite(input.estimatedHours)
+          ? input.estimatedHours
+          : null,
     })
     const task = mapApiTask(data)
     if (input.assigneeName) task.assigneeName = input.assigneeName
@@ -306,7 +321,8 @@ export async function createTask(input: {
     projectName: input.projectName ?? null,
     assigneeName: resolvedName,
     assigneeEmploymentId: input.assigneeEmploymentId ?? null,
-    dueDate: null,
+    dueDate: input.dueDate ?? null,
+    startDate: input.startDate ?? null,
     createdAt: new Date().toISOString(),
   }
   tasks.unshift(row)

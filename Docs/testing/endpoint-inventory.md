@@ -1,6 +1,15 @@
-# Endpoint Inventory (HISTORICAL — SUPERSEDED)
+# Endpoint Inventory (HISTORICAL static notes — SUPERSEDED by generated file)
 
-> Authoritative source is now generated `endpoint_inventory.json` (TASK-001, from the running app).
+> Authoritative source: generated `endpoint_inventory.json` (TASK-001, machine-derived
+> from the running app's router tree cross-checked against live `/openapi.json`).
+> Generated counts: TOTAL_ENDPOINTS=278 (router tree) / LIVE_OPENAPI_TOTAL=279
+> (delta is exactly `GET /health`, which lives outside the versioned API router).
+> Auth split (machine-derived from route dependencies): PUBLIC_BY_DESIGN=9,
+> JWT_ENFORCED=0, NONE_ENFORCED=269, WRITE_ENDPOINTS=138, DUPLICATE_ROUTES=0.
+> Finding: zero routes carry a JWT/auth dependency — all non-public endpoints rely
+> solely on optional actor headers (P0, see Security Gate).
+> The 9 My Work stub routes (`stubs/routes.py`) are NOT registered in the running
+> app (0 inventory entries sourced from that file); SEC-006 stub-reorder is NOT-APPLICABLE.
 > Counts below (historical static discovery: 274+ across 62 routes.py files) are illustrative only.
 
 ## Historical static discovery: 274+ across 62 routes.py files

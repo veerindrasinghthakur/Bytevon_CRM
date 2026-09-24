@@ -1,11 +1,16 @@
-import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { useState } from 'react'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
+import { Can } from '@/shared/rbac'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
-import { useLead, useSalesActivities, useUpdateLead } from '../../hooks/use-sales'
+import { useLead, useSalesActivities, useUpdateLead, useDeleteLead } from '../../hooks/use-sales'
 import { salesRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
 import { stageStyles, priorityStyles } from '../../schemas/enums'
@@ -18,10 +23,18 @@ export function LeadDetailPage() {
   const navigate = useNavigate()
   const { leadId } = useParams({ strict: false }) as { leadId: string }
   const leadQuery = useLead(leadId)
-  const activitiesQuery = useSalesActivities()
+  const numericLeadId = Number(String(leadId ?? '').replace(/^LD-/i, ''))
+  const activitiesQuery = useSalesActivities({
+    leadId: Number.isFinite(numericLeadId) ? numericLeadId : undefined,
+    limit: 4,
+  })
   const updateLead = useUpdateLead()
+  const deleteMut = useDeleteLead()
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const lead = leadQuery.data ?? null
   const timeline = (activitiesQuery.data ?? []).slice(0, 4)
+
+  useDeletedRedirect({ ready: !leadQuery.isLoading, data: lead, error: leadQuery.error, listTo: salesRoutes.leads })
 
   if (leadQuery.isLoading) return <PageLoadingSkeleton />
 
@@ -44,19 +57,6 @@ export function LeadDetailPage() {
         showBack
         backTo={salesRoutes.leads}
         backLabel="Back to leads"
-        breadcrumbs={
-          <nav className="text-body-sm text-on-surface-variant">
-            <Link {...looseLinkProps({ to: salesRoutes.root, className: 'hover:text-secondary' })}>
-              Sales
-            </Link>
-            <span className="mx-2">/</span>
-            <Link {...looseLinkProps({ to: salesRoutes.leads, className: 'hover:text-secondary' })}>
-              Leads
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-on-surface">{lead.id}</span>
-          </nav>
-        }
         actions={
           <div className="flex items-center gap-3">
             {lead.chatLink && (
@@ -70,21 +70,41 @@ export function LeadDetailPage() {
                 Open chat
               </a>
             )}
-            <Button
-              variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-              onClick={() =>
-                safeNavigate(navigate, {
-                  to: salesRoutes.leadEdit(lead.id),
-                  params: { leadId: lead.id },
-                })
-              }
-            >
-              Edit lead
-            </Button>
+            <Can action="UPDATE" resource="lead">
+              <Button
+                variant="primary"
+                leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
+                onClick={() =>
+                  safeNavigate(navigate, {
+                    to: salesRoutes.leadEdit(lead.id),
+                    params: { leadId: lead.id },
+                  })
+                }
+              >
+                Edit lead
+              </Button>
+            </Can>
+            <Can action="DELETE" resource="lead">
+              <DeleteButton
+                entityLabel={lead.title}
+                isLoading={deleteMut.isPending}
+                onConfirm={() =>
+                  deleteMut.mutate(lead.id, {
+                    onSuccess: () => safeNavigate(navigate, { to: salesRoutes.leads }),
+                    onError: (err) =>
+                      setDeleteError(getApiErrorMessage(err, 'Could not delete lead')),
+                  })
+                }
+              />
+            </Can>
           </div>
         }
       />
+      {deleteError && (
+        <p className="text-body-sm text-error" role="alert">
+          {deleteError}
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
         <span className={cn('px-2.5 py-1 rounded-full text-[11px] font-bold uppercase', stageStyles[lead.stage])}>
@@ -111,7 +131,7 @@ export function LeadDetailPage() {
           {lead.notes && (
             <section className="bv-surface p-6">
               <h2 className="text-title-md font-semibold mb-3">Internal notes</h2>
-              <p className="text-body-md text-on-surface italic">"{lead.notes}"</p>
+              <p className="text-body-md text-on-surface italic">&ldquo;{lead.notes}&rdquo;</p>
             </section>
           )}
 

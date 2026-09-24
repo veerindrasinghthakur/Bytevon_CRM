@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { UploadButton } from '@/shared/components/forms/UploadButton'
 import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { FilePreviewModal } from '@/shared/components/documents/FilePreviewModal'
 import type { FilePreviewItem } from '@/shared/types'
@@ -12,8 +11,13 @@ import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { downloadFile } from '@/shared/lib/download-file'
-import { ResourceName } from '@/shared/schema'
-import { useDocuments, useUploadDocument } from '../../hooks/document/use-documents'
+import { Can } from '@/shared/rbac'
+import { Button } from '@/shared/components/ui/Button'
+import {
+  useAllProjectDocuments,
+  useArchiveDocument,
+} from '../../hooks/document/use-documents'
+import { UploadDocumentsModal } from '../../components/document/UploadDocumentsModal'
 import { DocumentQuickContent, iconForMime } from '../../components/DocumentQuickContent'
 import type { ProjectDocument } from '../../types'
 
@@ -24,10 +28,12 @@ export function DocumentsPage() {
   const search = controls.search
   const typeFilter = controls.filters.type
 
-  const { data, isLoading, isError, refetch, isFetching } = useDocuments({
-    search: search || undefined,
-  })
-  const uploadMutation = useUploadDocument()
+  const { data, isLoading, isError, refetch, isFetching } = useAllProjectDocuments(
+    search || undefined,
+  )
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [archivingId, setArchivingId] = useState<string | null>(null)
+  const archiveMutation = useArchiveDocument()
   const [preview, setPreview] = useState<FilePreviewItem | null>(null)
   const { openPanel } = useQuickOverview()
 
@@ -87,14 +93,19 @@ export function DocumentsPage() {
         title="Documents"
         description="Project and organization documents. Upload, preview, and download."
         actions={
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <RefreshButton onClick={() => void refetch()} isLoading={isFetching} iconOnly />
-            <ExportButton resource={ResourceName.DOCUMENT} query={search} selectedIds={[]} filenameStem="documents" />
-            <UploadButton
-              label="Upload"
-              onFiles={(files) => void uploadMutation.mutateAsync(files)}
-              disabled={uploadMutation.isPending}
-            />
+            <ExportButton resource={'document'} query={search} selectedIds={[]} filenameStem="documents" />
+            <Can action="CREATE" resource="document">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}
+                onClick={() => setUploadOpen(true)}
+              >
+                Upload
+              </Button>
+            </Can>
           </div>
         }
       />
@@ -141,10 +152,12 @@ export function DocumentsPage() {
 
       {!isLoading && items.length > 0 && (
         <div className="bv-surface overflow-hidden">
-          <table className="w-full text-left">
+          <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[820px]">
             <thead>
               <tr className="border-b border-outline-variant bg-surface-container-low/50">
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase">Name</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase">Project</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase">Size</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase">Uploaded by</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase">Date</th>
@@ -165,11 +178,12 @@ export function DocumentsPage() {
                       </div>
                     </div>
                   </td>
+                  <td className="px-4 py-3 text-body-sm">{d.projectName ?? '—'}</td>
                   <td className="px-4 py-3 text-body-sm">{d.sizeLabel}</td>
                   <td className="px-4 py-3 text-body-sm">{d.uploadedBy}</td>
-                  <td className="px-4 py-3 text-body-sm">{d.uploadedAt}</td>
+                  <td className="px-4 py-3 text-body-sm whitespace-nowrap">{d.uploadedAt}</td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex justify-end gap-1">
+                    <div className="flex justify-end gap-1 items-center">
                       <button
                         type="button"
                         className="p-2 rounded-lg hover:bg-surface-container text-on-surface-variant"
@@ -196,12 +210,47 @@ export function DocumentsPage() {
                       >
                         <span className="material-symbols-outlined text-lg">download</span>
                       </button>
+                      <Can action="UPDATE" resource="document">
+                        {archivingId === d.id ? (
+                          <span className="inline-flex items-center gap-1 text-body-sm">
+                            <button
+                              type="button"
+                              className="text-error hover:underline font-semibold px-1"
+                              disabled={archiveMutation.isPending}
+                              onClick={() => {
+                                archiveMutation.mutate(d.id, {
+                                  onSuccess: () => setArchivingId(null),
+                                })
+                              }}
+                            >
+                              {archiveMutation.isPending ? 'Archiving…' : 'Confirm'}
+                            </button>
+                            <button
+                              type="button"
+                              className="text-on-surface-variant hover:text-on-surface px-1"
+                              onClick={() => setArchivingId(null)}
+                            >
+                              Cancel
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            className="p-2 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-error"
+                            title="Archive"
+                            onClick={() => setArchivingId(d.id)}
+                          >
+                            <span className="material-symbols-outlined text-lg">archive</span>
+                          </button>
+                        )}
+                      </Can>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
           <div className="px-4 py-3 border-t border-outline-variant text-label-sm text-on-surface-variant">
             Showing {items.length} document{items.length === 1 ? '' : 's'}
           </div>
@@ -209,6 +258,11 @@ export function DocumentsPage() {
       )}
 
       <FilePreviewModal open={Boolean(preview)} file={preview} onClose={() => setPreview(null)} />
+      <UploadDocumentsModal
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        onUploaded={() => void refetch()}
+      />
     </div>
   )
 }

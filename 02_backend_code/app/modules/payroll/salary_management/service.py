@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -41,7 +40,7 @@ class SalaryManagementService(BasePublicService):
         self,
         data: EmployeeSalaryCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> EmployeeSalaryResponse:
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         current = await self._repo.get_current_salary(
@@ -73,11 +72,13 @@ class SalaryManagementService(BasePublicService):
             )
         await self._commit()
         salary = await self._repo.get_salary_by_id(salary.id, with_items=True)
+        if salary is None:
+            raise NotFoundError("Salary configuration not found after create")
         await self._audit("employee_salary.created", salary.id, actor)
         return _salary_response(salary)
 
     async def get_current_salary(
-        self, employment_id: int, *, as_of: Optional[date] = None
+        self, employment_id: int, *, as_of: date | None = None
     ) -> EmployeeSalaryResponse:
         salary = await self._repo.get_current_salary(employment_id, as_of=as_of)
         if salary is None:

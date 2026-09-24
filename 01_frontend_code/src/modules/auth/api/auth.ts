@@ -17,6 +17,7 @@ import type {
 } from '../schemas/auth'
 import { MOCK_LOGIN_EMAIL, MOCK_LOGIN_PASSWORD } from '../schemas/auth'
 import { setCurrentEmploymentId } from '@/shared/rbac'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import type {AxiosErrorResponse} from "../types.ts"
 
 import { delay} from '@/shared/mock/db'
@@ -34,7 +35,9 @@ interface BackendLoginResponse {
   }
   login_id: number
   person_id: number
+  employment_id?: number | null
   email: string
+  session_id?: number | null
 }
 
 const ADMIN_USER: AuthUser = {
@@ -46,6 +49,7 @@ const ADMIN_USER: AuthUser = {
   department: 'Operations',
   employmentId: 1,
   personId: 1,
+  loginId: 1,
 }
 
 
@@ -103,11 +107,18 @@ export function persistSession(session: AuthSession | null) {
 export async function loginApi(input: LoginInput): Promise<AuthSession> {
   const rememberMe = input.rememberMe ?? false
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<BackendLoginResponse>('/auth/login', {
-      email: input.email.trim(),
-      password: input.password,
-      rememberMe,
-    })
+    let data: BackendLoginResponse
+    try {
+      ;({ data } = await apiClient.post<BackendLoginResponse>('/auth/login', {
+        email: input.email.trim(),
+        password: input.password,
+        rememberMe,
+      }))
+    } catch (err) {
+      // Surface the backend message ("Invalid username or password",
+      // "Account is locked …") instead of the raw axios status text.
+      throw new Error(getApiErrorMessage(err, 'Login failed. Please try again.'))
+    }
     const session: AuthSession = {
       user: {
         id: data.person_id,
@@ -116,8 +127,10 @@ export async function loginApi(input: LoginInput): Promise<AuthSession> {
         name: 'System Admin',
         role: 'Administrator',
         department: 'Administration',
-        employmentId: 1,
+        employmentId: data.employment_id ?? 1,
         personId: data.person_id,
+        loginId: data.login_id,
+        sessionId: data.session_id ?? null,
       },
       tokens: {
         accessToken: data.tokens.access_token,
@@ -171,9 +184,27 @@ export async function logoutApi(revokeAll = false): Promise<void> {
 export async function refreshApi(refreshToken: string): Promise<AuthSession> {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.post<AuthSession>('/auth/refresh', { refreshToken })
-      persistSession(data)
-      return data
+      // Backend returns a bare token pair (snake_case, no user object).
+      // Map it onto the stored AuthSession so user/rememberMe survive refresh —
+      // persisting the raw pair corrupts the session and logs the user out.
+      const { data } = await apiClient.post<{
+        access_token: string
+        refresh_token: string
+        token_type: string
+        expires_in: number
+      }>('/auth/refresh', { refresh_token: refreshToken })
+      const current = loadStoredSession()
+      if (!current) throw new Error('SESSION_EXPIRED')
+      const next: AuthSession = {
+        ...current,
+        tokens: {
+          accessToken: data.access_token,
+          refreshToken: data.refresh_token,
+          expiresIn: data.expires_in,
+        },
+      }
+      persistSession(next)
+      return next
     } catch (err) {
       // Only a definitive 401 means the refresh token is invalid.
       // Network errors / 5xx / backend-down must NOT wipe the local session,
@@ -255,7 +286,12 @@ export async function resetPasswordApi(
 
 export async function changePasswordApi(input: ChangePasswordInput): Promise<{ message: string }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<{ message: string }>('/auth/change-password', input)
+    // Backend ChangePasswordRequest is snake_case.
+    const { data } = await apiClient.post<{ message: string }>('/auth/change-password', {
+      current_password: input.currentPassword,
+      new_password: input.password,
+      revoke_all_sessions: Boolean(input.revokeAllSessions),
+    })
     return data
   }
 

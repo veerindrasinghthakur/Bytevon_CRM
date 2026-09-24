@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -17,8 +16,8 @@ class NoteCreate(BaseModel):
 
 
 class NoteUpdate(BaseModel):
-    title: Optional[str] = Field(None, min_length=1, max_length=255)
-    content: Optional[str] = Field(None, min_length=1)
+    title: str | None = Field(None, min_length=1, max_length=255)
+    content: str | None = Field(None, min_length=1)
 
 
 class NoteResponse(BaseModel):
@@ -31,4 +30,4 @@ class NoteResponse(BaseModel):
     content: str
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None

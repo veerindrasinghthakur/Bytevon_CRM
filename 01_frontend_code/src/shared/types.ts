@@ -414,6 +414,8 @@ export interface SelectProps {
   minWidthClass?: string
   id?: string
   disabled?: boolean
+  /** Panel placement: 'auto' flips up when viewport space below is tight. */
+  dropDirection?: 'auto' | 'up' | 'down'
   'aria-label'?: string
 }
 

@@ -43,6 +43,9 @@ export function useCreateTask() {
       projectName?: string
       assigneeName?: string
       assigneeEmploymentId?: number | null
+      startDate?: string
+      dueDate?: string
+      estimatedHours?: number
     }) => createTask(input),
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.tasks.all })
@@ -59,7 +62,9 @@ export function useCreateTask() {
         projectId: input.projectId ?? 0,
         projectName: input.projectName,
         assigneeName: input.assigneeName,
-        dueDate: null,
+        startDate: input.startDate ?? null,
+        dueDate: input.dueDate ?? null,
+        estimatedHours: input.estimatedHours ?? null,
         createdAt: new Date().toISOString(),
       }
 

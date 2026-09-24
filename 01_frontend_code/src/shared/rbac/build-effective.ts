@@ -1,9 +1,10 @@
 /**
  * Build EffectiveAuthorization from mock seed tables (or role templates).
  * Used when env.useMockApi — replaced by GET effective-permissions in real mode.
+ * Resource names are backend strings — never a frontend enum.
  */
 import { getDb } from '@/shared/mock/db'
-import { ResourceName, ScopeName } from '@/shared/schema'
+import { ScopeName } from '@/shared/schema'
 import {
   type EffectiveAuthorization,
   type ScopeByResource,
@@ -27,51 +28,51 @@ const SUPER_ADMIN_ROLE_ID = 1
 /** Baseline grants when role_permissions seed is empty — keeps non-admin roles usable. */
 const ROLE_TEMPLATES: Record<
   number,
-  { resources: ResourceName[]; actions: string[]; scope: ScopeName }
+  { resources: string[]; actions: string[]; scope: ScopeName }
 > = {
   2: {
     resources: [
-      ResourceName.EMPLOYMENT,
-      ResourceName.DEPARTMENT,
-      ResourceName.USER,
-      ResourceName.LEAVE_REQUEST,
-      ResourceName.LEAVE_POLICY,
-      ResourceName.ATTENDANCE,
-      ResourceName.SALARY,
-      ResourceName.ROLE,
-      ResourceName.ORG_SETTINGS,
-      ResourceName.SHIFT,
-      ResourceName.HOLIDAY,
-      ResourceName.LOCATION,
+      'employment',
+      'department',
+      'user',
+      'leave_request',
+      'leave_policy',
+      'attendance',
+      'salary',
+      'role',
+      'org_settings',
+      'shift',
+      'holiday',
+      'location',
     ],
     actions: ['VIEW', 'CREATE', 'UPDATE', 'DELETE', 'EXPORT', 'UNLOCK'],
     scope: ScopeName.ORGANIZATION,
   },
   3: {
     resources: [
-      ResourceName.EMPLOYMENT,
-      ResourceName.ATTENDANCE,
-      ResourceName.LEAVE_REQUEST,
-      ResourceName.TASK,
-      ResourceName.PROJECT,
-      ResourceName.APPROVAL,
+      'employment',
+      'attendance',
+      'leave_request',
+      'task',
+      'project',
+      'approval',
     ],
     actions: ['VIEW', 'CREATE', 'UPDATE', 'APPROVE'],
     scope: ScopeName.TEAM,
   },
   4: {
-    resources: [ResourceName.PAYROLL, ResourceName.SALARY, ResourceName.EMPLOYMENT],
+    resources: ['payroll', 'salary', 'employment'],
     actions: ['VIEW', 'CREATE', 'UPDATE', 'APPROVE', 'EXPORT'],
     scope: ScopeName.ORGANIZATION,
   },
   5: {
     resources: [
-      ResourceName.LEAVE_REQUEST,
-      ResourceName.ATTENDANCE,
-      ResourceName.TASK,
-      ResourceName.NOTIFICATION,
-      ResourceName.DOCUMENT,
-      ResourceName.NOTE,
+      'leave_request',
+      'attendance',
+      'task',
+      'notification',
+      'document',
+      'note',
     ],
     actions: ['VIEW', 'CREATE', 'UPDATE'],
     scope: ScopeName.SELF,
@@ -111,8 +112,9 @@ export function buildEffectiveAuthorization(employmentId: number): EffectiveAuth
 
   if (roleIds.includes(SUPER_ADMIN_ROLE_ID)) {
     const allOrg: ScopeByResource = {}
-    for (const r of Object.values(ResourceName)) {
-      allOrg[r] = ScopeName.ORGANIZATION
+    // Resource names come from the mock seed (mirrors backend `resources` table).
+    for (const r of db.resources ?? []) {
+      allOrg[r.name] = ScopeName.ORGANIZATION
     }
     return {
       employmentId,
@@ -127,7 +129,7 @@ export function buildEffectiveAuthorization(employmentId: number): EffectiveAuth
   const scopeByResource: ScopeByResource = {}
   let overall: ScopeName = ScopeName.SELF
 
-  const resourceById = new Map((db.resources ?? []).map((r) => [r.id, r.name as ResourceName]))
+  const resourceById = new Map((db.resources ?? []).map((r) => [r.id, r.name]))
   const permissionById = new Map(
     (db.permissions ?? []).map((p) => [p.id, { resourceId: p.resource_id, action: p.action }]),
   )

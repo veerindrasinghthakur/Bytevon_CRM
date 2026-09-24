@@ -8,6 +8,7 @@ import { queryKeys } from '@/shared/lib/query-keys'
 import { listMyAttendance, getMyWorkOverview } from '../../api/my-work'
 import { attendanceStatusStyles } from '../../schemas/enums'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { myWorkRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
 
@@ -23,6 +24,13 @@ export function AttendanceDetailPage() {
   const overviewQuery = useQuery({
     queryKey: queryKeys.myWork.overview(),
     queryFn: getMyWorkOverview,
+  })
+
+  useDeletedRedirect({
+    ready: !listQuery.isLoading,
+    data: listQuery.data?.items.find((r) => r.id === attendanceId) ?? null,
+    error: listQuery.error,
+    listTo: myWorkRoutes.attendance,
   })
 
   if (listQuery.isLoading) return <PageLoadingSkeleton />

@@ -18,6 +18,7 @@ export {
   getPayrollReview,
   approvePayrollEmployee,
   payPayrollEmployee,
+  rejectPayroll,
 } from './review'
 export { getPayslip } from './payslip'
 export { getSalaryStructure, saveSalaryStructure } from './salary'

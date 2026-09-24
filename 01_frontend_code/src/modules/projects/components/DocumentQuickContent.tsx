@@ -40,6 +40,9 @@ export function DocumentQuickContent({ d }: { d: ProjectDocument }) {
       <QuickSection title="Identity">
         <QuickRelatedRow icon="description" label="Name" value={d.name} />
         <QuickRelatedRow icon="tag" label="ID" value={d.id} />
+        {d.projectName && (
+          <QuickRelatedRow icon="account_tree" label="Project" value={d.projectName} />
+        )}
       </QuickSection>
     </>
   )

@@ -1,9 +1,9 @@
 /**
  * Scope helpers for data APIs — FE suggests boundary; BE remains authoritative.
+ * Resource names are backend strings — never a frontend enum.
  */
 import type { ScopeName } from '@/shared/schema'
 import type { EffectiveAuthorization, ScopeByResource } from './types'
-import type { ResourceName } from '@/shared/schema'
 
 export type ScopedListParams = {
   /** Data boundary for the request (never trusted by backend alone) */
@@ -19,10 +19,10 @@ export function dataScope(auth: EffectiveAuthorization | null | undefined): Scop
 /** Prefer per-resource scope when present, else overall. */
 export function dataScopeFor(
   auth: EffectiveAuthorization | null | undefined,
-  resource: ResourceName | string,
+  resource: string,
 ): ScopeName {
   if (!auth) return 'SELF' as ScopeName
-  const byRes = auth.scopeByResource?.[resource as ResourceName]
+  const byRes = auth.scopeByResource?.[resource]
   return byRes ?? auth.scope
 }
 
@@ -40,7 +40,7 @@ export function withAuthScope<
 >(
   params: T,
   auth: EffectiveAuthorization | null | undefined,
-  resource?: ResourceName | string,
+  resource?: string,
 ): T & ScopedListParams {
   const scope = resource ? dataScopeFor(auth, resource) : dataScope(auth)
   return withScope(params, scope)

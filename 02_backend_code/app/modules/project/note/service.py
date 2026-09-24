@@ -1,8 +1,6 @@
 """NoteService — polymorphic notes (LEAD | TASK | CLIENT only)."""
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -29,7 +27,7 @@ class NoteService(BasePublicService):
         self,
         data: NoteCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> NoteResponse:
         if data.reference_type not in _ALLOWED_NOTE_TYPES:
             raise DomainError(
@@ -68,7 +66,7 @@ class NoteService(BasePublicService):
         note_id: int,
         data: NoteUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> NoteResponse:
         note = await self._repo.get_by_id(note_id)
         if note is None:
@@ -77,5 +75,6 @@ class NoteService(BasePublicService):
             setattr(note, field, value)
         note.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
+        await self._session.refresh(note)
         await self._audit("note.updated", note.id, actor_employment_id)
         return NoteResponse.model_validate(note)
