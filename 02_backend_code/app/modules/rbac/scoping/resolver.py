@@ -98,15 +98,6 @@ class ScopeResolver:
     Does not mutate get_effective_permissions; that remains FE visibility only.
     """
 
-    def __init(
-        self,
-        session: AsyncSession,
-        *,
-        organization_id: Optional[int] = 1,
-    ) -> None:
-        self._session = session
-        self._organization_id = organization_id
-
     def __init__(
         self,
         session: AsyncSession,
