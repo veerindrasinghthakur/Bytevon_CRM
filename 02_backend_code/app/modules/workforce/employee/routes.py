@@ -49,7 +49,7 @@ async def list_persons(
 async def get_person(
     person_id: int,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
 ) -> PersonResponse:
     enforce_owner_or_grant(auth, "employment", "VIEW", owner_person_id=person_id)
     return await service.get_person(person_id)
@@ -60,7 +60,7 @@ async def update_person(
     person_id: int,
     body: PersonUpdate,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "SELF"))],
 ) -> PersonResponse:
     enforce_owner_or_grant(auth, "employment", "UPDATE", owner_person_id=person_id)
     return await service.update_person(person_id, body, actor_employment_id=auth.employment_id)
@@ -88,7 +88,8 @@ async def list_positions(
 async def get_position(
     position_id: int,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "CUSTOM"))],
+    # Grant-only quirk: no owner args — do not invent self-access.
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
     include_archived: bool = Query(False),
 ) -> PositionResponse:
     enforce_owner_or_grant(auth, "employment", "VIEW")
@@ -100,7 +101,7 @@ async def update_position(
     position_id: int,
     body: PositionUpdate,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "SELF"))],
 ) -> PositionResponse:
     enforce_owner_or_grant(auth, "employment", "UPDATE")
     return await service.update_position(position_id, body, actor_employment_id=auth.employment_id)
@@ -115,7 +116,6 @@ async def delete_position(
     return await service.delete_position(position_id, actor_employment_id=auth.employment_id)
 
 
-# Deprecated alias — old POST .../archive callers keep working
 @router.post("/positions/{position_id}/archive", response_model=MessageResponse, include_in_schema=False)
 async def archive_position(
     position_id: int,
@@ -131,7 +131,6 @@ async def restore_position(
     service: EmployeeServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "ORGANIZATION"))],
 ) -> PositionResponse:
-    """Q16: restore an archived position (409 on name clash)."""
     return await service.restore_position(position_id, actor_employment_id=auth.employment_id)
 
 
@@ -176,7 +175,7 @@ async def list_employments(
 async def list_employments_by_person(
     person_id: int,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
 ) -> list[EmploymentResponse]:
     enforce_owner_or_grant(auth, "employment", "VIEW", owner_person_id=person_id)
     return await service.list_employments_by_person(person_id)
@@ -186,7 +185,7 @@ async def list_employments_by_person(
 async def get_employment(
     employment_id: int,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
 ) -> EmploymentDetailResponse:
     enforce_owner_or_grant(auth, "employment", "VIEW", owner_employment_id=employment_id)
     return await service.get_employment(employment_id)
@@ -214,7 +213,7 @@ async def update_employment(
     employment_id: int,
     body: EmploymentUpdate,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "SELF"))],
 ) -> EmploymentResponse:
     enforce_owner_or_grant(auth, "employment", "UPDATE", owner_employment_id=employment_id)
     return await service.update_employment(employment_id, body, actor_employment_id=auth.employment_id)
