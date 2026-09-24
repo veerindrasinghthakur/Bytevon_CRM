@@ -149,11 +149,12 @@ class ApprovalActionService(BasePublicService):
         ):
             raise DomainError("Requester cannot approve or reject their own request")
 
-        # Relationship: leave APPROVE requires department-head match + PENDING
-        # (scope is upstream via require_permission). Fail → 403, not 404.
-        if not skip_relationship and action in (
-            ApprovalActionType.APPROVED,
-            ApprovalActionType.REJECTED,
+        # Leave APPROVE relationship: department head + PENDING.
+        # Non-leave request types are not gated by this first consumer.
+        if (
+            not skip_relationship
+            and action in (ApprovalActionType.APPROVED, ApprovalActionType.REJECTED)
+            and (req.request_type or "").upper().startswith("LEAVE")
         ):
             await enforce_relationship(
                 self._session,
