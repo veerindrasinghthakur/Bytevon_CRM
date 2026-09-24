@@ -1,15 +1,13 @@
 """Authorization dependency — RBAC permission + scope enforcement (SEC-002).
 
-Contracts enforced here:
-- Super Admin Contract: valid JWT required; bypasses ALL scope and
-  resource/action checks (never authentication, existence, business rules,
-  or DB integrity).
-- Scope hierarchy: SELF < TEAM < DEPARTMENT < LOCATION < ORGANIZATION.
-  A grant satisfies an endpoint when grant_rank >= required_rank.
-- CUSTOM scope: authentication is enforced by the dependency; the
-  handler enforces the owner-or-grant rule via enforce_owner_or_grant().
-- Grant failures hide existence (404 per architecture); explicit
-  action denials use 403 where intended.
+Error contract (data-scoped endpoints):
+- ForbiddenError (403): actor has NO grant at all for resource+action.
+- NotFoundError (404): actor has the grant, but the scoped query returns
+  zero rows (missing or out of scope — identical response).
+
+ScopeResolver + adapters enforce data boundaries on list/detail queries.
+require_permission(..., "ANY") only checks that some grant exists for the
+action; list handlers then apply ScopeConstraint filters.
 """
 from __future__ import annotations
 
@@ -22,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.dependencies import get_current_login, get_token_payload
-from app.core.exceptions.exception import NotFoundError
+from app.core.exceptions.exception import ForbiddenError, NotFoundError
 from app.core.security.token_payload import TokenPayload
 from app.modules.auth.models import Login
 
@@ -34,8 +32,6 @@ SCOPE_RANK: dict[str, int] = {
     "ORGANIZATION": 5,
 }
 
-# Non-owner access to a CUSTOM (owner-or-grant) endpoint requires at least
-# department-level authority; SELF-only grants never open other users' records.
 CUSTOM_NON_OWNER_MIN_RANK = SCOPE_RANK["DEPARTMENT"]
 
 
@@ -65,9 +61,6 @@ def _resolve_employment_id(
 
 SUPER_ADMIN_ROLE_NAMES = ("Super Admin", "SuperAdmin")
 
-# Endpoints gated by authentication + account match only (no RBAC grant):
-# logout, change-password, own session lists. Every valid login may use
-# them; permission_mapping.json marks them "authenticated_account".
 ACCOUNT_SELF_PATHS = frozenset(
     {
         ("POST", "/api/v1/auth/logout"),
@@ -79,12 +72,6 @@ ACCOUNT_SELF_PATHS = frozenset(
 
 
 async def _has_super_admin_role(session: AsyncSession, employment_id: int) -> bool:
-    """Direct role check — independent of permission grants.
-
-    The Super Admin role carries no RolePermission rows by design (it
-    bypasses checks per contract); detecting via grant joins would always
-    return False.
-    """
     from sqlalchemy import select
 
     from app.modules.rbac.models import EmployeeRole, Role
@@ -104,9 +91,11 @@ def require_permission(
 ) -> Callable[..., Coroutine[Any, Any, AuthContext]]:
     """FastAPI dependency factory enforcing (resource, action, scope).
 
-    Usage: `auth: AuthContextDep = Depends(require_permission("leave_request", "VIEW", "SELF"))`
+    scope="ANY": only requires that the actor has *some* grant for the action
+    (used by list endpoints that apply ScopeResolver data filters).
+    scope="CUSTOM": auth only; handler uses enforce_owner_or_grant or scoped fetch.
     """
-    required_rank = SCOPE_RANK.get(scope.upper(), SCOPE_RANK["ORGANIZATION"])
+    required_rank = SCOPE_RANK.get(scope.upper(), 0 if scope.upper() == "ANY" else SCOPE_RANK["ORGANIZATION"])
     scope_name = scope.upper()
 
     async def guard(
@@ -142,28 +131,31 @@ def require_permission(
         if ctx.is_super_admin:
             return ctx
         if scope_name == "CUSTOM":
-            # Authentication enforced above; handler applies owner-or-grant.
             return ctx
-        grant_scope = (ctx.scopes.get(resource) or "").upper()
-        if SCOPE_RANK.get(grant_scope, 0) < required_rank:
-            # Authenticated but not permitted: keep 404 status (hide existence)
-            # while the code/message tell the UI it's a permission issue,
-            # never a session/expiry problem.
-            raise NotFoundError(
-                "You don't have permission to access this resource",
-                code="insufficient_permission",
-            )
-        # Action-level check via permission matrix when present.
+
         permissions = effective.permissions or {}
         resource_perms = permissions.get(resource)
-        if resource_perms is not None and not resource_perms.get(action.lower(), False):
-            raise NotFoundError(
+        has_action = bool(resource_perms and resource_perms.get(action.lower(), False))
+        if not has_action:
+            # No grant at all for this resource+action → 403
+            raise ForbiddenError(
                 "You don't have permission to perform this action",
+                code="insufficient_permission",
+            )
+
+        if scope_name == "ANY":
+            # Grant exists; ScopeResolver applies data boundary in the handler.
+            return ctx
+
+        grant_scope = (ctx.scopes.get(resource) or "").upper()
+        if SCOPE_RANK.get(grant_scope, 0) < required_rank:
+            # Has some grant but not wide enough for this endpoint's rank gate.
+            raise ForbiddenError(
+                "You don't have permission to access this resource",
                 code="insufficient_permission",
             )
         return ctx
 
-    # Give the dependency a stable, debuggable name per endpoint.
     guard.__name__ = f"require_{resource}_{action.lower()}_{scope_name.lower()}"
     return guard
 
@@ -179,7 +171,9 @@ def enforce_owner_or_grant(
 ) -> None:
     """CUSTOM-scope handler rule: owner, Super Admin, or >= DEPARTMENT grant.
 
-    Raises 404 (hide existence) otherwise.
+    Prefer scoped SQL fetch (id + ScopeConstraint) for detail endpoints;
+    this helper remains for paths not yet on ScopeResolver.
+    Out-of-scope → 404 (hide existence).
     """
     if ctx.is_super_admin:
         return
@@ -193,6 +187,6 @@ def enforce_owner_or_grant(
     if SCOPE_RANK.get(grant_scope, 0) >= CUSTOM_NON_OWNER_MIN_RANK:
         return
     raise NotFoundError(
-        "You don't have permission to access this resource",
-        code="insufficient_permission",
+        "Resource not found",
+        code="not_found",
     )
