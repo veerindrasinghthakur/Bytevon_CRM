@@ -89,12 +89,16 @@ async def _has_super_admin_role(session: AsyncSession, employment_id: int) -> bo
 
 
 def require_permission(
-    resource: str, action: str, scope: str = "ORGANIZATION"
+    resource: str, action: str, scope: str = "ORGANIZATION", union: bool = False
 ) -> Callable[..., Coroutine[Any, Any, AuthContext]]:
     """FastAPI dependency factory enforcing (resource, action, scope).
 
-    For owner-or-grant routes: use scope="SELF" + enforce_owner_or_grant in handler
-    (union of owner-match OR ≥ DEPARTMENT grant).
+    For owner-or-grant routes: use scope="SELF", union=True + enforce_owner_or_grant
+    in handler (union of owner-match OR ≥ DEPARTMENT grant). With union=True the
+    guard enforces authentication only and the handler decides — this restores the
+    retired-CUSTOM behavior where grant-less owners could reach their own record.
+    Genuine SELF-gated routes (no handler union check) must NOT pass union=True.
+    TODO(ScopeResolver): replace inline union with scoped SQL when available.
     """
     scope_name = scope.upper()
     # CUSTOM retired — treat as SELF (rank gate only; handler does union).
@@ -134,6 +138,12 @@ def require_permission(
         )
         if ctx.is_super_admin:
             return ctx
+        if union:
+            # Owner-or-grant route: authentication enforced above; the handler
+            # must call enforce_owner_or_grant() to decide (owner-match OR
+            # ≥ DEPARTMENT grant). Skipping the rank/action gates here preserves
+            # grant-less self-access exactly as the retired CUSTOM scope did.
+            return ctx
 
         grant_scope = (ctx.scopes.get(resource) or "").upper()
         if SCOPE_RANK.get(grant_scope, 0) < required_rank:
@@ -151,6 +161,8 @@ def require_permission(
         return ctx
 
     guard.__name__ = f"require_{resource}_{action.lower()}_{scope_name.lower()}"
+    if union:
+        guard.__name__ += "_union"
     return guard
 
 

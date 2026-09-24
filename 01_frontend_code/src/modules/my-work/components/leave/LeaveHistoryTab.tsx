@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog'
 import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
@@ -36,6 +38,7 @@ export function LeaveHistoryTab({
 }) {
   const navigate = useNavigate()
   const requestCancelMut = useRequestLeaveCancel()
+  const [cancelId, setCancelId] = useState<string | null>(null)
 
   return (
     <div className="space-y-4">
@@ -155,10 +158,7 @@ export function LeaveHistoryTab({
                           variant="outline"
                           size="sm"
                           disabled={requestCancelMut.isPending}
-                          onClick={() => {
-                            if (!window.confirm(`Request cancellation for ${req.id}?`)) return
-                            requestCancelMut.mutate(req.id)
-                          }}
+                          onClick={() => setCancelId(req.id)}
                         >
                           {requestCancelMut.isPending ? 'Requesting…' : 'Request cancellation'}
                         </Button>
@@ -172,6 +172,18 @@ export function LeaveHistoryTab({
             </table>
           </div>
         </div>
+      )}
+      {cancelId && (
+        <ConfirmDialog
+          title={`Request cancellation for ${cancelId}?`}
+          message="Your approver will be notified to cancel this approved leave."
+          confirmLabel="Send request"
+          isLoading={requestCancelMut.isPending}
+          onConfirm={() => {
+            requestCancelMut.mutate(cancelId, { onSuccess: () => setCancelId(null) })
+          }}
+          onClose={() => !requestCancelMut.isPending && setCancelId(null)}
+        />
       )}
     </div>
   )

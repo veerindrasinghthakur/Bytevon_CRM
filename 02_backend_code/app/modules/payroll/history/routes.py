@@ -25,7 +25,7 @@ async def payroll_history(
 async def employee_payroll_history(
     employment_id: int,
     service: HistoryServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("payroll", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("payroll", "VIEW", "SELF", union=True))],
     limit: int = Query(100, ge=1, le=500),
 ) -> list[dict[str, Any]]:
     """Per-employment history; employment_id path (not payroll_id)."""

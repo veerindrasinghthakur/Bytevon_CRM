@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.core.db.enums import PayrollItemType, PayrollStatus, SalaryItemType
 
@@ -45,6 +45,8 @@ class MonthlyPayrollItemResponse(BaseModel):
 class MonthlyPayrollResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    # Alias of id for list/history consumers (review/payslip routes use payroll_id).
+    payroll_id: int | None = Field(default=None)
     employment_id: int
     year: int
     month: int
@@ -62,3 +64,9 @@ class MonthlyPayrollResponse(BaseModel):
     updated_at: datetime
     changed_by: int | None
     items: list[MonthlyPayrollItemResponse] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _fill_payroll_id(self) -> "MonthlyPayrollResponse":
+        if self.payroll_id is None:
+            self.payroll_id = self.id
+        return self

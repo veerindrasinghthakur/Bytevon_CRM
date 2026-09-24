@@ -30,7 +30,11 @@ export async function approvePayrollEmployee(id: string): Promise<void> {
   await apiClient.post(`/payroll/${encodeURIComponent(id)}/approve`)
 }
 
-export async function payPayrollEmployee(id: string, ref?: string): Promise<void> {
+export async function payPayrollEmployee(
+  id: string,
+  ref?: string,
+  method = 'BANK_TRANSFER',
+): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
     const row = payrollEmployees.find((e) => e.id === id)
@@ -41,8 +45,8 @@ export async function payPayrollEmployee(id: string, ref?: string): Promise<void
     return
   }
   await apiClient.post(`/payroll/${encodeURIComponent(id)}/pay`, {
-    payment_reference: ref,
-    reference: ref,
+    payment_method: method,
+    payment_reference: ref ?? null,
   })
 }
 

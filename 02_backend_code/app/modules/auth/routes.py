@@ -18,6 +18,7 @@ from app.modules.auth.schemas import (
     MessageResponse,
     RefreshRequest,
     ResetPasswordRequest,
+    SessionListItem,
     SessionResponse,
     TokenPairResponse,
 )
@@ -114,14 +115,51 @@ async def reset_password(
 
 @router.get(
     "/sessions",
-    response_model=list[SessionResponse],
+    response_model=list[SessionListItem],
     summary="List active sessions for current user",
 )
 async def list_sessions(
     service: AuthServiceDep,
     login: CurrentLoginDep,
     x_login_id: Annotated[int, Header(alias="X-Login-Id")],
-) -> list[SessionResponse]:
+    current_session_id: int | None = None,
+) -> list[SessionListItem]:
     if x_login_id != login.id:
         raise ForbiddenError("Cannot list another login's sessions")
-    return await service.list_sessions(x_login_id)
+    return await service.list_sessions(x_login_id, current_session_id=current_session_id)
+
+
+@router.post(
+    "/sessions/{session_id}/revoke",
+    response_model=MessageResponse,
+    summary="Revoke one of my sessions",
+)
+async def revoke_session(
+    session_id: int,
+    service: AuthServiceDep,
+    login: CurrentLoginDep,
+    x_login_id: Annotated[int, Header(alias="X-Login-Id")],
+) -> MessageResponse:
+    if x_login_id != login.id:
+        raise ForbiddenError("Cannot act on another login's sessions")
+    return await service.revoke_session(
+        actor_login_id=x_login_id, session_id=session_id
+    )
+
+
+@router.post(
+    "/sessions/revoke-others",
+    response_model=MessageResponse,
+    summary="Revoke all my sessions except the current one",
+)
+async def revoke_other_sessions(
+    service: AuthServiceDep,
+    login: CurrentLoginDep,
+    x_login_id: Annotated[int, Header(alias="X-Login-Id")],
+    keep_session_id: int | None = None,
+) -> MessageResponse:
+    if x_login_id != login.id:
+        raise ForbiddenError("Cannot act on another login's sessions")
+    return await service.revoke_other_sessions(
+        actor_login_id=x_login_id, keep_session_id=keep_session_id
+    )

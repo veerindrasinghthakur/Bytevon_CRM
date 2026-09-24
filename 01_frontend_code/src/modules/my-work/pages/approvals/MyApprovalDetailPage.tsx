@@ -37,7 +37,6 @@ export function MyApprovalDetailPage() {
   const item =
     listQuery.data?.items.find((a) => a.id === requestId) ?? listQuery.data?.items[0]
   const user = overviewQuery.data?.user
-  const user = overviewQuery.data?.user
 
   if (!item) {
     return (

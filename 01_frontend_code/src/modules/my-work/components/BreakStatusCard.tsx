@@ -16,6 +16,7 @@ import {
 } from '../lib/break-session'
 import { cn } from '@/shared/lib/cn'
 import { myWorkRoutes } from '../routes'
+import { syncBreakEndToServer } from '../api/my-work'
 
 export function BreakStatusCard() {
   const navigate = useNavigate()
@@ -107,7 +108,9 @@ export function BreakStatusCard() {
               variant="danger"
               size="sm"
               onClick={() => {
+                const active = getActiveBreak()
                 stopBreak()
+                if (active) void syncBreakEndToServer(active.id).catch(() => undefined)
                 refresh()
               }}
             >

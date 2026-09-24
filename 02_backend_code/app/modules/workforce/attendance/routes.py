@@ -76,7 +76,7 @@ async def list_days_in_range(
 async def get_day(
     day_id: int,
     service: AttendanceServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF", union=True))],
 ) -> AttendanceDayDetailResponse:
     day = await service.get_day(day_id)
     enforce_owner_or_grant(auth, "attendance", "VIEW", owner_employment_id=day.employment_id)
@@ -90,7 +90,7 @@ async def get_day(
 async def list_days(
     employment_id: int,
     service: AttendanceServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF", union=True))],
     from_date: date | None = Query(None),
     to_date: date | None = Query(None),
 ) -> list[AttendanceDayResponse]:
@@ -130,7 +130,7 @@ async def list_pending_corrections(
 async def get_correction(
     correction_id: int,
     service: AttendanceServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF", union=True))],
 ) -> CorrectionResponse:
     correction = await service.get_correction(correction_id)
     day = await service.get_day(correction.attendance_day_id)
@@ -147,7 +147,7 @@ async def get_monthly_summary(
     year: int,
     month: int,
     service: AttendanceServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF", union=True))],
 ) -> MonthlySummaryResponse:
     enforce_owner_or_grant(auth, "attendance", "VIEW", owner_employment_id=employment_id)
     return await service.get_monthly_summary(employment_id, year, month)

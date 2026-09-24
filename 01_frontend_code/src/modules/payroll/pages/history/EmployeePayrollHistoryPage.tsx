@@ -194,7 +194,7 @@ export function EmployeePayrollHistoryPage() {
                           onClick={() =>
                             safeNavigate(navigate, {
                               to: payrollRoutes.payslipPath,
-                              params: { employeeId: emp.id },
+                              params: { payrollId: r.payrollId ?? r.id },
                             })
                           }
                         >
@@ -207,7 +207,7 @@ export function EmployeePayrollHistoryPage() {
                         onClick={() =>
                           safeNavigate(navigate, {
                             to: payrollRoutes.payslipPath,
-                            params: { employeeId: emp.id },
+                            params: { payrollId: r.payrollId ?? r.id },
                           })
                         }
                       >

@@ -61,7 +61,7 @@ async def list_employments_without_login(service: ServiceDep) -> list[Employment
 async def get_user(
     login_id: int,
     service: ServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("user", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("user", "VIEW", "SELF", union=True))],
     include_archived: bool = Query(False),
 ) -> AdminUserDetailResponse:
     enforce_owner_or_grant(auth, "user", "VIEW", owner_login_id=login_id)
@@ -82,7 +82,7 @@ async def update_user(
     login_id: int,
     body: AdminUserUpdate,
     service: ServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("user", "UPDATE", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("user", "UPDATE", "SELF", union=True))],
 ) -> AdminUserDetailResponse:
     enforce_owner_or_grant(auth, "user", "UPDATE", owner_login_id=login_id)
     return await service.update_admin_user(login_id, body, actor_employment_id=auth.employment_id)
@@ -137,7 +137,7 @@ async def archive_user(
 async def delete_user(
     login_id: int,
     service: ServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("user", "DELETE", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("user", "DELETE", "SELF", union=True))],
 ) -> MessageResponse:
     enforce_owner_or_grant(auth, "user", "DELETE", owner_login_id=login_id)
     return await service.archive_admin_user(login_id, actor_employment_id=auth.employment_id)

@@ -16,9 +16,9 @@ export const executiveQuickActions = [
 ]
 
 export const executivePending = [
-  { name: 'Sarah Chen', detail: 'Annual Leave • 3 Days', initials: 'SC' },
-  { name: 'Marcus Miller', detail: 'Expense Claim • $1,240', initials: 'MM' },
-  { name: 'Elena Rossi', detail: 'Training Request • AI Ethics', initials: 'ER' },
+  { id: 0, name: 'Sarah Chen', detail: 'Annual Leave — 3 Days', initials: 'SC' },
+  { id: 0, name: 'Marcus Miller', detail: 'Expense Claim — $1,240', initials: 'MM' },
+  { id: 0, name: 'Elena Rossi', detail: 'Training Request — AI Ethics', initials: 'ER' },
 ]
 
 export const executiveActivities = [
@@ -52,8 +52,8 @@ export const executiveMeta = {
   greetingName: 'Alex',
   dateLine:
     'Today is October 24th. You have 3 pending employee approvals and your quarterly revenue targets are trending 12% above forecast. Systems are optimal.',
-  uptime: '99.98%',
   activeUsers: '1,242',
+  presentToday: '1,180',
   attendanceBars: [40, 55, 45, 70, 60, 80, 65, 75, 85, 70],
   revenueBars: [60, 85, 45, 70, 95, 55, 80, 90, 65, 100],
   months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],

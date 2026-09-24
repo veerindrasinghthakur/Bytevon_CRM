@@ -31,3 +31,12 @@ async def executive_dashboard(
 ) -> dict[str, Any]:
     """Scope-aware aggregations — data is filtered by the caller's grants."""
     return await service.get_executive(auth=auth)
+
+
+@router.get("/employee")
+async def employee_dashboard(
+    service: ServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
+) -> dict[str, Any]:
+    """Self dashboard — hero, KPIs, week bars, leave summary, my tasks."""
+    return await service.get_employee(auth=auth)

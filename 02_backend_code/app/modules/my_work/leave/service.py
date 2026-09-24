@@ -55,6 +55,120 @@ class MyWorkLeaveService(BasePublicService):
         self._ledger = LedgerService(session)
         self._types = LeaveTypeRepository(session)
 
+    async def _approver_map(
+        self, approval_ids: set[int]
+    ) -> dict[int, dict]:
+        """approval_request_id → {name, remarks, decided_on}.
+
+        Decided requests show the decider (latest action); pending ones show
+        the department head they are waiting on.
+        """
+        from sqlalchemy import desc, func, select
+
+        from app.modules.approvals.models.approval_models import (
+            ApprovalAction,
+            ApprovalRequest as ApprovalRow,
+        )
+        from app.modules.auth.models.authentication_models import Person
+        from app.modules.workforce.department.models import Department
+        from app.modules.workforce.models.employment_models import Employment
+
+        out: dict[int, dict] = {}
+        if not approval_ids:
+            return out
+        rows = (
+            await self._session.execute(
+                select(ApprovalRow).where(ApprovalRow.id.in_(sorted(approval_ids)))
+            )
+        ).scalars().all()
+        by_id = {r.id: r for r in rows}
+
+        latest_action_sub = (
+            select(
+                ApprovalAction.approval_request_id,
+                func.max(ApprovalAction.id).label("action_id"),
+            )
+            .where(ApprovalAction.approval_request_id.in_(sorted(approval_ids)))
+            .group_by(ApprovalAction.approval_request_id)
+            .subquery()
+        )
+        action_rows = (
+            await self._session.execute(
+                select(ApprovalAction).where(
+                    ApprovalAction.id.in_(select(latest_action_sub.c.action_id))
+                )
+            )
+        ).scalars().all()
+        latest = {a.approval_request_id: a for a in action_rows}
+
+        need_heads: dict[int, int] = {}
+        for aid, req in by_id.items():
+            if aid in latest or not req.target_department_id:
+                continue
+            need_heads[aid] = req.target_department_id
+        heads: dict[int, int | None] = {}
+        if need_heads:
+            dept_rows = (
+                await self._session.execute(
+                    select(Department.id, Department.department_head_employment_id).where(
+                        Department.id.in_(sorted(set(need_heads.values())))
+                    )
+                )
+            ).all()
+            head_by_dept = {d[0]: d[1] for d in dept_rows}
+            heads = {aid: head_by_dept.get(did) for aid, did in need_heads.items()}
+
+        emp_ids = {a.employment_id for a in latest.values()}
+        emp_ids |= {h for h in heads.values() if h}
+        names: dict[int, str] = {}
+        if emp_ids:
+            person_rows = (
+                await self._session.execute(
+                    select(Employment.id, Person.first_name, Person.last_name)
+                    .join(Person, Person.id == Employment.person_id)
+                    .where(Employment.id.in_(sorted(emp_ids)))
+                )
+            ).all()
+            names = {
+                r[0]: f"{r[1] or ''} {r[2] or ''}".strip() or f"Emp #{r[0]}"
+                for r in person_rows
+            }
+        for aid in approval_ids:
+            req = by_id.get(aid)
+            if req is None:
+                continue
+            action = latest.get(aid)
+            if action is not None:
+                created = action.created_at
+                out[aid] = {
+                    "name": names.get(action.employment_id, f"Emp #{action.employment_id}"),
+                    "remarks": action.remarks,
+                    "decided_on": created.date() if hasattr(created, "date") else None,
+                }
+            else:
+                head = heads.get(aid)
+                out[aid] = {
+                    "name": names.get(head, "") if head else "",
+                    "remarks": None,
+                    "decided_on": None,
+                }
+        return out
+
+    async def _approval_ids_for(self, employment_id: int) -> dict[int, int]:
+        from sqlalchemy import select
+
+        from app.modules.leave.models.leave_models import LeaveRequest as LeaveRow
+
+        rows = (
+            await self._session.execute(
+                select(LeaveRow.id, LeaveRow.approval_request_id).where(
+                    LeaveRow.employment_id == employment_id,
+                    LeaveRow.approval_request_id.is_not(None),
+                )
+            )
+        ).all()
+        return {r[0]: r[1] for r in rows}
+
     async def list_requests(
         self,
         employment_id: int | None = None,
@@ -75,12 +189,15 @@ class MyWorkLeaveService(BasePublicService):
         rows = await self._requests.list_requests(
             employment_id=employment_id, status=status_enum, limit=500, offset=0
         )
+        approval_by_leave = await self._approval_ids_for(employment_id)
+        approvers = await self._approver_map(set(approval_by_leave.values()))
         items: list[LeaveRequest] = []
         for r in rows:
             st = r.status.value if hasattr(r.status, "value") else str(r.status)
             lt = str(r.leave_type)
             if search and search.strip().lower() not in f"{lt} {r.reason or ''}".lower():
                 continue
+            info = approvers.get(approval_by_leave.get(int(r.id), -1), {})
             items.append(
                 LeaveRequest(
                     id=str(r.id),
@@ -93,6 +210,9 @@ class MyWorkLeaveService(BasePublicService):
                     applied_on=r.created_at.date()
                     if hasattr(r.created_at, "date")
                     else r.start_date,
+                    approver=info.get("name") or None,
+                    approver_remarks=info.get("remarks"),
+                    decided_on=info.get("decided_on"),
                 )
             )
         total = len(items)
@@ -217,6 +337,11 @@ class MyWorkLeaveService(BasePublicService):
         )
         lt = str(created.leave_type)
         st = created.status.value if hasattr(created.status, "value") else str(created.status)
+        info: dict = {}
+        if created.approval_request_id:
+            info = (await self._approver_map({created.approval_request_id})).get(
+                created.approval_request_id, {}
+            )
         return LeaveRequest(
             id=str(created.id),
             type=lt,
@@ -228,5 +353,8 @@ class MyWorkLeaveService(BasePublicService):
             applied_on=created.created_at.date()
             if hasattr(created.created_at, "date")
             else created.start_date,
+            approver=info.get("name") or None,
+            approver_remarks=info.get("remarks"),
+            decided_on=info.get("decided_on"),
             half_day=input.half_day,
         )

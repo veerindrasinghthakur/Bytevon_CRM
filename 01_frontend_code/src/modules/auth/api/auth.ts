@@ -37,6 +37,7 @@ interface BackendLoginResponse {
   person_id: number
   employment_id?: number | null
   email: string
+  session_id?: number | null
 }
 
 const ADMIN_USER: AuthUser = {
@@ -129,6 +130,7 @@ export async function loginApi(input: LoginInput): Promise<AuthSession> {
         employmentId: data.employment_id ?? 1,
         personId: data.person_id,
         loginId: data.login_id,
+        sessionId: data.session_id ?? null,
       },
       tokens: {
         accessToken: data.tokens.access_token,
@@ -284,7 +286,12 @@ export async function resetPasswordApi(
 
 export async function changePasswordApi(input: ChangePasswordInput): Promise<{ message: string }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<{ message: string }>('/auth/change-password', input)
+    // Backend ChangePasswordRequest is snake_case.
+    const { data } = await apiClient.post<{ message: string }>('/auth/change-password', {
+      current_password: input.currentPassword,
+      new_password: input.password,
+      revoke_all_sessions: Boolean(input.revokeAllSessions),
+    })
     return data
   }
 

@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { toast } from '@/shared/hooks/use-toast'
 import { listMyLeaveBalances, listMyLeaveRequests, requestLeaveCancel } from '../api/my-work'
 
 const FILTER_DEFAULTS = {
@@ -75,6 +77,12 @@ export function useRequestLeaveCancel() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => requestLeaveCancel(id),
-    onSuccess: () => invalidate.myWorkLeave(qc),
+    onSuccess: () => {
+      void invalidate.myWorkLeave(qc)
+      toast.success('Cancellation request sent to your approver')
+    },
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not request cancellation'))
+    },
   })
 }

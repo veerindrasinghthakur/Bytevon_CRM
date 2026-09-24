@@ -62,6 +62,8 @@ export interface PayrollEmployeeListParams {
 /** Org-wide paid history row (history list page). */
 export interface OrgPayrollHistoryRecord {
   id: string
+  /** MonthlyPayroll.id — payslip links use this. */
+  payrollId?: string
   period: string
   employeeId: string
   paidOn: string

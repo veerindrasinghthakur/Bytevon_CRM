@@ -89,13 +89,13 @@ export function ApplyLeavePage() {
         backLabel="Back to My Leave"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {isContextLoading
-          ? Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="bv-surface p-5 h-28 animate-pulse bg-surface-container-low" />
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bv-surface p-4 h-28 animate-pulse bg-surface-container-low" />
             ))
           : leaveBalances.map((lb) => (
-              <div key={lb.type} className="bv-surface card-hover p-5">
+              <div key={lb.type} className="bv-surface card-hover p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2 rounded-lg bg-surface-container-high text-secondary">
                     <span className="material-symbols-outlined text-xl">
@@ -119,7 +119,7 @@ export function ApplyLeavePage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <section className="bv-surface overflow-hidden">
+          <section className="bv-surface overflow-visible rounded-xl">
             <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low">
               <h2 className="text-title-md font-semibold flex items-center gap-2 text-on-background">
                 <span className="material-symbols-outlined text-secondary text-xl">info</span> Leave Information
@@ -139,6 +139,8 @@ export function ApplyLeavePage() {
                     value: String(o.value),
                     label: String(o.label),
                   }))}
+                  dropDirection="up"
+                  minWidthClass="w-full max-w-none"
                   aria-label="Leave type"
                 />
               </div>

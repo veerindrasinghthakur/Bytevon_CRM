@@ -19,6 +19,11 @@ import {
 } from '../../lib/break-session'
 import { cn } from '@/shared/lib/cn'
 import { BREAK_DURATION_PRESETS } from '../../schemas/enums'
+import {
+  getMyTodayDayId,
+  syncBreakEndToServer,
+  syncBreakStartToServer,
+} from '../../api/my-work'
 
 export function TakeABreakPage() {
   const navigate = useNavigate()
@@ -58,11 +63,20 @@ export function TakeABreakPage() {
     const s = startBreak({ durationMinutes, note })
     setSession(s)
     setMinutesInput('')
+    // Best-effort server sync so breaks count in week bars/history.
+    void getMyTodayDayId()
+      .then((dayId) => {
+        if (dayId != null) return syncBreakStartToServer(s.id, dayId)
+        return null
+      })
+      .catch(() => null)
   }
 
   const handleStop = () => {
+    const active = getActiveBreak()
     stopBreak()
     setSession(null)
+    if (active) void syncBreakEndToServer(active.id).catch(() => undefined)
   }
 
   return (

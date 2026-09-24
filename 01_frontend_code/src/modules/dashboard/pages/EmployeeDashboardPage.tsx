@@ -1,4 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
+import { useMemo } from 'react'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
@@ -43,7 +44,15 @@ export function EmployeeDashboardPage() {
   const { kpis, tasks, leaveSummary, meta, quickActions, isLoading, isError, error, refetch } =
     useEmployeeDashboard()
   const typedMeta = meta as EmployeeMeta | undefined
-  const { weekBarElements } = useWeekBars({ weekBars: typedMeta?.weekBars ?? [], todayIndex: 4 })
+  // Monday-first index for the current day (backend weekBars are Mon..Sun).
+  const todayIndex = useMemo(() => (new Date().getDay() + 6) % 7, [])
+  const { weekBarElements } = useWeekBars({ weekBars: typedMeta?.weekBars ?? [], todayIndex })
+  const greeting = useMemo(() => {
+    const h = new Date().getHours()
+    if (h < 12) return 'Good Morning'
+    if (h < 17) return 'Good Afternoon'
+    return 'Good Evening'
+  }, [])
 
   if (isError) {
     return (
@@ -70,7 +79,7 @@ export function EmployeeDashboardPage() {
       <section className="relative overflow-hidden bg-deep-navy rounded-xl p-8 text-on-primary executive-shadow">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <h2 className="text-headline-lg font-bold mb-2">Good Morning, {displayName}</h2>
+            <h2 className="text-headline-lg font-bold mb-2">{greeting}, {displayName}</h2>
             <div className="flex flex-wrap gap-3 text-inverse-primary">
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-label-md">
                 <span className="material-symbols-outlined text-[18px]">badge</span> {typedMeta.employeeId}
@@ -162,7 +171,7 @@ export function EmployeeDashboardPage() {
           </div>
           <div className="flex flex-wrap gap-3 text-label-sm text-on-surface-variant">
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-secondary/40" /> Work
+              <span className="w-2.5 h-2.5 rounded-sm bg-secondary/60" /> Work
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-sm bg-error/90" /> Break (red)

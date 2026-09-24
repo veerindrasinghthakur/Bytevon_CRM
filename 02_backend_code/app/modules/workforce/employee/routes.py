@@ -49,7 +49,7 @@ async def list_persons(
 async def get_person(
     person_id: int,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF", union=True))],
 ) -> PersonResponse:
     enforce_owner_or_grant(auth, "employment", "VIEW", owner_person_id=person_id)
     return await service.get_person(person_id)
@@ -60,7 +60,7 @@ async def update_person(
     person_id: int,
     body: PersonUpdate,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "SELF", union=True))],
 ) -> PersonResponse:
     enforce_owner_or_grant(auth, "employment", "UPDATE", owner_person_id=person_id)
     return await service.update_person(person_id, body, actor_employment_id=auth.employment_id)
@@ -89,7 +89,7 @@ async def get_position(
     position_id: int,
     service: EmployeeServiceDep,
     # Grant-only quirk: no owner args — do not invent self-access.
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF", union=True))],
     include_archived: bool = Query(False),
 ) -> PositionResponse:
     enforce_owner_or_grant(auth, "employment", "VIEW")
@@ -101,7 +101,7 @@ async def update_position(
     position_id: int,
     body: PositionUpdate,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "SELF", union=True))],
 ) -> PositionResponse:
     enforce_owner_or_grant(auth, "employment", "UPDATE")
     return await service.update_position(position_id, body, actor_employment_id=auth.employment_id)
@@ -175,7 +175,7 @@ async def list_employments(
 async def list_employments_by_person(
     person_id: int,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF", union=True))],
 ) -> list[EmploymentResponse]:
     enforce_owner_or_grant(auth, "employment", "VIEW", owner_person_id=person_id)
     return await service.list_employments_by_person(person_id)
@@ -185,7 +185,7 @@ async def list_employments_by_person(
 async def get_employment(
     employment_id: int,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF", union=True))],
 ) -> EmploymentDetailResponse:
     enforce_owner_or_grant(auth, "employment", "VIEW", owner_employment_id=employment_id)
     return await service.get_employment(employment_id)
@@ -213,7 +213,7 @@ async def update_employment(
     employment_id: int,
     body: EmploymentUpdate,
     service: EmployeeServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "SELF", union=True))],
 ) -> EmploymentResponse:
     enforce_owner_or_grant(auth, "employment", "UPDATE", owner_employment_id=employment_id)
     return await service.update_employment(employment_id, body, actor_employment_id=auth.employment_id)

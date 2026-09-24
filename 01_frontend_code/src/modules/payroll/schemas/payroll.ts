@@ -5,6 +5,10 @@ export type PayrollStatus = z.infer<typeof payrollStatusSchema>
 
 export const payrollEmployeeRowSchema = z.object({
   id: z.string(),
+  /** MonthlyPayroll.id — present in real-API rows, used for review/payslip routes. */
+  payrollId: z.string().optional(),
+  /** Employment id — used for salary/history routes. */
+  employmentId: z.string().optional(),
   name: z.string(),
   code: z.string(),
   role: z.string(),
@@ -126,6 +130,8 @@ export type PayrollReviewDetail = z.infer<typeof payrollReviewDetailSchema>
 
 export const payrollHistoryRowSchema = z.object({
   id: z.string(),
+  /** MonthlyPayroll.id — payslip links use this, not the employment id. */
+  payrollId: z.string().optional(),
   month: z.string(),
   year: z.number(),
   gross: z.number(),

@@ -199,7 +199,7 @@ async def list_roles_for_employment(
 async def get_effective_permissions(
     employment_id: int,
     service: RBACServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("role", "VIEW", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("role", "VIEW", "SELF", union=True))],
 ) -> EffectivePermissionsResponse:
     # Own permission set always readable; others need ≥ DEPARTMENT grant.
     enforce_owner_or_grant(auth, "role", "VIEW", owner_employment_id=employment_id)

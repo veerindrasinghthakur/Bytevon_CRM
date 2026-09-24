@@ -945,5 +945,14 @@
  ],
  "POST /api/v1/leave/types/{type_id}/soft-delete": [
   "test_leave_type_lifecycle"
+ ],
+ "GET /api/v1/dashboard/employee": [
+  "test_profile_and_dashboard"
+ ],
+ "GET /api/v1/my-work/tasks/projects": [
+  "test_profile_and_dashboard"
+ ],
+ "POST /api/v1/my-work/tasks": [
+  "test_profile_and_dashboard"
  ]
 }

@@ -22,6 +22,7 @@ class WeekDayHours(BaseModel):
     date: str
     status: str
     minutes: int = 0
+    break_minutes: int = 0
 
 
 class WeekHoursResponse(BaseModel):

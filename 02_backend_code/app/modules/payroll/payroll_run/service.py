@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.enums import EmploymentState
+from app.modules.auth.models import Person
 from app.modules.payroll.models import EmployeeBankAccount, EmployeeSalary
 from app.modules.payroll.monthly_payroll.schemas import PayrollCalculateRequest
 from app.modules.payroll.monthly_payroll.service import MonthlyPayrollService
@@ -118,19 +119,44 @@ class PayrollRunService:
         y = year or today.year
         m = month or today.month
         rows = await self._monthly.list_payrolls(year=y, month=m, limit=500)
-        employees = [
-            {
-                "id": str(getattr(r, "id", "")),
-                "payrollId": getattr(r, "id", None),
-                "employmentId": getattr(r, "employment_id", None),
-                "name": f"Employee #{getattr(r, 'employment_id', '')}",
-                "gross": _money(r, "gross_salary", "gross_pay"),
-                "earnings": _money(r, "total_earnings", "gross_salary"),
-                "deductions": _money(r, "total_deductions"),
-                "net": _money(r, "net_salary", "net_pay"),
-            }
+        emp_ids = {
+            int(getattr(r, "employment_id"))
             for r in rows
-        ]
+            if getattr(r, "employment_id", None) is not None
+        }
+        display: dict[int, dict[str, str]] = {}
+        if emp_ids:
+            for eid, code, first, last in (
+                await self._session.execute(
+                    select(
+                        Employment.id,
+                        Employment.employee_code,
+                        Person.first_name,
+                        Person.last_name,
+                    )
+                    .join(Person, Person.id == Employment.person_id)
+                    .where(Employment.id.in_(list(emp_ids)))
+                )
+            ).all():
+                name = f"{(first or '').strip()} {(last or '').strip()}".strip()
+                display[int(eid)] = {"name": name, "code": code}
+        employees = []
+        for r in rows:
+            emp_id = getattr(r, "employment_id", None)
+            info = display.get(int(emp_id), {}) if emp_id is not None else {}
+            employees.append(
+                {
+                    "id": str(getattr(r, "id", "")),
+                    "payrollId": getattr(r, "id", None),
+                    "employmentId": emp_id,
+                    "name": info.get("name") or None,
+                    "code": info.get("code"),
+                    "gross": _money(r, "gross_salary", "gross_pay"),
+                    "earnings": _money(r, "total_earnings", "gross_salary"),
+                    "deductions": _money(r, "total_deductions"),
+                    "net": _money(r, "net_salary", "net_pay"),
+                }
+            )
         return {
             "employees": employees,
             "totalGross": sum(e["gross"] for e in employees),

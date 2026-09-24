@@ -192,6 +192,31 @@ def test_header_only_identity_rejected(client, actors):
     )
 
 
+def test_union_grantless_owner_reads_own_record(client, actors):
+    # Union route (retired CUSTOM): grant-less owner reaches own record...
+    own = client.get(
+        f"/api/v1/admin/users/{actors['A']['login_id']}",
+        headers=actors["A"]["headers"],
+    )
+    assert own.status_code == 200, own.text
+    # ...but not another user's...
+    other = client.get(
+        f"/api/v1/admin/users/{actors['B']['login_id']}",
+        headers=actors["A"]["headers"],
+    )
+    assert other.status_code == 404, other.text
+    # ...unless a >= DEPARTMENT grant exists.
+    _setup_grant(
+        client, "User Viewer", actors["A"]["employment_id"],
+        "user", "VIEW", "DEPARTMENT",
+    )
+    granted = client.get(
+        f"/api/v1/admin/users/{actors['B']['login_id']}",
+        headers=actors["A"]["headers"],
+    )
+    assert granted.status_code == 200, granted.text
+
+
 def test_cross_login_session_actions_forbidden(client, actors):
     # A cannot log out / change password / list sessions for B's login.
     evil = {

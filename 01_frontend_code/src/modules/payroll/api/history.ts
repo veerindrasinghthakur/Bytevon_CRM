@@ -3,17 +3,18 @@ import { apiClient } from '@/shared/lib/axios'
 import { delay } from '@/shared/mock/db'
 import { historyByEmployee, payrollEmployees } from '@/shared/mock/data/payroll'
 import type { OrgPayrollHistoryRecord, PayrollHistoryRow } from '../types'
-import { buildOrgPaidHistory } from './_helpers'
+import { buildOrgPaidHistory, normalizeHistoryRow } from './_helpers'
 
 export async function listEmployeePayrollHistory(employeeId: string): Promise<PayrollHistoryRow[]> {
   if (env.useMockApi) {
     await delay(200)
     return (historyByEmployee[employeeId] ?? []).map((r) => ({ ...r }))
   }
-  const { data } = await apiClient.get<PayrollHistoryRow[]>(
+  const { data } = await apiClient.get<unknown[]>(
     `/payroll/employees/${encodeURIComponent(employeeId)}/history`,
   )
-  return data
+  const rows = Array.isArray(data) ? data : []
+  return rows.map((r) => normalizeHistoryRow((r ?? {}) as Record<string, unknown>))
 }
 
 export async function listOrgPayrollHistory(search?: string): Promise<OrgPayrollHistoryRecord[]> {

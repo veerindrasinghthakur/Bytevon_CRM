@@ -36,9 +36,13 @@ async def my_attendance_list(
     pageSize: int = Query(20, ge=1, le=100),
     from_date: date | None = Query(None),
     to_date: date | None = Query(None),
+    include_punches: bool = Query(False),
 ) -> dict:
     """Paginated alias over list_days for legacy frontend callers."""
-    rows = await service.list_days(auth.employment_id, from_date=from_date, to_date=to_date)
+    if include_punches:
+        rows = await service.list_days_detailed(auth.employment_id, from_date=from_date, to_date=to_date)
+    else:
+        rows = await service.list_days(auth.employment_id, from_date=from_date, to_date=to_date)
     total = len(rows)
     start = (max(1, page) - 1) * max(1, pageSize)
     return {

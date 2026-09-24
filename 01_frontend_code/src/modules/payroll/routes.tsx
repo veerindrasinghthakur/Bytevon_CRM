@@ -54,10 +54,10 @@ export const payrollRoutes = {
   monthly: '/payroll/monthly',
   run: '/payroll/run',
   generating: '/payroll/generating',
-  review: (employeeId: string) => `/payroll/review/${employeeId}`,
-  reviewPath: '/payroll/review/$employeeId',
-  payslip: (employeeId: string) => `/payroll/payslip/${employeeId}`,
-  payslipPath: '/payroll/payslip/$employeeId',
+  review: (payrollId: string) => `/payroll/review/${payrollId}`,
+  reviewPath: '/payroll/review/$payrollId',
+  payslip: (payrollId: string) => `/payroll/payslip/${payrollId}`,
+  payslipPath: '/payroll/payslip/$payrollId',
   salary: '/payroll/salary',
   salaryDetail: (employeeId: string) => `/payroll/salary/${employeeId}`,
   salaryDetailPath: '/payroll/salary/$employeeId',
@@ -96,14 +96,14 @@ export function createPayrollRoutes<TParent extends AnyRoute>(appLayoutRoute: TP
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
-      path: '/payroll/review/$employeeId',
+      path: '/payroll/review/$payrollId',
       beforeLoad: requirePayrollView,
       component: PayrollReviewPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
-      path: '/payroll/payslip/$employeeId',
-      // Payslip detail is CUSTOM owner-or-grant on the backend — action gate only here
+      path: '/payroll/payslip/$payrollId',
+      // Payslip detail is owner-or-grant on the backend — action gate only here
       beforeLoad: requirePayrollView,
       component: PayslipViewPage,
     }),

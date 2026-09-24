@@ -11,7 +11,7 @@ export function useRunPayroll() {
   })
   const previewQuery = useQuery({
     queryKey: queryKeys.payroll.runPreview(),
-    queryFn: getRunPayrollPreview,
+    queryFn: () => getRunPayrollPreview(),
   })
   const runMut = useMutation({
     mutationFn: (period: { year: number; month: number }) => runPayroll(period),

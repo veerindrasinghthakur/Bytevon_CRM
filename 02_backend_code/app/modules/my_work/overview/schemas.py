@@ -12,6 +12,8 @@ from app.modules.my_work.leave.schemas import LeaveBalance
 class OverviewUser(BaseModel):
     name: str = "User"
     employmentId: int | None = None
+    employeeCode: str = ""
+    department: str = ""
     todayLabel: str = "Today"
     shift: str = "—"
 

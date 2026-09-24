@@ -8,10 +8,11 @@ import {
   listMySessions,
   revokeAllOtherSessions,
   revokeSession,
+  updateMyPreferences,
   updateMyProfile,
   uploadAvatar,
 } from '../api/profile'
-import type { ProfileUpdateInput } from '../types'
+import type { ProfilePreferences, ProfileUpdateInput } from '../types'
 
 export function useMyProfile() {
   return useQuery({
@@ -24,8 +25,24 @@ export function useUpdateProfile() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (input: ProfileUpdateInput) => updateMyProfile(input),
-    onSuccess: (data) => {
-      qc.setQueryData(queryKeys.profile.me(), data)
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.profile.me() })
+    },
+  })
+}
+
+export function useUpdatePreferences() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      input: Partial<ProfilePreferences> & {
+        theme?: string
+        location?: string | null
+        timezone?: string | null
+      },
+    ) => updateMyPreferences(input),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.profile.me() })
     },
   })
 }

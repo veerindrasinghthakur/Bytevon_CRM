@@ -37,6 +37,7 @@ export type UpcomingEvent = z.infer<typeof upcomingEventSchema>
 export const myWorkUserSchema = z.object({
   name: z.string(),
   employeeId: z.string(),
+  employeeCode: z.string().optional(),
   department: z.string(),
   role: z.string().optional(),
   todayLabel: z.string(),

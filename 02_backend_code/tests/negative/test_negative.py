@@ -33,6 +33,7 @@ def test_validation_errors_and_format(client, factory):
     assert bad_person.status_code == 422
     assert _err_shape(bad_person) == "validation_error"
 
+    # Unknown leave type code: validated against the leave_types master → 404.
     bad_leave = client.post(
         "/api/v1/leave/requests",
         json={
@@ -43,7 +44,8 @@ def test_validation_errors_and_format(client, factory):
         },
         headers=h,
     )
-    assert bad_leave.status_code == 422
+    assert bad_leave.status_code == 404
+    assert _err_shape(bad_leave) == "not_found"
 
     bad_dates = client.post(
         "/api/v1/leave/requests",

@@ -1,11 +1,11 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { cn } from '@/shared/lib/cn'
 import {
-  ATTENDANCE_TREND_PERIODS,
   CALENDAR_DAY_LABELS,
   buildMonthGrid,
 } from '../calendar'
@@ -13,8 +13,16 @@ import { ActivityFeed } from '@/shared/components/ui/ActivityFeed'
 import { Can } from '@/shared/rbac'
 import { Action } from '@/shared/schema'
 import { useHomeDashboard } from '../hooks/use-home-dashboard'
+import { decideApproval } from '@/modules/approvals/api/approval_action'
+import { invalidate, queryKeys } from '@/shared/lib/query-keys'
 
 const card = 'bv-surface card-hover'
+
+const ATTENDANCE_PERIODS = [
+  { label: 'Last 7 Days', days: 7 },
+  { label: 'Last 14 Days', days: 14 },
+  { label: 'Last 30 Days', days: 30 },
+] as const
 
 export function ExecutiveDashboardPage() {
   const navigate = useNavigate()
@@ -39,6 +47,22 @@ export function ExecutiveDashboardPage() {
   // from live pending approvals — never hardcoded events.
   const calendarCells = useMemo(() => buildMonthGrid(new Date()), [])
   const upcomingDeadlines = useMemo(() => pending.slice(0, 2), [pending])
+
+  const [attendanceDays, setAttendanceDays] = useState<number>(30)
+  const attendanceBars = useMemo(
+    () => meta?.attendanceBars.slice(-attendanceDays) ?? [],
+    [meta, attendanceDays],
+  )
+
+  const qc = useQueryClient()
+  const decideMut = useMutation({
+    mutationFn: ({ id, decision }: { id: string | number; decision: 'approve' | 'reject' }) =>
+      decideApproval(String(id), decision),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.dashboard.executive() })
+      void invalidate.adminLeave(qc)
+    },
+  })
 
   if (isError) {
     return (
@@ -73,12 +97,12 @@ export function ExecutiveDashboardPage() {
           </div>
           <div className="flex gap-4">
             <div className="bg-white/10 border border-white/20 p-4 rounded-lg backdrop-blur-sm min-w-[140px]">
-              <p className="text-label-sm uppercase tracking-wider opacity-70">Uptime</p>
-              <p className="text-headline-md font-bold">{meta.uptime}</p>
-            </div>
-            <div className="bg-white/10 border border-white/20 p-4 rounded-lg backdrop-blur-sm min-w-[140px]">
               <p className="text-label-sm uppercase tracking-wider opacity-70">Active Users</p>
               <p className="text-headline-md font-bold">{meta.activeUsers}</p>
+            </div>
+            <div className="bg-white/10 border border-white/20 p-4 rounded-lg backdrop-blur-sm min-w-[140px]">
+              <p className="text-label-sm uppercase tracking-wider opacity-70">Present Today</p>
+              <p className="text-headline-md font-bold">{meta.presentToday ?? '—'}</p>
             </div>
           </div>
         </div>
@@ -151,14 +175,21 @@ export function ExecutiveDashboardPage() {
             <div className={`${card} p-6`}>
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-title-lg font-semibold text-on-surface">Attendance trend</h2>
-                <select className="bg-surface border border-outline-variant text-label-sm rounded-lg px-3 py-1.5 outline-none focus:border-secondary transition-colors duration-200 cursor-pointer">
-                  {ATTENDANCE_TREND_PERIODS.map((p) => (
-                    <option key={p}>{p}</option>
+                <select
+                  value={attendanceDays}
+                  onChange={(e) => setAttendanceDays(Number(e.target.value))}
+                  className="bg-surface border border-outline-variant text-label-sm rounded-lg px-3 py-1.5 outline-none focus:border-secondary transition-colors duration-200 cursor-pointer"
+                  aria-label="Attendance trend period"
+                >
+                  {ATTENDANCE_PERIODS.map((p) => (
+                    <option key={p.label} value={p.days}>
+                      {p.label}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="min-h-[240px] flex items-end justify-between gap-2 px-2 pb-2">
-                {meta.attendanceBars.map((h, i) => (
+                {attendanceBars.map((h, i) => (
                   <div
                     key={i}
                     className="flex-1 bg-secondary/20 hover:bg-secondary rounded-t transition-colors duration-200 cursor-pointer"
@@ -242,19 +273,23 @@ export function ExecutiveDashboardPage() {
                       <p className="text-label-md text-on-surface leading-tight">{p.name}</p>
                       <p className="text-label-sm text-on-surface-variant">{p.detail}</p>
                     </div>
-                    {canApprove && (
+                    {canApprove && p.id != null && (
                       <div className="flex gap-1">
                         <Can action={Action.APPROVE} resource={'approval'}>
                           <button
                             type="button"
-                            className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center bv-pressable cursor-pointer"
+                            disabled={decideMut.isPending}
+                            onClick={() => decideMut.mutate({ id: p.id, decision: 'approve' })}
+                            className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center bv-pressable cursor-pointer disabled:opacity-50"
                             aria-label="Approve"
                           >
                             <span className="material-symbols-outlined text-[18px]">check</span>
                           </button>
                           <button
                             type="button"
-                            className="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error transition-colors duration-200 cursor-pointer"
+                            disabled={decideMut.isPending}
+                            onClick={() => decideMut.mutate({ id: p.id, decision: 'reject' })}
+                            className="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error transition-colors duration-200 cursor-pointer disabled:opacity-50"
                             aria-label="Reject"
                           >
                             <span className="material-symbols-outlined text-[18px]">close</span>
@@ -297,7 +332,7 @@ export function ExecutiveDashboardPage() {
                 <button
                   type="button"
                   className="text-label-sm text-secondary hover:underline cursor-pointer"
-                  onClick={() => safeNavigate(navigate, { to: '/dashboard', search: {} })}
+                  onClick={() => safeNavigate(navigate, { to: '/approvals/pending', search: {} })}
                 >
                   View all
                 </button>

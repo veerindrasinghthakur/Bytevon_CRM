@@ -165,6 +165,7 @@ class AuthService(BasePublicService):
             person_id=login.person_id,
             employment_id=primary_employment_id,
             email=login.email,
+            session_id=session_row.id,
         )
 
     async def _record_failed_attempt(self, login: Login, now: datetime) -> None:
@@ -373,9 +374,35 @@ class AuthService(BasePublicService):
         await self._commit()
         return MessageResponse(message="Password has been reset successfully")
 
-    async def list_sessions(self, login_id: int) -> list[SessionResponse]:
+    async def list_sessions(
+        self, login_id: int, *, current_session_id: int | None = None
+    ) -> list[SessionListItem]:
+        from app.modules.auth.schemas import SessionListItem
+
         rows = await self._repo.get_active_sessions_for_login(login_id)
-        return [SessionResponse.model_validate(r) for r in rows]
+        items: list[SessionListItem] = []
+        for r in rows:
+            payload = SessionResponse.model_validate(r).model_dump()
+            payload["current"] = r.id == current_session_id
+            payload["user_agent"] = getattr(r, "user_agent", None)
+            items.append(SessionListItem.model_validate(payload))
+        return items
+
+    async def revoke_other_sessions(
+        self, *, actor_login_id: int, keep_session_id: int | None = None
+    ) -> MessageResponse:
+        from app.core.db.enums import SessionRevokeReason
+
+        rows = await self._repo.get_active_sessions_for_login(actor_login_id)
+        ids = [r.id for r in rows if r.id != keep_session_id]
+        if ids:
+            await self._repo.revoke_sessions(
+                login_id=actor_login_id,
+                reason=SessionRevokeReason.USER_LOGOUT.value,
+                session_ids=ids,
+            )
+            await self._commit()
+        return MessageResponse(message=f"Revoked {len(ids)} other session(s)")
 
     async def _audit_login_success(self, login_id: int) -> None:
         await self._audit(

@@ -125,13 +125,18 @@ export function useApplyLeave() {
 
   const onSubmit = async (data: LeaveFormValues) => {
     void files
-    await submitMut.mutateAsync({
-      type: data.type,
-      from: data.from,
-      to: data.to,
-      reason: data.reason,
-      halfDay: data.halfDay,
-    })
+    try {
+      await submitMut.mutateAsync({
+        type: data.type,
+        from: data.from,
+        to: data.to,
+        reason: data.reason,
+        halfDay: data.halfDay,
+      })
+    } catch {
+      // Rejection is already surfaced via onError toast; swallow here so
+      // react-hook-form doesn't raise an uncaught promise rejection.
+    }
   }
 
   const handleSaveDraft = () => {

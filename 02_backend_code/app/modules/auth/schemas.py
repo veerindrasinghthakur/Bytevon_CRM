@@ -64,8 +64,7 @@ class SessionResponse(BaseModel):
 
     @field_validator("ip_address", mode="before")
     @classmethod
-    def coerce_ip_to_str(cls, v: object) -> object:
-        # asyncpg returns INET columns as ipaddress objects; API emits strings.
+    def coerce_ip_to_str(cls, v: object) -> object:        # asyncpg returns INET columns as ipaddress objects; API emits strings.
         return str(v) if v is not None else v
 
 
@@ -75,6 +74,14 @@ class LoginResponse(BaseModel):
     person_id: int
     employment_id: int | None = None
     email: str
+    session_id: int | None = None
+
+
+class SessionListItem(SessionResponse):
+    """Session row for self-service UI: current marker + user agent."""
+
+    current: bool = False
+    user_agent: str | None = None
 
 
 class MessageResponse(BaseModel):

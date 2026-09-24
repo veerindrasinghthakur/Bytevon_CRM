@@ -336,7 +336,7 @@ export function PayrollReviewPage() {
                 setShowPayModal(false)
                 safeNavigate(navigate, {
                   to: payrollRoutes.payslipPath,
-                  params: { employeeId: emp.id },
+                  params: { payrollId: emp.payrollId ?? emp.id },
                 })
               },
             })

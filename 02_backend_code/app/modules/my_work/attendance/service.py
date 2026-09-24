@@ -5,7 +5,7 @@ owns today-info / week-hours / corrections list shapes for the my-work UI.
 """
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -80,7 +80,32 @@ class MyWorkAttendanceService:
             employment_id, from_date=from_date, to_date=to_date
         )
 
+    async def list_days_detailed(
+        self,
+        employment_id: int | None,
+        *,
+        from_date: date | None = None,
+        to_date: date | None = None,
+    ) -> list[AttendanceDayDetailResponse]:
+        """History rows with punches for the my-work history table."""
+        if employment_id is None:
+            return []
+        days = await self._wf.list_days(
+            employment_id, from_date=from_date, to_date=to_date
+        )
+        out: list[AttendanceDayDetailResponse] = []
+        for d in days:
+            try:
+                out.append(await self._wf.get_day(d.id))
+            except Exception:
+                continue
+        return out
+
     async def today_info(self, employment_id: int | None) -> TodayInfoResponse:
+        from sqlalchemy import select
+
+        from app.modules.workforce.attendance.models import AttendanceBreak
+
         if employment_id is None:
             return TodayInfoResponse()
         today = date.today()
@@ -101,6 +126,19 @@ class MyWorkAttendanceService:
                 check_out = p.punch_time.isoformat()
         worked = int(float(day.working_hours or 0) * 60)
         status = day.status.value if hasattr(day.status, "value") else str(day.status)
+        breaks = (
+            await self._session.execute(
+                select(AttendanceBreak).where(AttendanceBreak.attendance_day_id == day.id)
+            )
+        ).scalars().all()
+        break_minutes = 0
+        for b in breaks:
+            if b.duration_minutes is not None:
+                break_minutes += int(b.duration_minutes)
+            elif b.break_end and b.break_start:
+                end_ts = b.break_end.replace(tzinfo=None) if b.break_end.tzinfo else b.break_end
+                start_ts = b.break_start.replace(tzinfo=None) if b.break_start.tzinfo else b.break_start
+                break_minutes += max(0, int((end_ts - start_ts).total_seconds() // 60))
         return TodayInfoResponse(
             employmentId=employment_id,
             shift=str(day.shift_id) if day.shift_id else "—",
@@ -108,27 +146,58 @@ class MyWorkAttendanceService:
             checkIn=check_in,
             checkOut=check_out,
             workedMinutes=worked,
-            breakMinutes=0,
+            breakMinutes=break_minutes,
             dayId=day.id,
         )
 
     async def week_hours(self, employment_id: int | None) -> WeekHoursResponse:
+        from sqlalchemy import select
+
+        from app.modules.workforce.attendance.models import AttendanceBreak
+
         if employment_id is None:
             return WeekHoursResponse()
         today = date.today()
         start = date.fromordinal(today.toordinal() - today.weekday())
-        days = await self._wf.list_days(employment_id, from_date=start, to_date=today)
+        end = start + timedelta(days=6)
+        days = await self._wf.list_days(employment_id, from_date=start, to_date=end)
+        by_date = {d.attendance_date.isoformat(): d for d in days}
+        day_ids = [d.id for d in days]
+        breaks_by_day: dict[int, int] = {}
+        if day_ids:
+            res = await self._session.execute(
+                select(AttendanceBreak).where(
+                    AttendanceBreak.attendance_day_id.in_(day_ids)
+                )
+            )
+            for b in res.scalars().all():
+                mins = b.duration_minutes
+                if mins is None and b.break_end and b.break_start:
+                    end_ts = b.break_end.replace(tzinfo=None) if b.break_end.tzinfo else b.break_end
+                    start_ts = b.break_start.replace(tzinfo=None) if b.break_start.tzinfo else b.break_start
+                    mins = max(0, int((end_ts - start_ts).total_seconds() // 60))
+                breaks_by_day[b.attendance_day_id] = breaks_by_day.get(b.attendance_day_id, 0) + int(mins or 0)
         out: list[WeekDayHours] = []
         total = 0
-        for d in days:
-            mins = int(float(d.working_hours or 0) * 60)
+        for i in range(7):
+            day = start + timedelta(days=i)
+            key = day.isoformat()
+            hit = by_date.get(key)
+            if hit is None:
+                status = "WEEK_OFF" if day.weekday() >= 5 else "NOT_MARKED"
+                if day > today:
+                    status = "UPCOMING"
+                out.append(WeekDayHours(date=key, status=status, minutes=0, break_minutes=0))
+                continue
+            mins = int(float(hit.working_hours or 0) * 60)
             total += mins
-            st = d.status.value if hasattr(d.status, "value") else str(d.status)
+            st = hit.status.value if hasattr(hit.status, "value") else str(hit.status)
             out.append(
                 WeekDayHours(
-                    date=d.attendance_date.isoformat(),
+                    date=key,
                     status=st,
                     minutes=mins,
+                    break_minutes=breaks_by_day.get(hit.id, 0),
                 )
             )
         return WeekHoursResponse(

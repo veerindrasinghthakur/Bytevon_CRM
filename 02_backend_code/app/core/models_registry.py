@@ -27,6 +27,7 @@ from app.modules.leave.models import (  # noqa: F401
     LeaveRequest,
     LeaveType,
 )
+from app.modules.my_work.profile.models import UserPreference  # noqa: F401
 from app.modules.notifications.models import (  # noqa: F401
     Notification,
     NotificationPreference,

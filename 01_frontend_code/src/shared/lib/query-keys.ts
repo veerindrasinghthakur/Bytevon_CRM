@@ -232,6 +232,7 @@ export const queryKeys = {
       list: (filters?: unknown) => [...queryKeys.myWork.corrections.all, 'list', filters ?? {}] as const,
     },
     overview: () => ['my-work', 'overview'] as const,
+    projects: () => ['my-work', 'projects'] as const,
     bankDetails: () => ['my-work', 'bank-details'] as const,
     approvers: () => ['my-work', 'approvers'] as const,
     holidays: {
@@ -279,6 +280,7 @@ export const invalidate = {
   orgShifts: (qc: Qc) =>
     void qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all }),
   myWorkTasks: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.tasks.all }),
+  myWorkOverview: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.overview() }),
   myWorkLeave: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.leave.all }),
   myWorkAttendance: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.attendance.all }),
   myWorkCorrections: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.corrections.all }),

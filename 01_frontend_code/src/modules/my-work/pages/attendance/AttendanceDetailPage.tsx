@@ -38,7 +38,6 @@ export function AttendanceDetailPage() {
   const record =
     listQuery.data?.items.find((r) => r.id === attendanceId) ?? listQuery.data?.items[0]
   const user = overviewQuery.data?.user
-  const user = overviewQuery.data?.user
 
   if (!record) {
     return (

@@ -1,4 +1,4 @@
-"""Scope-based GET /dashboard/attendance (default SELF, drill-down via CUSTOM)."""
+"""Scope-based GET /dashboard/attendance (default SELF, drill-down via owner-or-grant union)."""
 from __future__ import annotations
 
 from datetime import date
@@ -27,7 +27,7 @@ ServiceDep = Annotated[DashboardAttendanceService, Depends(get_service)]
 @router.get("/attendance", response_model=DashboardAttendanceResponse)
 async def dashboard_attendance(
     service: ServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF", union=True))],
     employment_id: int | None = Query(None),
     from_date: date | None = Query(None),
     to_date: date | None = Query(None),

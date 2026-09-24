@@ -176,7 +176,7 @@ export function EmployeeCreatePage() {
       const m = await getOrgMastersForEmployeeForm()
       setMasters({
         departments: m.departments.map((d) => ({ id: d.id, name: d.name })),
-        positions: m.positions.map((p) => ({ id: p.id, name: p.name })),
+        positions: m.positions.map((p) => ({ id: p.id, name: p.name, departmentId: p.departmentId ?? null })),
         locations: m.locations.map((l) => ({ id: l.id, name: l.name })),
         shifts: m.shifts.map((s) => ({ id: s.id, name: s.name })),
       })

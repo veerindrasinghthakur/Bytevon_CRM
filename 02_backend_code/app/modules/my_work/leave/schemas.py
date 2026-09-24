@@ -28,6 +28,8 @@ class LeaveRequest(BaseModel):
     status: str
     applied_on: date
     approver: str | None = None
+    approver_remarks: str | None = None
+    decided_on: date | None = None
     half_day: str | None = None
 
 

@@ -11,8 +11,11 @@ import {
 } from '../../api/review'
 
 export function usePayrollReview() {
-  const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
-  const id = employeeId ?? ''
+  const { payrollId, employeeId } = useParams({ strict: false }) as {
+    payrollId?: string
+    employeeId?: string
+  }
+  const id = payrollId ?? employeeId ?? ''
   const qc = useQueryClient()
   const [showPayModal, setShowPayModal] = useState(false)
   const [paymentRef, setPaymentRef] = useState('')

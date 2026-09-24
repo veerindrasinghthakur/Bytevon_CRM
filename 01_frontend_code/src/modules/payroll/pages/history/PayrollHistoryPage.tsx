@@ -92,6 +92,7 @@ function HistoryRow({
 }: {
   record: {
     id: string
+    payrollId?: string
     period: string
     employeeId: string
     paidOn: string
@@ -138,7 +139,7 @@ function HistoryRow({
             onClick={() =>
               safeNavigate(navigate, {
                 to: payrollRoutes.payslipPath,
-                params: { employeeId: record.employeeId },
+                params: { payrollId: record.payrollId ?? record.id },
               })
             }
           >

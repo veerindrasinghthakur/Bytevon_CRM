@@ -29,7 +29,10 @@ export function RunPayrollPage() {
       {
         onSuccess: () => {
           toast.success('Payroll run started')
-          safeNavigate(navigate, { to: payrollRoutes.generating })
+          safeNavigate(navigate, {
+            to: payrollRoutes.generating,
+            search: { year: Number(year), month: Number(month) },
+          })
         },
         onError: (err) => {
           toast.error(getApiErrorMessage(err, 'Could not start payroll run'))

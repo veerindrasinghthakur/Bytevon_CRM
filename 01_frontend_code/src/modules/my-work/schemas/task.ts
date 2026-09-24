@@ -9,6 +9,7 @@ export const taskStatusSchema = z.enum([
   'Blocked',
   'Completed',
   'Pending',
+  'Cancelled',
 ])
 export type TaskStatus = z.infer<typeof taskStatusSchema>
 
@@ -21,6 +22,7 @@ export const myTaskSchema = z.object({
   status: taskStatusSchema,
   estimatedHours: z.string().optional(),
   assignee: z.string().optional(),
+  createdAt: z.string().optional(),
 })
 export type MyTask = z.infer<typeof myTaskSchema>
 

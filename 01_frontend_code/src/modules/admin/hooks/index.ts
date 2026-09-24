@@ -14,5 +14,5 @@ export * from './settings/use-head-office'
 export * from './settings/use-settings'
 
 export * from './location/use-locations'
-export * from './shift/use-shifts'
+export * from '../../workforce/hooks/shift/use-shifts'
 export * from './leave/use-leave-settings'

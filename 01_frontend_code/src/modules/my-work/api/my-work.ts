@@ -89,7 +89,60 @@ function mapApiLeaveRequest(r: Record<string, unknown>): LeaveRequest {
     status: String(r.status ?? 'Pending') as LeaveRequest['status'],
     appliedOn: String(r.appliedOn ?? r.applied_on ?? ''),
     approver: r.approver == null ? undefined : String(r.approver),
+    approverRemarks:
+      r.approverRemarks == null && r.approver_remarks == null
+        ? undefined
+        : String(r.approverRemarks ?? r.approver_remarks ?? ''),
+    decidedOn:
+      r.decidedOn == null && r.decided_on == null
+        ? undefined
+        : String(r.decidedOn ?? r.decided_on ?? ''),
     halfDay: (r.halfDay ?? r.half_day ?? null) as LeaveRequest['halfDay'],
+  }
+}
+
+/** Withdraw a pending leave — backend POST /leave/requests/{id}/cancel (releases the HOLD). */
+export async function cancelLeaveRequest(id: string): Promise<void> {
+  if (env.useMockApi) {
+    await delay(300)
+    return
+  }
+  await apiClient.post(`/leave/requests/${encodeURIComponent(id)}/cancel`)
+}
+
+/** Backend task codes (HIGH, IN_PROGRESS…) → UI labels (High, In Progress…). */
+const BACKEND_TASK_PRIORITY_TO_UI: Record<string, string> = {
+  LOW: 'Low',
+  MEDIUM: 'Medium',
+  HIGH: 'High',
+  CRITICAL: 'Critical',
+}
+
+const BACKEND_TASK_STATUS_TO_UI: Record<string, string> = {
+  TODO: 'Not Started',
+  IN_PROGRESS: 'In Progress',
+  IN_REVIEW: 'Pending',
+  BLOCKED: 'Blocked',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+}
+
+export function mapApiMyTask(r: Record<string, unknown>): MyTask {
+  const est = r.estimated_hours ?? r.estimatedHours
+  const created = r.created_at ?? r.createdAt
+  return {
+    id: String(r.id ?? ''),
+    name: String(r.name ?? ''),
+    project: r.project == null ? undefined : String(r.project),
+    priority: (BACKEND_TASK_PRIORITY_TO_UI[String(r.priority ?? '').toUpperCase()] ??
+      String(r.priority ?? 'Medium')) as MyTask['priority'],
+    dueDate: String(r.due_date ?? r.dueDate ?? ''),
+    status: (BACKEND_TASK_STATUS_TO_UI[String(r.status ?? '').toUpperCase()] ??
+      String(r.status ?? 'Not Started')) as MyTask['status'],
+    estimatedHours:
+      est == null || est === '' ? undefined : typeof est === 'number' ? `${est}h` : String(est),
+    assignee: r.assignee == null ? undefined : String(r.assignee),
+    createdAt: created == null || created === '' ? undefined : String(created).slice(0, 10),
   }
 }
 
@@ -120,6 +173,29 @@ function mockCountWorkingDays(
 }
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+
+/** Backend sends full ISO datetimes for check-in/out; cards need short local HH:MM. */
+function formatClockShort(value: unknown): string {
+  if (typeof value !== 'string' || value.trim() === '') return '—'
+  const bare = /^(\d{1,2}):(\d{2})(?::\d{2})?(\s*[AP]M)?$/i.exec(value.trim())
+  if (bare) return `${bare[1].padStart(2, '0')}:${bare[2]}${bare[3] ? ` ${bare[3].trim()}` : ''}`
+  const dt = new Date(value)
+  if (!Number.isNaN(dt.getTime())) {
+    return dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+  return '—'
+}
+
+const ATTENDANCE_STATUS_LABEL: Record<string, string> = {
+  PRESENT: 'Present',
+  ABSENT: 'Absent',
+  HALF_DAY: 'Half Day',
+  ON_LEAVE: 'On Leave',
+  HOLIDAY: 'Holiday',
+  WEEK_OFF: 'Week Off',
+  NOT_MARKED: 'Not marked',
+  UPCOMING: 'Upcoming',
+}
 
 /** Backend returns WeekHoursResponse { days: [{ date, status, minutes }] }; UI needs WeekHourBar[]. */
 function mapWeekHoursPayload(data: unknown): WeekHourBar[] {
@@ -158,7 +234,9 @@ function mapOneWeekDay(raw: Record<string, unknown>): WeekHourBar {
     if (!Number.isNaN(dt.getTime())) {
       dow = dt.getDay()
       isWeekend = dow === 0 || dow === 6
-      const todayIso = new Date().toISOString().slice(0, 10)
+      // Local calendar day (not UTC) so isToday matches the server day.
+      const n = new Date()
+      const todayIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
       isToday = dateStr === todayIso
     }
   }
@@ -199,6 +277,7 @@ export async function getMyWorkOverview(): Promise<MyWorkOverview> {
     user: {
       name: String(rawUser.name ?? 'User'),
       employeeId: String(rawUser.employmentId ?? rawUser.employeeId ?? ''),
+      employeeCode: typeof rawUser.employeeCode === 'string' ? rawUser.employeeCode : undefined,
       department: String(rawUser.department ?? ''),
       role: typeof rawUser.role === 'string' ? (rawUser.role as string) : undefined,
       todayLabel: String(rawUser.todayLabel ?? 'Today'),
@@ -206,8 +285,11 @@ export async function getMyWorkOverview(): Promise<MyWorkOverview> {
     },
     metrics: Array.isArray(raw.metrics) ? raw.metrics : [],
     todayAttendance: {
-      checkIn: typeof rawToday?.checkIn === 'string' ? (rawToday.checkIn as string) : '—',
-      checkInNote: typeof rawToday?.status === 'string' ? (rawToday.status as string) : '',
+      checkIn: formatClockShort(rawToday?.checkIn),
+      checkInNote:
+        typeof rawToday?.status === 'string'
+          ? (ATTENDANCE_STATUS_LABEL[String(rawToday.status).toUpperCase()] ?? String(rawToday.status))
+          : '',
       totalHours:
         rawToday && (rawToday.checkIn || rawToday.checkOut)
           ? `${hours}h ${mins}m`
@@ -217,7 +299,9 @@ export async function getMyWorkOverview(): Promise<MyWorkOverview> {
     },
     weekHours: mapWeekHoursPayload(raw.weekHours),
     leaveBalances: Array.isArray(raw.leaveBalances) ? raw.leaveBalances : [],
-    tasks: Array.isArray(raw.tasks) ? raw.tasks : [],
+    tasks: (Array.isArray(raw.tasks) ? raw.tasks : []).map((t) =>
+      mapApiMyTask(t as Record<string, unknown>),
+    ),
     notifications: Array.isArray(raw.notifications) ? raw.notifications : [],
     events: Array.isArray(raw.events) ? raw.events : [],
     quickActions: Array.isArray(raw.quickActions) ? raw.quickActions : [],
@@ -415,19 +499,30 @@ export async function calculateLeaveDays(
 }
 
 export async function listMyAttendance(
-  params: MyWorkListParams = {},
+  params: MyWorkListParams & { fromDate?: string; toDate?: string } = {},
 ): Promise<AttendanceListResponse> {
   const page = params.page ?? DEFAULT_LIST_PAGE
   const pageSize = params.pageSize ?? DEFAULT_LIST_PAGE_SIZE
 
   if (!env.useMockApi) {
+    const { fromDate, toDate, ...rest } = params
     const { data } = await apiClient.get<
       AttendanceListResponse | unknown[] | { items?: unknown[]; total?: number }
-    >('/my-work/attendance', { params })
-    if (Array.isArray(data)) {
-      return { items: data as AttendanceRecord[], total: data.length, page, pageSize }
-    }
-    const items = ((data as { items?: AttendanceRecord[] }).items ?? []) as AttendanceRecord[]
+    >(
+      '/my-work/attendance',
+      {
+        params: {
+          ...rest,
+          ...(fromDate ? { from_date: fromDate } : {}),
+          ...(toDate ? { to_date: toDate } : {}),
+          include_punches: true,
+        },
+      },
+    )
+    const rawItems: unknown[] = Array.isArray(data)
+      ? data
+      : ((data as { items?: unknown[] }).items ?? [])
+    const items = rawItems.map((r) => mapApiAttendanceDay(r as Record<string, unknown>))
     return {
       items,
       total: Number((data as { total?: number }).total ?? items.length),
@@ -438,6 +533,48 @@ export async function listMyAttendance(
 
   await delay()
   return { items: [], total: 0, page, pageSize }
+}
+
+/** Backend AttendanceDay(+punches) → UI AttendanceRecord. */
+const BACKEND_ATTENDANCE_STATUS_TO_UI: Record<string, string> = {
+  PRESENT: 'Present',
+  ABSENT: 'Absent',
+  HALF_DAY: 'Half Day',
+  ON_LEAVE: 'On Leave',
+  HOLIDAY: 'Holiday',
+  WEEK_OFF: 'Weekend',
+  NOT_MARKED: 'Absent',
+  NOT_STARTED: 'Absent',
+  UPCOMING: 'Absent',
+}
+
+function mapApiAttendanceDay(r: Record<string, unknown>): AttendanceRecord {
+  const punches = Array.isArray(r.punches) ? (r.punches as Array<Record<string, unknown>>) : []
+  let checkIn: string | undefined
+  let checkOut: string | undefined
+  for (const p of punches) {
+    const t = String(p.punch_type ?? p.punchType ?? '').toUpperCase()
+    const at = String(p.punch_time ?? p.punchTime ?? '')
+    const hm = formatClockShort(at === '' ? undefined : at)
+    if (t === 'CHECK_IN' && checkIn == null) checkIn = hm === '—' ? undefined : hm
+    if (t === 'CHECK_OUT') checkOut = hm === '—' ? undefined : hm
+  }
+  const wh = r.working_hours ?? r.workingHours
+  let totalHours: string | undefined
+  if (wh != null && wh !== '') {
+    const mins = Math.round(Number(wh) * 60)
+    totalHours = `${Math.floor(mins / 60)}h ${mins % 60}m`
+  }
+  const statusKey = String(r.status ?? '').toUpperCase()
+  return {
+    id: String(r.id ?? ''),
+    date: String(r.attendance_date ?? r.date ?? ''),
+    checkIn,
+    checkOut,
+    totalHours,
+    status: (BACKEND_ATTENDANCE_STATUS_TO_UI[statusKey] ?? 'Present') as AttendanceRecord['status'],
+    note: typeof r.note === 'string' ? r.note : undefined,
+  }
 }
 
 export async function getMyWorkTodayInfo(): Promise<{ todayLabel: string; shift: string }> {
@@ -464,6 +601,80 @@ export async function getMyWeekHours(): Promise<WeekHourBar[]> {
   }
   await delay()
   return weekHours.map((w) => ({ ...w }))
+}
+
+/** Real check-in / check-out punch. Server owns the attendance_day row. */
+export async function punchAttendance(input: {
+  employmentId: number
+  punchType: 'CHECK_IN' | 'CHECK_OUT'
+}): Promise<{ id?: number; dayId?: number }> {
+  const { data } = await apiClient.post<Record<string, unknown>>(
+    '/my-work/attendance/punch',
+    {
+      employment_id: input.employmentId,
+      punch_type: input.punchType,
+    },
+  )
+  const dayId = data.attendance_day_id ?? data.day_id ?? data.dayId
+  return {
+    id: typeof data.id === 'number' ? data.id : undefined,
+    dayId: typeof dayId === 'number' ? dayId : undefined,
+  }
+}
+
+/** Today's attendance day id (needed to open a server-side break). */
+export async function getMyTodayDayId(): Promise<number | null> {
+  const { data } = await apiClient.get<Record<string, unknown>>(
+    '/my-work/attendance/today-info',
+  )
+  const dayId = data.dayId ?? data.day_id ?? data.attendance_day_id
+  return typeof dayId === 'number' ? dayId : null
+}
+
+const BREAK_SERVER_ID_KEY = 'bytevon.breakServerIds'
+
+function readBreakServerIds(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(BREAK_SERVER_ID_KEY) ?? '{}') as Record<string, number>
+  } catch {
+    return {}
+  }
+}
+
+/** Open a server-side break; remembers the server id for the local break id. */
+export async function syncBreakStartToServer(
+  localId: string,
+  attendanceDayId: number,
+): Promise<number | null> {
+  try {
+    const { data } = await apiClient.post<Record<string, unknown>>(
+      '/my-work/attendance/breaks/start',
+      { attendance_day_id: attendanceDayId },
+    )
+    if (typeof data.id === 'number') {
+      const map = readBreakServerIds()
+      map[localId] = data.id
+      localStorage.setItem(BREAK_SERVER_ID_KEY, JSON.stringify(map))
+      return data.id
+    }
+  } catch {
+    /* best-effort: local timer remains source of truth */
+  }
+  return null
+}
+
+/** Close the server-side break linked to a local break id. */
+export async function syncBreakEndToServer(localId: string): Promise<void> {
+  try {
+    const map = readBreakServerIds()
+    const serverId = map[localId]
+    if (serverId == null) return
+    await apiClient.post(`/my-work/attendance/breaks/${serverId}/end`, {})
+    delete map[localId]
+    localStorage.setItem(BREAK_SERVER_ID_KEY, JSON.stringify(map))
+  } catch {
+    /* best-effort */
+  }
 }
 
 /** Backend day status → UI display status. */
@@ -528,8 +739,18 @@ export async function listMyTasks(params: MyWorkListParams = {}): Promise<MyTask
   const pageSize = params.pageSize ?? DEFAULT_LIST_PAGE_SIZE
 
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<MyTaskListResponse>('/my-work/tasks', { params })
-    return data
+    const { data } = await apiClient.get<{
+      items?: Array<Record<string, unknown>>
+      total?: number
+    }>('/my-work/tasks', { params })
+    const raw = Array.isArray(data) ? data : (data.items ?? [])
+    const items = (Array.isArray(raw) ? raw : []).map(mapApiMyTask)
+    return {
+      items,
+      total: Array.isArray(data) ? items.length : Number((data as { total?: number }).total ?? items.length),
+      page,
+      pageSize,
+    }
   }
 
   await delay()
@@ -553,6 +774,50 @@ export async function getMyTask(taskId: string): Promise<MyTask> {
   const task = items.find((t) => String(t.id) === String(taskId))
   if (!task) throw new Error('Task not found')
   return task
+}
+
+export interface MyProjectOption {
+  id: number
+  name: string
+  status: string
+}
+
+/** Active projects assigned to me or to one of my teams. */
+export async function listMyProjects(): Promise<MyProjectOption[]> {
+  if (env.useMockApi) {
+    await delay()
+    return []
+  }
+  const { data } = await apiClient.get<MyProjectOption[]>('/my-work/tasks/projects')
+  return Array.isArray(data) ? data : []
+}
+
+export interface CreateMyTaskInput {
+  projectId: number
+  title: string
+  description?: string | null
+  priority: string
+  startDate?: string | null
+  dueDate?: string | null
+  estimatedHours?: number | null
+}
+
+/** Self-assign task create — assignee is always the caller (server-enforced). */
+export async function createMyTask(input: CreateMyTaskInput): Promise<Record<string, unknown>> {
+  if (env.useMockApi) {
+    await delay(400)
+    return { id: `T-${Date.now()}`, ...input }
+  }
+  const { data } = await apiClient.post<Record<string, unknown>>('/my-work/tasks', {
+    project_id: input.projectId,
+    title: input.title,
+    description: input.description ?? null,
+    priority: input.priority,
+    start_date: input.startDate ?? null,
+    due_date: input.dueDate ?? null,
+    estimated_hours: input.estimatedHours ?? null,
+  })
+  return data
 }
 
 export async function listMyApprovals(
@@ -732,7 +997,7 @@ export async function submitLeaveRequest(input: CreateLeaveRequestInput): Promis
     )
     return {
       id: `LV-${Date.now()}`,
-      type: input.type,
+      type: mapLeaveTypeToUI(input.type) as LeaveRequest['type'],
       from: input.from,
       to: input.to,
       days,

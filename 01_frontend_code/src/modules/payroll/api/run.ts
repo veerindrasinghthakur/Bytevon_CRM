@@ -29,7 +29,10 @@ export async function getRunPayrollChecks(): Promise<RunPayrollCheck[]> {
   })
 }
 
-export async function getRunPayrollPreview(): Promise<RunPayrollPreview> {
+export async function getRunPayrollPreview(period?: {
+  year: number
+  month: number
+}): Promise<RunPayrollPreview> {
   if (env.useMockApi) {
     await delay(200)
     const employees = payrollEmployees.map((r) => ({ ...r }))
@@ -41,7 +44,9 @@ export async function getRunPayrollPreview(): Promise<RunPayrollPreview> {
       estimatedNet: employees.reduce((s, e) => s + e.net, 0),
     }
   }
-  const { data } = await apiClient.get<Record<string, unknown>>('/payroll/run/preview')
+  const { data } = await apiClient.get<Record<string, unknown>>('/payroll/run/preview', {
+    params: period ?? undefined,
+  })
   const employeesRaw = Array.isArray(data?.employees) ? data.employees : []
   const employees = employeesRaw.map((row) =>
     normalizeEmployee((row ?? {}) as Record<string, unknown>),

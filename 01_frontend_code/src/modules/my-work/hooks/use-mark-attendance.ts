@@ -21,11 +21,13 @@ import {
   getTodayBreaks,
   subscribeBreakChange,
 } from '../lib/break-session'
-import { getMyWorkTodayInfo, submitManualAttendance } from '../api/my-work'
+import { getMyWorkTodayInfo, punchAttendance, submitManualAttendance } from '../api/my-work'
 import type { WorkLogRow } from '../lib/working-hours-log'
 import { myWorkRoutes } from '../routes'
 import { useAuth } from '@/modules/auth/context/AuthContext'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from '@/shared/hooks/use-toast'
 
 export type WorkStatus = 'Present' | 'WFH' | 'Leave'
 
@@ -51,6 +53,7 @@ function dayPct(iso: string, now = Date.now()): number {
 
 export function useMarkAttendance() {
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const { employmentId } = useAuth()
   const [now, setNow] = useState(() => new Date())
   const [status, setStatus] = useState<WorkStatus>('Present')
@@ -143,18 +146,37 @@ export function useMarkAttendance() {
   const markerPct = session ? dayPct(session.checkInAt, now.getTime()) : null
   const totalLoggedLabel = summary ? formatHoursCompact(summary.netMs) : '0m'
 
+  const refreshAttendanceQueries = useCallback(() => {
+    void qc.invalidateQueries({ queryKey: queryKeys.myWork.attendance.todayInfo() })
+    void qc.invalidateQueries({ queryKey: queryKeys.myWork.attendance.weekHours() })
+    void qc.invalidateQueries({ queryKey: queryKeys.myWork.attendance.list({}) })
+    void qc.invalidateQueries({ queryKey: queryKeys.myWork.overview() })
+  }, [qc])
+
   const handleCheckIn = useCallback(() => {
     if (status !== 'Present') return
     setSubmitting(true)
     checkInNow()
     setSubmitting(false)
-  }, [status])
+    if (employmentId == null) return
+    void punchAttendance({ employmentId, punchType: 'CHECK_IN' })
+      .then(() => refreshAttendanceQueries())
+      .catch((err: unknown) => {
+        toast.error(getApiErrorMessage(err, 'Check-in saved locally; server punch failed'))
+      })
+  }, [status, employmentId, refreshAttendanceQueries])
 
   const handleCheckOut = useCallback(() => {
     setSubmitting(true)
     checkOutNow()
     setSubmitting(false)
-  }, [])
+    if (employmentId == null) return
+    void punchAttendance({ employmentId, punchType: 'CHECK_OUT' })
+      .then(() => refreshAttendanceQueries())
+      .catch((err: unknown) => {
+        toast.error(getApiErrorMessage(err, 'Check-out saved locally; server punch failed'))
+      })
+  }, [employmentId, refreshAttendanceQueries])
 
   const resetManual = useCallback(() => {
     setManualDate(new Date().toISOString().slice(0, 10))

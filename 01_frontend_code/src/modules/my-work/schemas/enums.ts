@@ -14,6 +14,7 @@ export const statusDot: Record<string, string> = {
   'Not Started': 'bg-outline',
   Completed: 'bg-secondary',
   Blocked: 'bg-[var(--color-warning-amber)]',
+  Cancelled: 'bg-outline-variant',
 }
 
 /** Leave / approval request status pills */

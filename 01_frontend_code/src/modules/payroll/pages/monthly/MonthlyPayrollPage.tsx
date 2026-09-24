@@ -269,7 +269,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.payslipPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -282,7 +282,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.payslipPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -297,7 +297,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.reviewPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -309,7 +309,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.reviewPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -324,7 +324,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.reviewPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
@@ -336,7 +336,7 @@ export function MonthlyPayrollPage() {
                                 onClick={() =>
                                   safeNavigate(navigate, {
                                     to: payrollRoutes.reviewPath,
-                                    params: { employeeId: r.id },
+                                    params: { payrollId: r.payrollId ?? r.id },
                                   })
                                 }
                               >
