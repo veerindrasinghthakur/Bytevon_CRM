@@ -39,9 +39,15 @@ async def list_payroll_employees(
     page: int = Query(1, ge=1),
     pageSize: int = Query(20, ge=1, le=200),
     search: str | None = Query(None),
+    status: str | None = Query(None, description="Filter by payroll status"),
 ) -> dict[str, Any]:
     return await service.list_employees(
-        year=year, month=month, page=page, page_size=pageSize, search=search
+        year=year,
+        month=month,
+        page=page,
+        page_size=pageSize,
+        search=search,
+        status=status,
     )
 
 
@@ -67,7 +73,8 @@ async def list_bank_accounts(
     employment_id: int,
     service: EmployeePayrollServiceDep,
     session: Annotated[AsyncSession, Depends(get_db_session)],
-    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "CUSTOM"))],
+    # TODO(ScopeResolver): was CUSTOM; scope-union = owner OR ≥ DEPARTMENT via enforce_owner_or_grant
+    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "SELF"))],
 ) -> list[dict]:
     enforce_owner_or_grant(auth, "salary", "VIEW", owner_employment_id=employment_id)
     rows = await service.list_bank_accounts(employment_id)
@@ -81,7 +88,7 @@ async def get_primary_bank(
     employment_id: int,
     service: EmployeePayrollServiceDep,
     session: Annotated[AsyncSession, Depends(get_db_session)],
-    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "SELF"))],
 ) -> dict:
     enforce_owner_or_grant(auth, "salary", "VIEW", owner_employment_id=employment_id)
     row = await service.get_primary_bank(employment_id)
