@@ -115,7 +115,7 @@ async def cancel(
     request_id: int,
     body: ApprovalActionRequest,
     service: ApprovalActionServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("approval", "UPDATE", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "UPDATE", "SELF"))],
 ) -> ApprovalRequestDetailResponse:
     current = await service.get_request(request_id)
     enforce_owner_or_grant(auth, "approval", "UPDATE", owner_employment_id=current.requester_employment_id)
@@ -131,7 +131,7 @@ async def comment(
     request_id: int,
     body: CommentRequest,
     service: ApprovalActionServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("approval", "UPDATE", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "UPDATE", "SELF"))],
 ) -> ApprovalActionResponse:
     current = await service.get_request(request_id)
     enforce_owner_or_grant(auth, "approval", "UPDATE", owner_employment_id=current.requester_employment_id)
