@@ -157,7 +157,6 @@ async def create_request(
     service: RequestServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("approval", "CREATE", "SELF"))],
 ) -> ApprovalRequestResponse:
-    # SELF-service: a request is always filed as yourself (no spoofing).
     body = body.model_copy(update={"requester_employment_id": auth.employment_id})
     return await service.create_request(body, actor_employment_id=auth.employment_id)
 
@@ -186,7 +185,7 @@ async def list_requests(
 async def get_request(
     request_id: int,
     service: RequestServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "SELF"))],
 ) -> ApprovalRequestDetailResponse:
     detail = await service.get_request(request_id)
     enforce_owner_or_grant(auth, "approval", "VIEW", owner_employment_id=detail.requester_employment_id)
@@ -201,7 +200,7 @@ async def get_request_by_reference(
     request_type: str,
     reference_id: int,
     service: RequestServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "SELF"))],
 ) -> ApprovalRequestDetailResponse:
     detail = await service.get_request_by_reference(request_type, reference_id)
     enforce_owner_or_grant(auth, "approval", "VIEW", owner_employment_id=detail.requester_employment_id)
@@ -212,7 +211,7 @@ async def get_request_by_reference(
 async def get_request_ui(
     request_id: int,
     service: RequestServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "SELF"))],
 ) -> dict[str, Any]:
     detail = await service.get_request(request_id)
     enforce_owner_or_grant(auth, "approval", "VIEW", owner_employment_id=detail.requester_employment_id)
