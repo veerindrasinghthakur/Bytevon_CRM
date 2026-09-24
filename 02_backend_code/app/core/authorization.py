@@ -1,15 +1,11 @@
 """Authorization dependency — RBAC permission + scope enforcement (SEC-002).
 
-Contracts enforced here:
-- Super Admin Contract: valid JWT required; bypasses ALL scope and
-  resource/action checks (never authentication, existence, business rules,
-  or DB integrity).
+Contracts:
+- Super Admin: JWT required; bypasses scope/resource checks.
 - Scope hierarchy: SELF < TEAM < DEPARTMENT < LOCATION < ORGANIZATION.
-  A grant satisfies an endpoint when grant_rank >= required_rank.
-- CUSTOM scope: authentication is enforced by the dependency; the
-  handler enforces the owner-or-grant rule via enforce_owner_or_grant().
-- Grant failures hide existence (404 per architecture); explicit
-  action denials use 403 where intended.
+- Scope-union (replaces CUSTOM): handler uses enforce_owner_or_grant —
+  pass if owner-match OR grant rank >= DEPARTMENT (SELF-only never opens
+  other users' records). TODO(ScopeResolver): merge when scoping package lands.
 """
 from __future__ import annotations
 
@@ -34,9 +30,11 @@ SCOPE_RANK: dict[str, int] = {
     "ORGANIZATION": 5,
 }
 
-# Non-owner access to a CUSTOM (owner-or-grant) endpoint requires at least
-# department-level authority; SELF-only grants never open other users' records.
-CUSTOM_NON_OWNER_MIN_RANK = SCOPE_RANK["DEPARTMENT"]
+# Non-owner access on owner-or-grant endpoints requires ≥ DEPARTMENT.
+# TODO(ScopeResolver): rename when CUSTOM is fully purged from comments.
+OWNER_OR_GRANT_MIN_RANK = SCOPE_RANK["DEPARTMENT"]
+# Back-compat alias for imports still using the old name during migration.
+CUSTOM_NON_OWNER_MIN_RANK = OWNER_OR_GRANT_MIN_RANK
 
 
 @dataclass
@@ -65,9 +63,6 @@ def _resolve_employment_id(
 
 SUPER_ADMIN_ROLE_NAMES = ("Super Admin", "SuperAdmin")
 
-# Endpoints gated by authentication + account match only (no RBAC grant):
-# logout, change-password, own session lists. Every valid login may use
-# them; permission_mapping.json marks them "authenticated_account".
 ACCOUNT_SELF_PATHS = frozenset(
     {
         ("POST", "/api/v1/auth/logout"),
@@ -79,12 +74,6 @@ ACCOUNT_SELF_PATHS = frozenset(
 
 
 async def _has_super_admin_role(session: AsyncSession, employment_id: int) -> bool:
-    """Direct role check — independent of permission grants.
-
-    The Super Admin role carries no RolePermission rows by design (it
-    bypasses checks per contract); detecting via grant joins would always
-    return False.
-    """
     from sqlalchemy import select
 
     from app.modules.rbac.models import EmployeeRole, Role
@@ -104,10 +93,14 @@ def require_permission(
 ) -> Callable[..., Coroutine[Any, Any, AuthContext]]:
     """FastAPI dependency factory enforcing (resource, action, scope).
 
-    Usage: `auth: AuthContextDep = Depends(require_permission("leave_request", "VIEW", "SELF"))`
+    For owner-or-grant routes: use scope="SELF" + enforce_owner_or_grant in handler
+    (union of owner-match OR ≥ DEPARTMENT grant).
     """
-    required_rank = SCOPE_RANK.get(scope.upper(), SCOPE_RANK["ORGANIZATION"])
     scope_name = scope.upper()
+    # CUSTOM retired — treat as SELF (rank gate only; handler does union).
+    if scope_name == "CUSTOM":
+        scope_name = "SELF"
+    required_rank = SCOPE_RANK.get(scope_name, SCOPE_RANK["ORGANIZATION"])
 
     async def guard(
         payload: Annotated[TokenPayload, Depends(get_token_payload)],
@@ -141,19 +134,13 @@ def require_permission(
         )
         if ctx.is_super_admin:
             return ctx
-        if scope_name == "CUSTOM":
-            # Authentication enforced above; handler applies owner-or-grant.
-            return ctx
+
         grant_scope = (ctx.scopes.get(resource) or "").upper()
         if SCOPE_RANK.get(grant_scope, 0) < required_rank:
-            # Authenticated but not permitted: keep 404 status (hide existence)
-            # while the code/message tell the UI it's a permission issue,
-            # never a session/expiry problem.
             raise NotFoundError(
                 "You don't have permission to access this resource",
                 code="insufficient_permission",
             )
-        # Action-level check via permission matrix when present.
         permissions = effective.permissions or {}
         resource_perms = permissions.get(resource)
         if resource_perms is not None and not resource_perms.get(action.lower(), False):
@@ -163,7 +150,6 @@ def require_permission(
             )
         return ctx
 
-    # Give the dependency a stable, debuggable name per endpoint.
     guard.__name__ = f"require_{resource}_{action.lower()}_{scope_name.lower()}"
     return guard
 
@@ -177,8 +163,9 @@ def enforce_owner_or_grant(
     owner_person_id: int | None = None,
     owner_login_id: int | None = None,
 ) -> None:
-    """CUSTOM-scope handler rule: owner, Super Admin, or >= DEPARTMENT grant.
+    """Scope-union: owner, Super Admin, or grant rank >= DEPARTMENT.
 
+    TODO(ScopeResolver): replace with scoped SQL when available.
     Raises 404 (hide existence) otherwise.
     """
     if ctx.is_super_admin:
@@ -190,7 +177,7 @@ def enforce_owner_or_grant(
     if owner_login_id is not None and owner_login_id == ctx.login_id:
         return
     grant_scope = (ctx.scopes.get(resource) or "").upper()
-    if SCOPE_RANK.get(grant_scope, 0) >= CUSTOM_NON_OWNER_MIN_RANK:
+    if SCOPE_RANK.get(grant_scope, 0) >= OWNER_OR_GRANT_MIN_RANK:
         return
     raise NotFoundError(
         "You don't have permission to access this resource",
