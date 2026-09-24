@@ -1,5 +1,18 @@
 """
 Core domain and HTTP-mappable exceptions.
+
+Authorization status contract (final):
+  ForbiddenError (403)
+    - Actor has no grant at all for the resource+action, OR
+    - Relationship / business-policy denial (e.g. not the department head),
+      OR
+    - Sensitive-field denial (write/update of a field the actor cannot touch).
+  NotFoundError (404)
+    - Permission exists, but the target is missing or out of the actor's
+      data scope (scoped query returns zero rows). Missing and out-of-scope
+      are intentionally indistinguishable.
+
+Non-authorization uses of these classes (plain missing rows, etc.) stay as-is.
 """
 
 from __future__ import annotations
@@ -26,6 +39,18 @@ class AppException(Exception):
 
 
 class NotFoundError(AppException):
+    """
+    HTTP 404.
+
+    Authorization use (final rule):
+      Actor *has* a grant for the resource+action, but the target is missing
+      or outside their resolved data scope. Missing and out-of-scope must
+      look identical to the client.
+
+    Non-authorization use: ordinary "row not found" after a legitimate lookup
+    (untouched by this rule).
+    """
+
     def __init__(self, message: str = "Resource not found", **kwargs: Any) -> None:
         code = kwargs.pop("code", "not_found")
         status_code = kwargs.pop("status_code", 404)
@@ -55,8 +80,14 @@ class UnauthorizedError(AppException):
 
 class ForbiddenError(AppException):
     """
-    Prefer 404 for most authorization failures per architecture (hide existence).
-    Use this only for explicit sensitive-field or action denials where 403 is intended.
+    HTTP 403.
+
+    Authorization use (final rule):
+      - No grant at all for the resource+action, OR
+      - Relationship / business-policy denial (e.g. not a valid approver), OR
+      - Sensitive-field denial (actor may not read/update that field).
+
+    Do **not** use 403 to hide out-of-scope targets — those are NotFoundError.
     """
 
     def __init__(self, message: str = "Forbidden", **kwargs: Any) -> None:
