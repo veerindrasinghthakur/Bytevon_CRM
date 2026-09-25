@@ -23,6 +23,8 @@ import {
 import { listEmployments } from '../api/employment'
 import { useQuery } from '@tanstack/react-query'
 import type { TodayAttendanceRow } from '../types'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -525,21 +527,25 @@ export function AttendanceDashboardPage() {
                   <p className="text-caption text-on-surface-variant mt-1">&ldquo;{c.reason}&rdquo;</p>
                   {c.approval_request_id != null && (
                     <div className="mt-2 flex gap-2">
-                      <Button
-                        variant="primary"
-                        className="!py-1 !px-2 !text-[11px]"
-                        isLoading={decideMut.isPending}
-                        onClick={() => decide(c.approval_request_id, 'approve')}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="!py-1 !px-2 !text-[11px]"
-                        onClick={() => decide(c.approval_request_id, 'reject')}
-                      >
-                        Reject
-                      </Button>
+                      <Can action={Action.APPROVE} resource="attendance">
+                        <Button
+                          variant="primary"
+                          className="!py-1 !px-2 !text-[11px]"
+                          isLoading={decideMut.isPending}
+                          onClick={() => decide(c.approval_request_id, 'approve')}
+                        >
+                          Approve
+                        </Button>
+                      </Can>
+                      <Can action={Action.APPROVE} resource="attendance">
+                        <Button
+                          variant="outline"
+                          className="!py-1 !px-2 !text-[11px]"
+                          onClick={() => decide(c.approval_request_id, 'reject')}
+                        >
+                          Reject
+                        </Button>
+                      </Can>
                     </div>
                   )}
                 </li>

@@ -16,6 +16,8 @@ import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { toast } from '@/shared/hooks/use-toast'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 /** First salary version for an employment (versioned create, never an update). */
 export function AddSalaryPage() {
@@ -127,9 +129,11 @@ export function AddSalaryPage() {
             <Button variant="outline" size="sm" onClick={backToList} disabled={saveMut.isPending}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={() => void onSubmit()} disabled={saveMut.isPending || !employmentId}>
-              {saveMut.isPending ? 'Creating…' : 'Create Salary'}
-            </Button>
+            <Can action={Action.CREATE} resource="salary">
+              <Button variant="primary" size="sm" onClick={() => void onSubmit()} disabled={saveMut.isPending || !employmentId}>
+                {saveMut.isPending ? 'Creating…' : 'Create Salary'}
+              </Button>
+            </Can>
           </div>
         </div>
       </header>

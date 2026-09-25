@@ -18,6 +18,10 @@ const MonthlyPayrollPage = lazyPage(
   () => import('./pages/monthly/MonthlyPayrollPage'),
   'MonthlyPayrollPage',
 )
+const MonthlyPayrollDetailPage = lazyPage(
+  () => import('./pages/monthly/MonthlyPayrollDetailPage'),
+  'MonthlyPayrollDetailPage',
+)
 const RunPayrollPage = lazyPage(() => import('./pages/run/RunPayrollPage'), 'RunPayrollPage')
 const GeneratingPayrollPage = lazyPage(
   () => import('./pages/run/GeneratingPayrollPage'),
@@ -57,6 +61,8 @@ const PayrollHistoryPage = lazyPage(
 export const payrollRoutes = {
   root: '/payroll',
   monthly: '/payroll/monthly',
+  monthlyDetail: (payrollId: string) => `/payroll/monthly/${payrollId}`,
+  monthlyDetailPath: '/payroll/monthly/$payrollId',
   run: '/payroll/run',
   generating: '/payroll/generating',
   review: (payrollId: string) => `/payroll/review/${payrollId}`,
@@ -88,6 +94,12 @@ export function createPayrollRoutes<TParent extends AnyRoute>(appLayoutRoute: TP
       path: '/payroll/monthly',
       beforeLoad: requirePayrollView,
       component: MonthlyPayrollPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/payroll/monthly/$payrollId',
+      beforeLoad: requirePayrollView,
+      component: MonthlyPayrollDetailPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,

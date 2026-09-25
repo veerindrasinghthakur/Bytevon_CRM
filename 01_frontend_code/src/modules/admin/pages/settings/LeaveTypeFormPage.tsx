@@ -24,6 +24,8 @@ import {
   leaveTypeMasterFormSchema,
   type LeaveTypeMasterFormInput,
 } from '../../schemas/leave-form'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 const LIST_TO = '/admin/leave-settings'
 
@@ -144,28 +146,34 @@ export function LeaveTypeFormPage() {
                 Cancel
               </Button>
             )}
-            <Button
-              variant="primary"
-              size="sm"
-              isLoading={saveMut.isPending}
-              onClick={() => void form.handleSubmit((v) => saveMut.mutate(v))()}
-            >
-              {isNew ? 'Create' : 'Save'}
-            </Button>
+            <Can action={isNew ? Action.CREATE : Action.UPDATE} resource="leave_policy">
+              <Button
+                variant="primary"
+                size="sm"
+                isLoading={saveMut.isPending}
+                onClick={() => void form.handleSubmit((v) => saveMut.mutate(v))()}
+              >
+                {isNew ? 'Create' : 'Save'}
+              </Button>
+            </Can>
           </div>
         ) : (
           <div className="flex gap-2">
-            {!isNew && row && !row.deleted_at && <EditButton variant="outline" onClick={startEditing} />}
-            {!isNew && row && !row.deleted_at && (
-              <DeleteButton
-                iconOnly
-                entityLabel={row.name}
-                isLoading={deleteMut.isPending}
-                onConfirm={() => {
-                  void deleteMut.mutateAsync()
-                }}
-              />
-            )}
+            <Can action={Action.UPDATE} resource="leave_policy">
+              {!isNew && row && !row.deleted_at && <EditButton variant="outline" onClick={startEditing} />}
+            </Can>
+            <Can action={Action.DELETE} resource="leave_policy">
+              {!isNew && row && !row.deleted_at && (
+                <DeleteButton
+                  iconOnly
+                  entityLabel={row.name}
+                  isLoading={deleteMut.isPending}
+                  onConfirm={() => {
+                    void deleteMut.mutateAsync()
+                  }}
+                />
+              )}
+            </Can>
           </div>
         )}
       </div>

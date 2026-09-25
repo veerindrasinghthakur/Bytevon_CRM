@@ -8,6 +8,7 @@ import { notificationStatusDotClass } from '../../schemas/enums'
 import { notificationRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 import { NotificationQuickContent } from '../../components/center/NotificationQuickContent'
 import { NotificationCard } from '../../components/center/NotificationCard'
 import { CenterKpiCards } from '../../components/center/CenterKpiCards'
@@ -70,14 +71,16 @@ export function NotificationCenterPage() {
             selectedIds={c.selectionMode ? Array.from(c.selectedIds) : undefined}
             filenameStem="notifications-inbox"
           />
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">done_all</span>}
-            onClick={() => c.markAllRead()}
-          >
-            Mark All Read
-          </Button>
+          <Can action={Action.UPDATE} resource="notification">
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">done_all</span>}
+              onClick={() => c.markAllRead()}
+            >
+              Mark All Read
+            </Button>
+          </Can>
           <Button
             variant="outline"
             size="sm"
@@ -86,14 +89,16 @@ export function NotificationCenterPage() {
           >
             Preferences
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">archive</span>}
-            onClick={() => c.archiveRead()}
-          >
-            Archive Read
-          </Button>
+          <Can action={Action.UPDATE} resource="notification">
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">archive</span>}
+              onClick={() => c.archiveRead()}
+            >
+              Archive Read
+            </Button>
+          </Can>
           <Can action="CREATE" resource="notification" minScope="SELF">
             <Button
               variant="primary"

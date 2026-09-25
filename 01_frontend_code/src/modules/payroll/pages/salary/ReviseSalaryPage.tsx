@@ -16,6 +16,8 @@ import {
 } from '../../schemas/salary-form'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function ReviseSalaryPage() {
   const navigate = useNavigate()
@@ -119,9 +121,11 @@ export function ReviseSalaryPage() {
             <Button variant="outline" size="sm" onClick={backToDetail} disabled={saveMut.isPending}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={() => void onSubmit()} disabled={saveMut.isPending}>
-              {saveMut.isPending ? 'Saving…' : 'Save New Version'}
-            </Button>
+            <Can action={Action.UPDATE} resource="salary">
+              <Button variant="primary" size="sm" onClick={() => void onSubmit()} disabled={saveMut.isPending}>
+                {saveMut.isPending ? 'Saving…' : 'Save New Version'}
+              </Button>
+            </Can>
           </div>
         </div>
       </header>

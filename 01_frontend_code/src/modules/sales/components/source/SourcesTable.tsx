@@ -2,6 +2,8 @@ import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { cn } from '@/shared/lib/cn'
 import type { LeadSource } from '../../api/source'
+import { can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 type Props = {
   rows: LeadSource[]
@@ -34,14 +36,12 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete, on
               <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
                 Leads
               </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Status
-                </th>
-                {/* Actions column hidden — restore the block below when row actions return.
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
-                  Actions
-                </th>
-                */}
+              <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
+              Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant">
@@ -73,49 +73,46 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete, on
                     {row.status}
                   </span>
                 </td>
-                {/* Row actions hidden — restore with the Actions <th> above.
-                    NOTE: this removes the only edit/delete/restore entry points
-                    for sources until a detail/quick-view flow exists.
                 <td className="px-4 py-4 text-center">
                   <div className="flex justify-center">
                     <RowActions
                       label={`Actions for ${row.name}`}
                       actions={[
-                        {
-                          id: 'edit',
-                          label: 'Edit',
-                          icon: 'edit',
-                          onClick: () => onEdit(row),
-                          disabled: row.isArchived,
-                        },
-                        {
-                          id: 'delete',
-                          label: 'Delete',
-                          icon: 'delete',
-                          onClick: () => onDelete(row),
-                          disabled: row.isArchived,
-                        },
-                        ...(row.isArchived
-                          ? [
-                              {
-                                id: 'restore',
-                                label: 'Restore',
-                                icon: 'restore_from_trash',
-                                onClick: () => onRestore(row),
-                              },
-                            ]
+                        ...(can({ action: Action.UPDATE, resource: 'lead' }) && !row.isArchived
+                          ? [{
+                              id: 'edit',
+                              label: 'Edit',
+                              icon: 'edit',
+                              onClick: () => onEdit(row),
+                            }]
+                          : []),
+                        ...(can({ action: Action.DELETE, resource: 'lead' }) && !row.isArchived
+                          ? [{
+                              id: 'delete',
+                              label: 'Delete',
+                              icon: 'delete',
+                              onClick: () => onDelete(row),
+                              danger: true,
+                            }]
+                          : []),
+                        ...(can({ action: Action.UPDATE, resource: 'lead' }) && row.isArchived
+                          ? [{
+                              id: 'restore',
+                              label: 'Restore',
+                              icon: 'restore_from_trash',
+                              onClick: () => onRestore(row),
+                            }]
                           : []),
                       ]}
                     />
                   </div>
                 </td>
-                */}
               </tr>
             ))}
             {rows.length === 0 && !isLoading && (
               <tr>
                 <td colSpan={5} className="px-4 py-10 text-center text-body-sm text-on-surface-variant">
-                  No sources found. Click “Add source” to create one.
+                  No sources found. Click "Add source" to create one.
                 </td>
               </tr>
             )}

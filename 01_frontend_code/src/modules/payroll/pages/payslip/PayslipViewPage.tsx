@@ -7,6 +7,8 @@ import { payrollStatusStyles } from '../../schemas/enums'
 import { payrollRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
 import { PayslipSumCard } from '../../components/payslip/PayslipSumCard'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function PayslipViewPage() {
   const { payslip, emp, formatMoney, isLoading, isError } = usePayslip()
@@ -17,7 +19,11 @@ export function PayslipViewPage() {
   if (isError || !payslip || !emp) {
     return (
       <div className="p-8 space-y-4">
-        <p className="text-body-md text-error">Payslip not found.</p>
+        <p className="text-body-md text-error">
+          Payslip not found. Payslip links use the payroll ID (MonthlyPayroll.id) — for an
+          employee profile use Salary instead. Employment IDs resolve automatically when a
+          payroll exists for that employee.
+        </p>
         <BackButton to={payrollRoutes.monthly} />
       </div>
     )
@@ -64,14 +70,16 @@ export function PayslipViewPage() {
           >
             View PDF
           </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-sm">download</span>}
-            onClick={handleDownload}
-          >
-            Download
-          </Button>
+          <Can action={Action.EXPORT} resource="payroll">
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-sm">download</span>}
+              onClick={handleDownload}
+            >
+              Download
+            </Button>
+          </Can>
           <ExportButton
             resource={'payroll'}
             filters={{ employeeId: emp.id }}

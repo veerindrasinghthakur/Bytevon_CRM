@@ -20,7 +20,7 @@ import {
 } from '../../types'
 import { workforceRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { can } from '@/shared/rbac'
+import { can, Can } from '@/shared/rbac'
 import { Action, EmploymentType } from '@/shared/schema'
 import type { AdminRoleOption } from '@/modules/admin/types'
 import { cn } from '@/shared/lib/cn'
@@ -561,9 +561,11 @@ export function EmployeeCreatePage() {
           <Button type="button" variant="ghost" onClick={goList}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" isLoading={saving}>
-            {canCreateUser ? 'Save & continue' : 'Save Employee'}
-          </Button>
+          <Can action={Action.CREATE} resource="employment">
+            <Button type="submit" variant="primary" isLoading={saving}>
+              {canCreateUser ? 'Save & continue' : 'Save Employee'}
+            </Button>
+          </Can>
         </div>
       </form>
     </div>

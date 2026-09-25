@@ -14,6 +14,8 @@ import type { AddMemberMode, CandidateMember, DepartmentRole } from '../types'
 import { DEPARTMENT_ROLE_OPTIONS } from '../schemas/enums'
 import { RouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -245,15 +247,17 @@ export function AddMemberPage() {
                             )
                           })}
                         </div>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="w-full"
-                          disabled={!roles[m.id]}
-                          onClick={addMember}
-                        >
-                          Add to {team ? 'Team' : 'Department'}
-                        </Button>
+                        <Can action={Action.UPDATE} resource="department">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="w-full"
+                            disabled={!roles[m.id]}
+                            onClick={addMember}
+                          >
+                            Add to {team ? 'Team' : 'Department'}
+                          </Button>
+                        </Can>
                       </div>
                     )
                   })}

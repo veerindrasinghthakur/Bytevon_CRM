@@ -82,17 +82,72 @@ export function createAdminOrganizationSettingsRoutes<TParent extends AnyRoute>(
   settingsLayoutRoute: TParent,
 ) {
   return [
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/locations', component: LocationsListPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/locations/$locationId', component: LocationDetailPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/shifts', component: ShiftsListPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/shifts/new', component: ShiftDetailPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/shifts/$shiftId', component: ShiftDetailPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/working-weeks', component: WorkingWeeksPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/holidays', component: HolidayCalendarsPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/holidays/$calendarId', component: HolidaysListPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions', component: AdminPositionsListPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/new', component: AdminPositionDetailPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/$positionId', component: AdminPositionDetailPage }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/locations',
+      beforeLoad: requireView('location'),
+      component: LocationsListPage,
+    }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/locations/$locationId',
+      beforeLoad: requireView('location'),
+      component: LocationDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/shifts',
+      beforeLoad: requireView('shift'),
+      component: ShiftsListPage,
+    }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/shifts/new',
+      beforeLoad: () => requirePermission({ action: 'CREATE', resource: 'shift' }),
+      component: ShiftDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/shifts/$shiftId',
+      beforeLoad: requireView('shift'),
+      component: ShiftDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/working-weeks',
+      beforeLoad: requireView('working_week'),
+      component: WorkingWeeksPage,
+    }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/holidays',
+      beforeLoad: requireView('holiday_calendar'),
+      component: HolidayCalendarsPage,
+    }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/holidays/$calendarId',
+      beforeLoad: requireView('holiday_calendar'),
+      component: HolidaysListPage,
+    }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/positions',
+      beforeLoad: requireView('position'),
+      component: AdminPositionsListPage,
+    }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/positions/new',
+      beforeLoad: () => requirePermission({ action: 'CREATE', resource: 'position' }),
+      component: AdminPositionDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => settingsLayoutRoute,
+      path: '/positions/$positionId',
+      beforeLoad: requireView('position'),
+      component: AdminPositionDetailPage,
+    }),
   ]
 }
 
@@ -129,11 +184,13 @@ export function createAdminSettingsCoreRoutes<TParent extends AnyRoute>(
     createRoute({
       getParentRoute: () => settingsLayoutRoute,
       path: '/offices/new',
+      beforeLoad: () => requirePermission({ action: 'CREATE', resource: 'office' }),
       component: OfficeFormPage,
     }),
     createRoute({
       getParentRoute: () => settingsLayoutRoute,
       path: '/offices/$officeId/edit',
+      beforeLoad: () => requirePermission({ action: 'UPDATE', resource: 'office' }),
       component: OfficeFormPage,
     }),
   ]
@@ -260,16 +317,19 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       createRoute({
         getParentRoute: () => leaveLayout,
         path: '/types/$typeId',
+        beforeLoad: requireView('leave_policy'),
         component: LeaveTypeFormPage,
       }),
       createRoute({
         getParentRoute: () => leaveLayout,
         path: '/policies',
+        beforeLoad: requireView('leave_policy'),
         component: LeavePoliciesPage,
       }),
       createRoute({
         getParentRoute: () => leaveLayout,
         path: '/ledger/$employeeId',
+        beforeLoad: requireView('employment'),
         component: LeaveLedgerPage,
       }),
     ]),

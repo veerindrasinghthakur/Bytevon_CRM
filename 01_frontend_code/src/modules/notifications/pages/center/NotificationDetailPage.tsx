@@ -13,6 +13,8 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { notificationRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function NotificationDetailPage() {
   const navigate = useNavigate()
@@ -138,15 +140,17 @@ export function NotificationDetailPage() {
 
           <div className="bv-surface p-4 flex flex-wrap gap-3 items-center justify-between">
             <div className="flex flex-wrap gap-3">
-              <Button
-                variant="primary"
-                size="md"
-                leftIcon={<span className="material-symbols-outlined text-[20px]">check_circle</span>}
-                onClick={() => markRead.mutate(n.id)}
-                isLoading={markRead.isPending}
-              >
-                {n.status === 'Unread' ? 'Mark as Read' : 'Marked Read'}
-              </Button>
+              <Can action={Action.UPDATE} resource="notification">
+                <Button
+                  variant="primary"
+                  size="md"
+                  leftIcon={<span className="material-symbols-outlined text-[20px]">check_circle</span>}
+                  onClick={() => markRead.mutate(n.id)}
+                  isLoading={markRead.isPending}
+                >
+                  {n.status === 'Unread' ? 'Mark as Read' : 'Marked Read'}
+                </Button>
+              </Can>
               <Button
                 variant="outline"
                 size="md"
@@ -159,15 +163,17 @@ export function NotificationDetailPage() {
                 Open Related
               </Button>
             </div>
-            <Button
-              variant="outline"
-              size="md"
-              leftIcon={<span className="material-symbols-outlined text-[20px]">archive</span>}
-              isLoading={archiveMut.isPending}
-              onClick={() => archiveMut.mutate(n.id)}
-            >
-              Archive
-            </Button>
+            <Can action={Action.UPDATE} resource="notification">
+              <Button
+                variant="outline"
+                size="md"
+                leftIcon={<span className="material-symbols-outlined text-[20px]">archive</span>}
+                isLoading={archiveMut.isPending}
+                onClick={() => archiveMut.mutate(n.id)}
+              >
+                Archive
+              </Button>
+            </Can>
           </div>
         </div>
 

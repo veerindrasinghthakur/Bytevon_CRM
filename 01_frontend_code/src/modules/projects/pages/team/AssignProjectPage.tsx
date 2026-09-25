@@ -14,6 +14,8 @@ import { cn } from '@/shared/lib/cn'
 import { getProjects, updateProject } from '../../api/project'
 import { getTeam } from '../../api/team'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 const assignProjectSchema = z.object({
   projectId: z.string().min(1, 'Select a project'),
@@ -151,9 +153,11 @@ export function AssignProjectPage() {
           <Button type="button" variant="outline" onClick={() => safeNavigate(navigate, { to: projectRoutes.teamDetailPath, params: { teamId: String(numericTeamId) } })}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" isLoading={assignMutation.isPending} disabled={assignable.length === 0}>
-            Assign team
-          </Button>
+          <Can action={Action.UPDATE} resource="project">
+            <Button type="submit" variant="primary" isLoading={assignMutation.isPending} disabled={assignable.length === 0}>
+              Assign team
+            </Button>
+          </Can>
         </div>
       </form>
     </div>

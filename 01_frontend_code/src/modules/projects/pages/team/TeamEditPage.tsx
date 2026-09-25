@@ -10,6 +10,8 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useTeamDetail } from '../../hooks/team/use-team-detail'
 import { useUpdateTeam } from '../../hooks/team/use-teams'
 import { projectRoutes } from '../../routes'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 const schema = z.object({
   name: z.string().min(1, 'Team name is required'),
@@ -96,7 +98,9 @@ export function TeamEditPage() {
           <Button type="button" variant="outline" onClick={() => safeNavigate(navigate, { to: projectRoutes.teamDetailPath, params: { teamId: team.id } })}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" isLoading={update.isPending}>Save</Button>
+          <Can action={Action.UPDATE} resource="project">
+            <Button type="submit" variant="primary" isLoading={update.isPending}>Save</Button>
+          </Can>
         </div>
       </form>
     </div>

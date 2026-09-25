@@ -6,6 +6,8 @@ import { EntitySearch } from '@/shared/components/forms/EntitySearch'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useTaskCreate } from '../../hooks/task/use-task-create'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function TaskCreatePage() {
   const {
@@ -249,16 +251,18 @@ export function TaskCreatePage() {
             <Button type="button" variant="outline" onClick={cancel}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting || createMutation.isPending}
-              leftIcon={
-                <span className="material-symbols-outlined material-icons-filled text-sm">check</span>
-              }
-            >
-              Create Task
-            </Button>
+            <Can action={Action.CREATE} resource="task">
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={isSubmitting || createMutation.isPending}
+                leftIcon={
+                  <span className="material-symbols-outlined material-icons-filled text-sm">check</span>
+                }
+              >
+                Create Task
+              </Button>
+            </Can>
           </div>
         </form>
       </div>

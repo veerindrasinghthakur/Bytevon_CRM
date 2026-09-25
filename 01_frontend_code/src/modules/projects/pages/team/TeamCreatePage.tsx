@@ -13,6 +13,8 @@ import { useProject } from '../../hooks/project/use-projects'
 import { projectRoutes } from '../../routes'
 import { listEmployments } from '@/modules/workforce/api/employment'
 import { schema, type FormValues } from '../../schemas/team/team-form'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function TeamCreatePage() {
   const navigate = useNavigate()
@@ -218,9 +220,11 @@ export function TeamCreatePage() {
             <Button type="button" variant="outline" onClick={() => safeNavigate(navigate, { to: backTo })}>
               Cancel
             </Button>
-            <Button type="submit" variant="primary" isLoading={isSubmitting || createMutation.isPending}>
-              {project ? 'Create & assign to project' : 'Create Team'}
-            </Button>
+            <Can action={Action.CREATE} resource="project">
+              <Button type="submit" variant="primary" isLoading={isSubmitting || createMutation.isPending}>
+                {project ? 'Create & assign to project' : 'Create Team'}
+              </Button>
+            </Can>
           </div>
         </form>
       </div>

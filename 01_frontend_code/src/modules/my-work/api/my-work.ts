@@ -79,6 +79,32 @@ function mapLeaveTypeToUI(value: unknown): string {
 }
 
 function mapApiLeaveRequest(r: Record<string, unknown>): LeaveRequest {
+  // Backend may send approver as a name string or as an object {name, employment_id, employee_code}.
+  const approverRaw = r.approver as Record<string, unknown> | string | null | undefined
+  const approverName =
+    approverRaw == null || approverRaw === ''
+      ? undefined
+      : typeof approverRaw === 'string'
+        ? approverRaw
+        : String(
+            (approverRaw as Record<string, unknown>).name ??
+              (approverRaw as Record<string, unknown>).full_name ??
+              '',
+          ) || undefined
+  const approverEmploymentIdRaw =
+    (typeof approverRaw === 'object' && approverRaw !== null
+      ? ((approverRaw as Record<string, unknown>).employment_id ??
+        (approverRaw as Record<string, unknown>).employmentId)
+      : undefined) ??
+    r.approver_id ??
+    r.approverId ??
+    r.approver_employment_id ??
+    r.decided_by ??
+    r.decidedBy
+  const approverEmploymentId =
+    approverEmploymentIdRaw == null || approverEmploymentIdRaw === ''
+      ? undefined
+      : Number(approverEmploymentIdRaw)
   return {
     id: String(r.id ?? ''),
     type: mapLeaveTypeToUI(r.type) as LeaveRequest['type'],
@@ -88,7 +114,15 @@ function mapApiLeaveRequest(r: Record<string, unknown>): LeaveRequest {
     reason: String(r.reason ?? ''),
     status: String(r.status ?? 'Pending') as LeaveRequest['status'],
     appliedOn: String(r.appliedOn ?? r.applied_on ?? ''),
-    approver: r.approver == null ? undefined : String(r.approver),
+    approver: approverName,
+    approverEmploymentId:
+      approverEmploymentId != null && Number.isFinite(approverEmploymentId)
+        ? approverEmploymentId
+        : undefined,
+    approverEmployeeCode:
+      r.approverEmployeeCode == null && r.approver_employee_code == null
+        ? undefined
+        : String(r.approverEmployeeCode ?? r.approver_employee_code ?? ''),
     approverRemarks:
       r.approverRemarks == null && r.approver_remarks == null
         ? undefined
@@ -130,10 +164,21 @@ const BACKEND_TASK_STATUS_TO_UI: Record<string, string> = {
 export function mapApiMyTask(r: Record<string, unknown>): MyTask {
   const est = r.estimated_hours ?? r.estimatedHours
   const created = r.created_at ?? r.createdAt
+  const projectIdRaw = r.project_id ?? r.projectId
+  const projectId =
+    projectIdRaw == null || projectIdRaw === '' ? undefined : Number(projectIdRaw)
+  const projectNameRaw = r.project_name ?? r.projectName
   return {
     id: String(r.id ?? ''),
-    name: String(r.name ?? ''),
-    project: r.project == null ? undefined : String(r.project),
+    name: String(r.name ?? r.title ?? ''),
+    project:
+      r.project == null
+        ? projectNameRaw == null
+          ? undefined
+          : String(projectNameRaw)
+        : String(r.project),
+    projectId: projectId != null && Number.isFinite(projectId) ? projectId : undefined,
+    projectName: projectNameRaw == null ? undefined : String(projectNameRaw),
     priority: (BACKEND_TASK_PRIORITY_TO_UI[String(r.priority ?? '').toUpperCase()] ??
       String(r.priority ?? 'Medium')) as MyTask['priority'],
     dueDate: String(r.due_date ?? r.dueDate ?? ''),
@@ -279,7 +324,14 @@ export async function getMyWorkOverview(): Promise<MyWorkOverview> {
       employeeId: String(rawUser.employmentId ?? rawUser.employeeId ?? ''),
       employeeCode: typeof rawUser.employeeCode === 'string' ? rawUser.employeeCode : undefined,
       department: String(rawUser.department ?? ''),
-      role: typeof rawUser.role === 'string' ? (rawUser.role as string) : undefined,
+      // Backend OverviewUser has no `role` field; fall back to position/title
+      // keys like profile normalization does so the header never renders empty.
+      role:
+        typeof rawUser.role === 'string' && rawUser.role
+          ? (rawUser.role as string)
+          : String(
+              rawUser.position ?? rawUser.title ?? rawUser.jobTitle ?? rawUser.job_title ?? rawUser.designation ?? '',
+            ) || undefined,
       todayLabel: String(rawUser.todayLabel ?? 'Today'),
       shift: String(rawUser.shift ?? '—'),
     },
@@ -1074,13 +1126,23 @@ export async function listApproverDirectory(): Promise<ApproverOption[]> {
   const { data } = await apiClient.get<
     Array<Record<string, unknown>>
   >('/my-work/approvers')
-  // Backend shape: { employmentId, name, role, departmentId? } → UI shape.
+  // Backend shape: { employmentId, name, role, departmentId?, department? } → UI shape.
+  // Tolerant of snake_case / legacy keys (id, full_name, title, department_name).
+  // Ordering from the server is meaningful: requester's department head first,
+  // then HR (runtime-created), then admin fallback. Dept heads see HR, never self.
   return (Array.isArray(data) ? data : []).map((r) => {
-    const employmentId = Number(r.employmentId ?? r.employment_id)
+    const employmentId = Number(
+      r.employmentId ?? r.employment_id ?? (typeof r.id === 'number' ? r.id : NaN),
+    )
+    const name = String(r.name ?? r.full_name ?? '')
     return {
-      id: Number.isFinite(employmentId) ? `emp-${employmentId}` : String(r.id ?? r.name ?? ''),
-      name: String(r.name ?? ''),
+      id: Number.isFinite(employmentId) ? `emp-${employmentId}` : String(r.id ?? name ?? ''),
+      name: name || (Number.isFinite(employmentId) ? `Emp #${employmentId}` : ''),
       title: String(r.role ?? r.title ?? 'Approver'),
+      department:
+        r.department != null || r.department_name != null
+          ? String(r.department ?? r.department_name ?? '')
+          : undefined,
       departmentId:
         r.departmentId != null || r.department_id != null
           ? Number(r.departmentId ?? r.department_id)
@@ -1113,4 +1175,81 @@ export async function requestLeaveCancel(id: string): Promise<void> {
     return
   }
   await apiClient.post(`/leave/requests/${encodeURIComponent(id)}/request-cancel`)
+}
+
+export interface LeaveThreadEntry {
+  id: string
+  author: string
+  authorEmploymentId?: number
+  role: 'requester' | 'approver' | 'system'
+  body: string
+  createdAt: string
+}
+
+/** Full discussion thread for a leave request (all approver/requester comments). */
+export async function listLeaveThread(
+  id: string,
+  fallback?: { reason: string; appliedOn: string; approver?: string; approverRemarks?: string; decidedOn?: string },
+): Promise<LeaveThreadEntry[]> {
+  if (!env.useMockApi) {
+    try {
+      const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+        `/leave/requests/${encodeURIComponent(id)}/actions`,
+      )
+      const rows = Array.isArray(data) ? data : []
+      if (rows.length > 0) {
+        return rows.map((r, i) => {
+          const action = String(r.action ?? '').toUpperCase()
+          const remarks = String(r.remarks ?? r.comment ?? '')
+          const name = String(r.actor_name ?? r.actorName ?? r.employment_name ?? 'Approver')
+          const empRaw = r.employment_id ?? r.employmentId ?? r.actor_id
+          const emp =
+            empRaw == null || empRaw === '' ? undefined : Number(empRaw)
+          return {
+            id: String(r.id ?? `action-${i}`),
+            author: name,
+            authorEmploymentId: emp != null && Number.isFinite(emp) ? emp : undefined,
+            role: action === 'COMMENTED' ? 'approver' : action ? 'approver' : 'approver',
+            body:
+              remarks ||
+              (action === 'APPROVED'
+                ? 'Request approved.'
+                : action === 'REJECTED'
+                  ? 'Request could not be approved at this time.'
+                  : 'Status update.'),
+            createdAt: String(r.created_at ?? r.createdAt ?? ''),
+          }
+        })
+      }
+    } catch {
+      // Fall through to fallback projection below.
+    }
+  } else {
+    await delay(150)
+  }
+  // Fallback: project the single latest approver remark so the thread never renders empty.
+  const out: LeaveThreadEntry[] = []
+  if (fallback) {
+    if (fallback.approverRemarks) {
+      out.push({
+        id: `${id}-decision`,
+        author: fallback.approver ?? 'Manager',
+        role: 'approver',
+        body: fallback.approverRemarks,
+        createdAt: fallback.decidedOn ?? fallback.appliedOn,
+      })
+    }
+  }
+  return out
+}
+
+/** Post a requester comment on a leave thread. */
+export async function postLeaveComment(id: string, remarks: string): Promise<void> {
+  if (env.useMockApi) {
+    await delay(300)
+    return
+  }
+  await apiClient.post(`/approvals/requests/${encodeURIComponent(id)}/comment`, {
+    remarks,
+  })
 }

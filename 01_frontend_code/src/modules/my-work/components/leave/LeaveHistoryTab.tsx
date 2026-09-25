@@ -9,6 +9,11 @@ import { myWorkRoutes } from '../../routes'
 import { statusStyles, LEAVE_STATUS_OPTIONS, LEAVE_TYPE_OPTIONS } from '../../schemas/enums'
 import {LeaveHistoryRow} from '../../types'
 import { useRequestLeaveCancel } from '../../hooks/use-my-leave'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { cancelLeaveRequest } from '../../api/my-work'
+import { invalidate } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { toast } from '@/shared/hooks/use-toast'
 
 function isFutureDated(from: string): boolean {
   const today = new Date().toISOString().slice(0, 10)
@@ -37,8 +42,21 @@ export function LeaveHistoryTab({
   setTypeFilter: (v: string) => void
 }) {
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const requestCancelMut = useRequestLeaveCancel()
+  const withdrawMut = useMutation({
+    mutationFn: (id: string) => cancelLeaveRequest(id),
+    onSuccess: () => {
+      setWithdrawId(null)
+      void invalidate.myWorkLeave(qc)
+      toast.success('Leave request withdrawn — balance restored')
+    },
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not withdraw the request'))
+    },
+  })
   const [cancelId, setCancelId] = useState<string | null>(null)
+  const [withdrawId, setWithdrawId] = useState<string | null>(null)
 
   return (
     <div className="space-y-4">
@@ -153,7 +171,17 @@ export function LeaveHistoryTab({
                       {req.appliedOn}
                     </td>
                     <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                      {req.status === 'Approved' && isFutureDated(req.from) ? (
+                      {req.status === 'Pending' ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={withdrawMut.isPending}
+                          leftIcon={<span className="material-symbols-outlined text-base">cancel</span>}
+                          onClick={() => setWithdrawId(req.id)}
+                        >
+                          {withdrawMut.isPending ? 'Withdrawing…' : 'Withdraw'}
+                        </Button>
+                      ) : req.status === 'Approved' && isFutureDated(req.from) ? (
                         <Button
                           variant="outline"
                           size="sm"
@@ -183,6 +211,17 @@ export function LeaveHistoryTab({
             requestCancelMut.mutate(cancelId, { onSuccess: () => setCancelId(null) })
           }}
           onClose={() => !requestCancelMut.isPending && setCancelId(null)}
+        />
+      )}
+      {withdrawId && (
+        <ConfirmDialog
+          title={`Withdraw leave request ${withdrawId}?`}
+          message="The request will be cancelled and the held balance will be restored to your leave account."
+          confirmLabel="Withdraw request"
+          danger
+          isLoading={withdrawMut.isPending}
+          onConfirm={() => withdrawMut.mutate(withdrawId)}
+          onClose={() => !withdrawMut.isPending && setWithdrawId(null)}
         />
       )}
     </div>

@@ -13,6 +13,9 @@ import { salesRoutes } from '../../routes'
 import { SourceMetricsCards } from '../../components/source/SourceMetricsCards'
 import { SourcesTable } from '../../components/source/SourcesTable'
 import { SourceFormModal } from '../../components/source/SourceFormModal'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 
 type ModalMode = 'create' | 'edit' | null
 type ConfirmKind = 'save' | 'cancel' | null
@@ -142,14 +145,22 @@ export function SourcesListPage() {
         title="Manage sources"
         description="Lead sources used on leads. Create, update, or delete sources for the pipeline."
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={openCreate}
-          >
-            Add source
-          </Button>
+          <div className="flex items-center gap-2">
+            <ExportButton
+              resource="lead"
+              filenameStem="sources"
+            />
+            <Can action={Action.CREATE} resource="lead">
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                onClick={openCreate}
+              >
+                Add source
+              </Button>
+            </Can>
+          </div>
         }
       />
 

@@ -9,6 +9,7 @@ import { approvalRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 import {
   approvalPriorityStyles,
   approvalStatusOptions,
@@ -47,9 +48,7 @@ export function ApprovalCenterPage() {
             <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[20px]">history</span>}>
               Log
             </Button>
-            <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[20px]">file_export</span>}>
-              Export
-            </Button>
+            <ExportButton resource="approval" filenameStem="approval-center" label="Export" />
           </div>
         }
       />

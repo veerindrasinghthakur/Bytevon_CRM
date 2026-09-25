@@ -14,6 +14,8 @@ import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function PositionDetailPage({ basePath = '/workforce/positions' }: { basePath?: string }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -130,39 +132,49 @@ export function PositionDetailPage({ basePath = '/workforce/positions' }: { base
                 Cancel
               </Button>
             )}
-            <Button
-              variant="primary"
-              size="sm"
-              isLoading={saveMut.isPending}
-              onClick={() => saveMut.mutate()}
-            >
-              {isNew ? 'Create' : 'Save'}
-            </Button>
+            <Can action={Action.CREATE} resource="position">
+              <Can action={Action.UPDATE} resource="position">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  isLoading={saveMut.isPending}
+                  onClick={() => saveMut.mutate()}
+                >
+                  {isNew ? 'Create' : 'Save'}
+                </Button>
+              </Can>
+            </Can>
           </div>
         ) : (
           <div className="flex gap-2">
-            <EditButton variant="outline" onClick={startEditing} />
+            <Can action={Action.UPDATE} resource="position">
+              <EditButton variant="outline" onClick={startEditing} />
+            </Can>
             {!isNew && pos && !pos.is_archived && (
-              <DeleteButton
-                iconOnly
-                entityLabel={pos.name}
-                isLoading={deleteMut.isPending}
-                onConfirm={() => deleteMut.mutateAsync()}
-              />
+              <Can action={Action.DELETE} resource="position">
+                <DeleteButton
+                  iconOnly
+                  entityLabel={pos.name}
+                  isLoading={deleteMut.isPending}
+                  onConfirm={() => deleteMut.mutateAsync()}
+                />
+              </Can>
             )}
             {!isNew && pos?.is_archived && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-secondary text-secondary hover:bg-secondary/10"
-                leftIcon={
-                  <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
-                }
-                isLoading={restoreMut.isPending}
-                onClick={() => restoreMut.mutate()}
-              >
-                Restore
-              </Button>
+              <Can action={Action.UPDATE} resource="position">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-secondary text-secondary hover:bg-secondary/10"
+                  leftIcon={
+                    <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                  }
+                  isLoading={restoreMut.isPending}
+                  onClick={() => restoreMut.mutate()}
+                >
+                  Restore
+                </Button>
+              </Can>
             )}
           </div>
         )}

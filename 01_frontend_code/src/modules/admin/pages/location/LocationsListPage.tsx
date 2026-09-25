@@ -21,6 +21,9 @@ import type { LocationRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { myAdminRoutes } from '../../routes'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 
 function LocationQuickContent({ loc }: { loc: LocationRow }) {
   return (
@@ -114,13 +117,25 @@ export function LocationsListPage() {
             Manage office locations for the organization
           </p>
         </div>
-        <Button
-          variant="primary"
-          leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-          onClick={() => safeNavigate(navigate, { to: myAdminRoutes.officesNew })}
-        >
-          Add Location
-        </Button>
+        <div className="flex gap-2">
+          <ExportButton
+            resource="location"
+            query={controls.search.trim() || undefined}
+            filters={{
+              active: controls.search ? undefined : undefined,
+            }}
+            filenameStem="locations"
+          />
+          <Can action={Action.CREATE} resource="location">
+            <Button
+              variant="primary"
+              leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+              onClick={() => safeNavigate(navigate, { to: myAdminRoutes.officesNew })}
+            >
+              Add Location
+            </Button>
+          </Can>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

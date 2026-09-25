@@ -1,5 +1,6 @@
-import { useState } from 'react'
 import { Select } from '@/shared/components/ui/Select'
+import { DocumentUpload } from '@/shared/components/forms/DocumentUpload'
+import { PAYMENT_METHOD_OPTIONS } from '../../schemas/enums'
 
 export function RecordPaymentModal({
   employeeName,
@@ -8,6 +9,12 @@ export function RecordPaymentModal({
   amount,
   paymentRef,
   setPaymentRef,
+  method,
+  setMethod,
+  paymentDate,
+  setPaymentDate,
+  receiptFiles,
+  setReceiptFiles,
   isPending,
   formatMoney,
   onClose,
@@ -19,12 +26,18 @@ export function RecordPaymentModal({
   amount: number
   paymentRef: string
   setPaymentRef: (v: string) => void
+  method: string
+  setMethod: (v: string) => void
+  paymentDate: string
+  setPaymentDate: (v: string) => void
+  receiptFiles: File[]
+  setReceiptFiles: (f: File[]) => void
   isPending: boolean
   formatMoney: (n: number) => string
   onClose: () => void
   onConfirm: () => void
 }) {
-  const [method, setMethod] = useState('bank_transfer')
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -79,11 +92,7 @@ export function RecordPaymentModal({
               <Select
                 value={method}
                 onChange={setMethod}
-                options={[
-                  { value: 'neft', label: 'NEFT' },
-                  { value: 'bank_transfer', label: 'Bank Transfer' },
-                  { value: 'other', label: 'Other' },
-                ]}
+                options={[...PAYMENT_METHOD_OPTIONS]}
                 minWidthClass="min-w-0"
                 className="w-full"
               />
@@ -96,6 +105,25 @@ export function RecordPaymentModal({
                 onChange={(e) => setPaymentRef(e.target.value)}
                 placeholder="e.g. TRX-482910"
                 className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-label-md text-on-surface">Payment Date</label>
+              <input
+                type="date"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-label-md text-on-surface">Payment Receipt Screenshot</label>
+              <DocumentUpload
+                files={receiptFiles}
+                onChange={setReceiptFiles}
+                accept=".jpg,.jpeg,.png,.pdf"
+                maxSizeMb={10}
+                hint="Upload the payment receipt (JPG/PNG/PDF, max 10 MB)"
               />
             </div>
           </div>

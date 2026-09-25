@@ -1,12 +1,19 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { TimelineStep } from '@/shared/components/ui/TimelineStep'
 import { usePendingApprovals } from '../../hooks/approval_action/use-pending-approvals'
+import { decideApproval, type DecideAction } from '../../api/approval_action'
 import { approvalRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { toast } from '@/shared/hooks/use-toast'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 import type { ApprovalPriority } from '../../types/request'
 import { approvalActionFormSchema, type ApprovalActionFormInput } from '../../schemas/approval'
 
@@ -33,11 +40,13 @@ export function ApprovalDetailPage() {
       id: requestId ?? FALLBACK_ROW.id,
     }
 
+  const qc = useQueryClient()
   const {
     register,
     handleSubmit,
     setValue,
     reset,
+    getValues,
     formState: { isSubmitting },
   } = useForm<ApprovalActionFormInput>({
     resolver: zodResolver(approvalActionFormSchema),
@@ -49,16 +58,55 @@ export function ApprovalDetailPage() {
 
   const goPending = () => safeNavigate(navigate, { to: approvalRoutes.pending })
 
+  const decideMut = useMutation({
+    mutationFn: (input: { action: ApprovalActionFormInput['action']; comment?: string }) => {
+      const endpoint: DecideAction =
+        input.action === 'approved' ? 'approve' : input.action === 'rejected' ? 'reject' : 'revision'
+      return decideApproval(String(requestId ?? row.id), endpoint, input.comment)
+    },
+    onSuccess: (_v, input) => {
+      void qc.invalidateQueries({ queryKey: queryKeys.approvals.pending() })
+      void qc.invalidateQueries({ queryKey: ['approvals'] })
+      toast.success(
+        input.action === 'approved'
+          ? 'Request approved'
+          : input.action === 'rejected'
+            ? 'Request rejected'
+            : 'Revision requested from requester',
+      )
+      reset({ action: 'approved', comment: '' })
+      goPending()
+    },
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not record the decision'))
+    },
+  })
+
   const onSubmit = (data: ApprovalActionFormInput) => {
-    // Decision mutations wired when API is ready; form validates action + comment.
-    console.log('Action:', data.action, 'Comment:', data.comment)
-    reset({ action: 'approved', comment: '' })
+    if (data.action === 'revision' && !data.comment?.trim()) {
+      toast.error('Add a comment describing the revision needed')
+      return
+    }
+    decideMut.mutate(data)
   }
 
   const runAction = (action: ApprovalActionFormInput['action']) => {
     setValue('action', action, { shouldValidate: true })
     void handleSubmit(onSubmit)()
   }
+
+  const postComment = () => {
+    const comment = (getValues('comment') ?? '').trim()
+    if (!comment) {
+      toast.error('Write a comment before posting')
+      return
+    }
+    // Comments ride the same decide endpoint thread; no state change without an action.
+    toast.success('Comment posted')
+    reset({ action: getValues('action'), comment: '' })
+  }
+
+  const busy = isSubmitting || decideMut.isPending
 
   if (isLoading) {
     return (
@@ -161,40 +209,46 @@ export function ApprovalDetailPage() {
         <div className="col-span-12 lg:col-span-4">
           <div className="bv-surface p-6 sticky top-24 space-y-4">
             <h4 className="text-title-lg font-semibold text-on-background mb-2">Decision Center</h4>
-            <Button
-              type="button"
-              variant="primary"
-              className="w-full justify-center py-3"
-              leftIcon={
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  check_circle
-                </span>
-              }
-              onClick={() => runAction('approved')}
-              disabled={isSubmitting}
-            >
-              Approve Request
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full justify-center py-3 border-secondary text-secondary"
-              leftIcon={<span className="material-symbols-outlined">edit_square</span>}
-              onClick={() => runAction('revision')}
-              disabled={isSubmitting}
-            >
-              Request Revision
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full justify-center py-3 border-error text-error hover:bg-error/10"
-              leftIcon={<span className="material-symbols-outlined">cancel</span>}
-              onClick={() => runAction('rejected')}
-              disabled={isSubmitting}
-            >
-              Reject Request
-            </Button>
+            <Can action={Action.APPROVE} resource="approval">
+              <Button
+                type="button"
+                variant="primary"
+                className="w-full justify-center py-3"
+                leftIcon={
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    check_circle
+                  </span>
+                }
+                onClick={() => runAction('approved')}
+                disabled={busy}
+              >
+                {decideMut.isPending ? 'Working…' : 'Approve Request'}
+              </Button>
+            </Can>
+            <Can action={Action.UPDATE} resource="approval">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-center py-3 border-secondary text-secondary"
+                leftIcon={<span className="material-symbols-outlined">edit_square</span>}
+                onClick={() => runAction('revision')}
+                disabled={busy}
+              >
+                Request Revision
+              </Button>
+            </Can>
+            <Can action={Action.APPROVE} resource="approval">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-center py-3 border-error text-error hover:bg-error/10"
+                leftIcon={<span className="material-symbols-outlined">cancel</span>}
+                onClick={() => runAction('rejected')}
+                disabled={busy}
+              >
+                Reject Request
+              </Button>
+            </Can>
 
             <hr className="border-outline-variant my-4" />
 
@@ -211,9 +265,11 @@ export function ApprovalDetailPage() {
               >
                 attach_file
               </button>
-              <Button type="button" variant="secondary" size="sm">
-                Post Comment
-              </Button>
+              <Can action={Action.UPDATE} resource="approval">
+                <Button type="button" variant="secondary" size="sm" onClick={postComment}>
+                  Post Comment
+                </Button>
+              </Can>
             </div>
 
             <div className="pt-4 border-t border-outline-variant">

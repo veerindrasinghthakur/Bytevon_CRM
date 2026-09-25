@@ -69,6 +69,23 @@ export function useApplyLeave() {
     return m
   }, [holidays])
 
+  const reapplyDefaults = useMemo<Partial<LeaveFormValues>>(() => {
+    try {
+      const raw = sessionStorage.getItem('leave-reapply')
+      if (!raw) return {}
+      const parsed = JSON.parse(raw) as Partial<LeaveFormValues>
+      sessionStorage.removeItem('leave-reapply')
+      return {
+        ...(typeof parsed.type === 'string' ? { type: parsed.type } : {}),
+        ...(typeof parsed.from === 'string' ? { from: parsed.from } : {}),
+        ...(typeof parsed.to === 'string' ? { to: parsed.to } : {}),
+        ...(typeof parsed.reason === 'string' ? { reason: parsed.reason } : {}),
+      }
+    } catch {
+      return {}
+    }
+  }, [])
+
   const {
     register,
     handleSubmit,
@@ -77,7 +94,7 @@ export function useApplyLeave() {
     formState: { errors, isSubmitting },
   } = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveFormSchema),
-    defaultValues: emptyLeaveForm(),
+    defaultValues: { ...emptyLeaveForm(), ...reapplyDefaults },
   })
 
   const from = watch('from')

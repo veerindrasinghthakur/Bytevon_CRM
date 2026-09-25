@@ -7,6 +7,8 @@ import { payrollStatusStyles } from '../../schemas/enums'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 import { DashboardKpiCard } from '../../components/dashboard/DashboardKpiCard'
 import { DashboardQuickAction } from '../../components/dashboard/DashboardQuickAction'
 
@@ -34,21 +36,25 @@ export function PayrollDashboardPage() {
         description="Manage monthly salary processing, approvals and payments."
         actions={
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => safeNavigate(navigate, { to: payrollRoutes.salary })}
-            >
-              Salary Management
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">play_arrow</span>}
-              onClick={() => safeNavigate(navigate, { to: payrollRoutes.run })}
-            >
-              Run Payroll
-            </Button>
+            <Can action={Action.VIEW} resource="salary">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => safeNavigate(navigate, { to: payrollRoutes.salary })}
+              >
+                Salary Management
+              </Button>
+            </Can>
+            <Can action={Action.CREATE} resource="payroll">
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">play_arrow</span>}
+                onClick={() => safeNavigate(navigate, { to: payrollRoutes.run })}
+              >
+                Run Payroll
+              </Button>
+            </Can>
           </div>
         }
       />
@@ -142,30 +148,36 @@ export function PayrollDashboardPage() {
           <section className="bv-surface p-5">
             <h3 className="text-headline-md font-semibold text-on-background mb-4">Quick Actions</h3>
             <div className="flex flex-col gap-3">
-              <DashboardQuickAction
-                icon="play_arrow"
-                iconTone="bg-primary-fixed text-primary group-hover:bg-primary group-hover:text-on-primary"
-                label="Run Monthly Payroll"
-                onClick={() => safeNavigate(navigate, { to: payrollRoutes.run })}
-              />
-              <DashboardQuickAction
-                icon="manage_accounts"
-                iconTone="bg-secondary-container text-on-secondary-container"
-                label="Manage Salaries"
-                onClick={() => safeNavigate(navigate, { to: payrollRoutes.salary })}
-              />
-              <DashboardQuickAction
-                icon="history"
-                iconTone="bg-secondary-container text-on-secondary-container"
-                label="View Payroll History"
-                onClick={() => safeNavigate(navigate, { to: payrollRoutes.monthly })}
-              />
+              <Can action={Action.CREATE} resource="payroll">
+                <DashboardQuickAction
+                  icon="play_arrow"
+                  iconTone="bg-primary-fixed text-primary group-hover:bg-primary group-hover:text-on-primary"
+                  label="Run Monthly Payroll"
+                  onClick={() => safeNavigate(navigate, { to: payrollRoutes.run })}
+                />
+              </Can>
+              <Can action={Action.VIEW} resource="salary">
+                <DashboardQuickAction
+                  icon="manage_accounts"
+                  iconTone="bg-secondary-container text-on-secondary-container"
+                  label="Manage Salaries"
+                  onClick={() => safeNavigate(navigate, { to: payrollRoutes.salary })}
+                />
+              </Can>
+              <Can action={Action.VIEW} resource="payroll">
+                <DashboardQuickAction
+                  icon="history"
+                  iconTone="bg-secondary-container text-on-secondary-container"
+                  label="View Payroll History"
+                  onClick={() => safeNavigate(navigate, { to: payrollRoutes.history })}
+                />
+              </Can>
             </div>
           </section>
 
           <section className="bv-surface p-5 flex-1">
             <h3 className="text-headline-md font-semibold text-on-background mb-4">Recent Activity</h3>
-            <div className="relative pl-4 border-l border-outline-variant space-y-6">
+            <div className="relative pl-4 border-l border-outline-variant space-y-6 max-h-[320px] overflow-y-auto pr-2 bv-scroll">
               {activity.map((a) => (
                 <div key={a.id} className="relative">
                   <div

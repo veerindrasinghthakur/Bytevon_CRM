@@ -13,6 +13,8 @@ import { useDeleteLocation, useLocationDetail, useRestoreLocation, useUpdateLoca
 import type { LocationRow } from '@/shared/schema'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function LocationDetailPage() {
   const { locationId } = useParams({ strict: false }) as { locationId: string }
@@ -149,41 +151,50 @@ export function LocationDetailPage() {
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={save} isLoading={updateMut.isPending}>
-              Save
-            </Button>
+            <Can action={Action.UPDATE} resource="location">
+              <Button variant="primary" onClick={save} isLoading={updateMut.isPending}>
+                Save
+              </Button>
+            </Can>
           </div>
         ) : (
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              leftIcon={<span className="material-symbols-outlined">edit</span>}
-              onClick={beginEdit}
-            >
-              Edit
-            </Button>
-            {!loc.is_archived && (
-              <DeleteButton
-                iconOnly
-                entityLabel={loc?.name}
-                onConfirm={handleDelete}
-                disabled={updateMut.isPending || deleteMut.isPending}
-                isLoading={deleteMut.isPending}
-              />
-            )}
-            {loc.is_archived && (              <Button
+            <Can action={Action.UPDATE} resource="location">
+              <Button
                 variant="outline"
-                size="sm"
-                className="border-secondary text-secondary hover:bg-secondary/10"
-                leftIcon={
-                  <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
-                }
-                disabled={updateMut.isPending || restoreMut.isPending}
-                isLoading={restoreMut.isPending}
-                onClick={handleRestore}
+                leftIcon={<span className="material-symbols-outlined">edit</span>}
+                onClick={beginEdit}
               >
-                Restore
+                Edit
               </Button>
+            </Can>
+            {!loc.is_archived && (
+              <Can action={Action.DELETE} resource="location">
+                <DeleteButton
+                  iconOnly
+                  entityLabel={loc?.name}
+                  onConfirm={handleDelete}
+                  disabled={updateMut.isPending || deleteMut.isPending}
+                  isLoading={deleteMut.isPending}
+                />
+              </Can>
+            )}
+            {loc.is_archived && (
+              <Can action={Action.UPDATE} resource="location">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-secondary text-secondary hover:bg-secondary/10"
+                  leftIcon={
+                    <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                  }
+                  disabled={updateMut.isPending || restoreMut.isPending}
+                  isLoading={restoreMut.isPending}
+                  onClick={handleRestore}
+                >
+                  Restore
+                </Button>
+              </Can>
             )}
           </div>
         )}

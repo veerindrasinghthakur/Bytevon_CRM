@@ -99,13 +99,25 @@ class DashboardService:
         y = year or today.year
         m = month or today.month
         rows = await self._monthly.list_payrolls(year=y, month=m, limit=500)
+        total_gross = sum(_money(r, "gross_salary", "gross_pay") for r in rows)
+        total_net = sum(_money(r, "net_salary", "net_pay") for r in rows)
+        total_earnings = sum(_money(r, "total_earnings", "gross_salary") for r in rows)
+        total_deductions = sum(_money(r, "total_deductions") for r in rows)
         return {
             "year": y,
             "month": m,
+            "totalEmployees": len(rows),
             "employeeCount": len(rows),
-            "totalGross": sum(_money(r, "gross_salary", "gross_pay") for r in rows),
-            "totalNet": sum(_money(r, "net_salary", "net_pay") for r in rows),
-            "totalDeductions": sum(_money(r, "total_deductions") for r in rows),
+            "grossSalary": total_gross,
+            "totalGross": total_gross,
+            "earnings": total_earnings,
+            "totalEarnings": total_earnings,
+            "deductions": total_deductions,
+            "totalDeductions": total_deductions,
+            "netPayroll": total_net,
+            "totalNet": total_net,
+            "pendingApproval": sum(1 for r in rows if _status_str(r).upper() in ("CALCULATED", "DRAFT", "PENDING_APPROVAL")),
+            "pendingPayment": sum(1 for r in rows if _status_str(r).upper() in ("APPROVED", "PENDING_PAYMENT", "PENDING")),
             "items": [
                 {
                     "payrollId": getattr(r, "id", None),

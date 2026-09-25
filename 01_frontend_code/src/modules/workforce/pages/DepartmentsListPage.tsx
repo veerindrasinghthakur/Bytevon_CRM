@@ -24,6 +24,8 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { DEPARTMENT_STATUS_OPTIONS } from '../schemas/enums'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -186,9 +188,11 @@ export function DepartmentsListPage() {
               selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
               filenameStem="departments"
             />
-            <Button variant="primary" leftIcon={<Icon name="add" />} onClick={goNew}>
-              Add Department
-            </Button>
+            <Can action={Action.CREATE} resource="department">
+              <Button variant="primary" leftIcon={<Icon name="add" />} onClick={goNew}>
+                Add Department
+              </Button>
+            </Can>
           </div>
         }
       />

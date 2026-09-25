@@ -22,6 +22,16 @@ export const SALARY_ITEM_TYPE_OPTIONS = [
   { value: 'DEDUCTION', label: 'DEDUCTION' },
 ] as const
 
+/** Payment method options for the pay form (backend accepts free string ≤50; extend here). */
+export const PAYMENT_METHOD_OPTIONS = [
+  { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
+  { value: 'NEFT', label: 'NEFT' },
+  { value: 'UPI', label: 'UPI' },
+  { value: 'CASH', label: 'Cash' },
+  { value: 'CHEQUE', label: 'Cheque' },
+  { value: 'OTHER', label: 'Other' },
+] as const
+
 /** Payroll status filter options (MonthlyPayrollPage). */
 export const PAYROLL_STATUS_OPTIONS = [
   { value: 'All', label: 'Status: All' },

@@ -100,6 +100,11 @@ export function TaskDetailSidebar({ task }: Props) {
               Open project →
             </Link>
           ) : null}
+          <div className="pt-3 mt-1 border-t border-outline-variant text-caption text-on-surface-variant">
+            {task.projectName && task.projectId
+              ? `${task.projectName} · PROJ-${task.projectId}`
+              : (task.projectName ?? 'No project linked')}
+          </div>
         </div>
       </section>
     </aside>

@@ -6,6 +6,8 @@ import { myAdminRoutes } from '@/modules/admin/routes'
 import { useRoleForm } from '../../hooks/role/use-role-form'
 import { hierarchyLevels, inheritOptions, permissionActionLabels } from '../../schemas/enums'
 import type { RoleFormProps, RolePermissionAction } from '../../types'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function RoleFormPage({ mode, roleId, duplicateFromId }: RoleFormProps) {
   const form = useRoleForm(mode, roleId, duplicateFromId)
@@ -297,9 +299,11 @@ export function RoleFormPage({ mode, roleId, duplicateFromId }: RoleFormProps) {
             <Button variant="outline" size="sm" onClick={form.cancel} disabled={form.isSubmitting}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" isLoading={form.isSubmitting} onClick={form.submit}>
-              {mode === 'create' ? 'Create Role' : 'Save Changes'}
-            </Button>
+            <Can action={mode === 'create' ? Action.CREATE : Action.UPDATE} resource="role">
+              <Button variant="primary" size="sm" isLoading={form.isSubmitting} onClick={form.submit}>
+                {mode === 'create' ? 'Create Role' : 'Save Changes'}
+              </Button>
+            </Can>
           </div>
         </div>
       </div>

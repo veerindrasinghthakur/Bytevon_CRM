@@ -5,6 +5,7 @@ import logging
 from datetime import UTC, date, datetime
 from decimal import Decimal
 
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -426,6 +427,18 @@ class AttendanceService(BasePublicService):
         days = await self._repo.list_days_for_month(employment_id, year, month)
         present = absent = half = holiday = week_off = on_leave = Decimal("0")
         working_hours = Decimal("0")
+        # Total break minutes across the month's days (real, from breaks table).
+        day_ids = [d.id for d in days if d.id is not None]
+        break_minutes = Decimal("0")
+        if day_ids:
+            total = (
+                await self._session.execute(
+                    select(func.coalesce(func.sum(AttendanceBreak.duration_minutes), 0)).where(
+                        AttendanceBreak.attendance_day_id.in_(day_ids)
+                    )
+                )
+            ).scalar()
+            break_minutes = Decimal(str(total or 0))
         for d in days:
             if d.status == AttendanceStatus.PRESENT:
                 present += 1
@@ -454,12 +467,13 @@ class AttendanceService(BasePublicService):
             existing.week_off_days = week_off
             existing.on_leave_days = on_leave
             existing.working_hours = working_hours
+            existing.break_minutes = break_minutes
             existing.attendance_percentage = pct
             existing.rebuilt_at = now
             existing.changed_by = actor
             row = existing
         else:
-            row = MonthlyAttendanceSummary(employment_id=employment_id, year=year, month=month, present_days=present, absent_days=absent, half_days=half, holiday_days=holiday, week_off_days=week_off, on_leave_days=on_leave, working_hours=working_hours, attendance_percentage=pct, rebuilt_at=now, changed_by=actor, is_locked=False)
+            row = MonthlyAttendanceSummary(employment_id=employment_id, year=year, month=month, present_days=present, absent_days=absent, half_days=half, holiday_days=holiday, week_off_days=week_off, on_leave_days=on_leave, working_hours=working_hours, break_minutes=break_minutes, attendance_percentage=pct, rebuilt_at=now, changed_by=actor, is_locked=False)
             await self._repo.add(row)
         await self._commit()
         await self._audit("attendance.monthly_summary_rebuilt", row.id, actor)

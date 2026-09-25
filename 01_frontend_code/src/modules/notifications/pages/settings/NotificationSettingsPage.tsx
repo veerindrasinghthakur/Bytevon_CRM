@@ -8,6 +8,8 @@ import {
   type NotificationSettingsForm,
 } from '../../schemas/settings-form'
 import { cn } from '@/shared/lib/cn'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 function Toggle({
   checked,
@@ -126,9 +128,11 @@ export function NotificationSettingsPage() {
               <Button variant="outline" size="md" type="button" onClick={onDiscard}>
                 Discard Changes
               </Button>
-              <Button variant="primary" size="md" type="submit" isLoading={isSubmitting}>
-                Save Settings
-              </Button>
+              <Can action={Action.UPDATE} resource="notification">
+                <Button variant="primary" size="md" type="submit" isLoading={isSubmitting}>
+                  Save Settings
+                </Button>
+              </Can>
             </div>
           )}
         </div>

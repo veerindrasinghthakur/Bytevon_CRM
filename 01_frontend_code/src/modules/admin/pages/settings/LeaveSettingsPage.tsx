@@ -16,6 +16,9 @@ import { listLeaveTypes } from '../../api/leave'
 import { getLeaveAccrualPolicy, updateLeaveAccrualPolicy } from '../../api/settings'
 import { invalidate, queryKeys } from '@/shared/lib/query-keys'
 import { leaveAccrualPolicySchema, type LeaveAccrualPolicyInput } from '../../schemas/leave'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 
 /** Content only — pencil Edit lives on Accrual Policy section */
 export function LeaveSettingsPage() {
@@ -103,14 +106,22 @@ export function LeaveSettingsPage() {
               <span className="material-symbols-outlined text-secondary">ballot</span>
               <h3 className="text-title-lg font-semibold text-on-surface">Leave Types</h3>
             </div>
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[20px]">add_circle</span>}
-              onClick={() => safeNavigate(navigate, { to: '/admin/leave-settings/types/new' })}
-            >
-              Add Leave Type
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton
+                resource="leave_policy"
+                filenameStem="leave-types"
+              />
+              <Can action={Action.CREATE} resource="leave_policy">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<span className="material-symbols-outlined text-[20px]">add_circle</span>}
+                  onClick={() => safeNavigate(navigate, { to: '/admin/leave-settings/types/new' })}
+                >
+                  Add Leave Type
+                </Button>
+              </Can>
+            </div>
           </div>
           <div className="overflow-x-auto">
             {isLoading ? (
@@ -200,11 +211,13 @@ export function LeaveSettingsPage() {
               <span className="material-symbols-outlined text-secondary">update</span>
               <h3 className="text-title-lg font-semibold text-on-surface">Accrual Policy</h3>
             </div>
-            {!editing && (
-              <IconButton label="Edit accrual policy" size="sm" onClick={() => setEditing(true)}>
-                <span className="material-symbols-outlined text-[20px]">edit</span>
-              </IconButton>
-            )}
+            <Can action={Action.UPDATE} resource="leave_policy">
+              {!editing && (
+                <IconButton label="Edit accrual policy" size="sm" onClick={() => setEditing(true)}>
+                  <span className="material-symbols-outlined text-[20px]">edit</span>
+                </IconButton>
+              )}
+            </Can>
           </div>
           {accrualLoading ? (
             <p className="text-body-sm text-on-surface-variant">Loading policy…</p>

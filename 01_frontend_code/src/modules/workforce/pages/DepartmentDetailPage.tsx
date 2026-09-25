@@ -281,13 +281,15 @@ export function DepartmentDetailPage() {
                 <Button variant="outline" onClick={cancelEdit}>
                   Cancel
                 </Button>
-                <Button variant="primary" onClick={saveEdit} isLoading={isMutating}>
-                  Save
-                </Button>
+                <Can action={Action.UPDATE} resource="department">
+                  <Button variant="primary" onClick={saveEdit} isLoading={isMutating}>
+                    Save
+                  </Button>
+                </Can>
               </div>
             ) : (
-              // <Can action={Action.Update} resource={'department'}>
-                <div className="flex gap-2">
+              <div className="flex gap-2">
+                <Can action={Action.UPDATE} resource="department">
                   <Button
                     variant="outline"
                     leftIcon={<span className="material-symbols-outlined">edit</span>}
@@ -295,7 +297,9 @@ export function DepartmentDetailPage() {
                   >
                     Edit
                   </Button>
-                  {!d.isArchived && (
+                </Can>
+                {!d.isArchived && (
+                  <Can action={Action.DELETE} resource="department">
                     <DeleteButton
                       iconOnly
                       entityLabel={d?.name}
@@ -303,8 +307,10 @@ export function DepartmentDetailPage() {
                       disabled={isMutating}
                       isLoading={isMutating}
                     />
-                  )}
-                  {d.isArchived && (
+                  </Can>
+                )}
+                {d.isArchived && (
+                  <Can action={Action.UPDATE} resource="department">
                     <Button
                       variant="outline"
                       size="sm"
@@ -319,9 +325,9 @@ export function DepartmentDetailPage() {
                     >
                       Restore
                     </Button>
-                  )}
-                </div>
-              // </Can>
+                  </Can>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -366,14 +372,16 @@ export function DepartmentDetailPage() {
             </Button>
           ) : (
             !hasHead && (
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<Icon name="person_add" />}
-                onClick={() => void openAssignHead()}
-              >
-                Assign head
-              </Button>
+              <Can action={Action.UPDATE} resource="department">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<Icon name="person_add" />}
+                  onClick={() => void openAssignHead()}
+                >
+                  Assign head
+                </Button>
+              </Can>
             )
           )}
         </div>
@@ -392,15 +400,17 @@ export function DepartmentDetailPage() {
               <Button variant="ghost" size="sm" onClick={() => setAssignHeadOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={!assignHeadId || isMutating}
-                isLoading={isMutating}
-                onClick={() => void saveAssignHead()}
-              >
-                Assign
-              </Button>
+              <Can action={Action.UPDATE} resource="department">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  disabled={!assignHeadId || isMutating}
+                  isLoading={isMutating}
+                  onClick={() => void saveAssignHead()}
+                >
+                  Assign
+                </Button>
+              </Can>
             </div>
           </div>
         )}
@@ -617,13 +627,15 @@ export function DepartmentDetailPage() {
                   <Button variant="ghost" onClick={() => setMode('choose')}>
                     Back
                   </Button>
-                  <Button
-                    variant="primary"
-                    disabled={!selectedEmp || isMutating}
-                    onClick={() => void assignExisting()}
-                  >
-                    {isMutating ? 'Assigning…' : 'Assign to department'}
-                  </Button>
+                  <Can action={Action.UPDATE} resource="department">
+                    <Button
+                      variant="primary"
+                      disabled={!selectedEmp || isMutating}
+                      onClick={() => void assignExisting()}
+                    >
+                      {isMutating ? 'Assigning…' : 'Assign to department'}
+                    </Button>
+                  </Can>
                 </div>
               </div>
             )}
@@ -649,9 +661,11 @@ export function DepartmentDetailPage() {
               <Button variant="ghost" onClick={() => setRemoveTarget(null)}>
                 Cancel
               </Button>
-              <Button variant="primary" isLoading={isMutating} onClick={() => void confirmRemove()}>
-                Remove
-              </Button>
+              <Can action={Action.UPDATE} resource="department">
+                <Button variant="primary" isLoading={isMutating} onClick={() => void confirmRemove()}>
+                  Remove
+                </Button>
+              </Can>
             </div>
           </div>
         </div>

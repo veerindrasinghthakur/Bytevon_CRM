@@ -16,6 +16,8 @@ import { getEmployeeBankDetails, saveEmployeeBankDetails } from '@/modules/workf
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import type { BankDetails } from '@/modules/my-work/types'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -142,28 +144,32 @@ export function EmployeeBankDetailsPage() {
 
         <div className="flex items-center gap-2 flex-wrap">
           {!isEditing && !saved && (
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={startEdit}
-            >
-              Add bank details
-            </Button>
+            <Can action={Action.CREATE} resource="employment">
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                onClick={startEdit}
+              >
+                Add bank details
+              </Button>
+            </Can>
           )}
           {isEditing && (
             <>
               <Button variant="outline" size="sm" onClick={cancelEdit}>
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<span className="material-symbols-outlined text-[18px]">save</span>}
-                onClick={() => handleSubmit(onSubmit)()}
-              >
-                {isCreate ? 'Save' : 'Save changes'}
-              </Button>
+              <Can action={isCreate ? Action.CREATE : Action.UPDATE} resource="employment">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<span className="material-symbols-outlined text-[18px]">save</span>}
+                  onClick={() => handleSubmit(onSubmit)()}
+                >
+                  {isCreate ? 'Save' : 'Save changes'}
+                </Button>
+              </Can>
             </>
           )}
         </div>
@@ -338,9 +344,11 @@ export function EmployeeBankDetailsPage() {
                 <Button variant="outline" onClick={cancelEdit}>
                   Cancel
                 </Button>
-                <Button variant="primary" isLoading={save.isPending} onClick={() => handleSubmit(onSubmit)()}>
-                  {isCreate ? 'Save' : 'Save changes'}
-                </Button>
+                <Can action={isCreate ? Action.CREATE : Action.UPDATE} resource="employment">
+                  <Button variant="primary" isLoading={save.isPending} onClick={() => handleSubmit(onSubmit)()}>
+                    {isCreate ? 'Save' : 'Save changes'}
+                  </Button>
+                </Can>
               </div>
             )}
           </section>

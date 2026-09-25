@@ -19,6 +19,9 @@ export function usePayrollReview() {
   const qc = useQueryClient()
   const [showPayModal, setShowPayModal] = useState(false)
   const [paymentRef, setPaymentRef] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('BANK_TRANSFER')
+  const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [receiptFiles, setReceiptFiles] = useState<File[]>([])
 
   const query = useQuery({
     queryKey: queryKeys.payroll.review(id),
@@ -34,7 +37,11 @@ export function usePayrollReview() {
     onSuccess: () => invalidate.payroll(qc),
   })
   const payMut = useMutation({
-    mutationFn: (ref?: string) => payPayrollEmployee(id, ref),
+    mutationFn: (input?: { ref?: string; method?: string; paymentDate?: string; receiptName?: string }) =>
+      payPayrollEmployee(id, input?.ref, input?.method ?? paymentMethod, {
+        paymentDate: input?.paymentDate ?? paymentDate,
+        receiptName: input?.receiptName ?? receiptFiles[0]?.name,
+      }),
     onSuccess: () => invalidate.payroll(qc),
   })
   const rejectMut = useMutation({
@@ -60,6 +67,12 @@ export function usePayrollReview() {
     setShowPayModal,
     paymentRef,
     setPaymentRef,
+    paymentMethod,
+    setPaymentMethod,
+    paymentDate,
+    setPaymentDate,
+    receiptFiles,
+    setReceiptFiles,
     gross: review?.gross ?? 0,
     totalEarnings: review?.totalEarnings ?? 0,
     totalDeductions: review?.totalDeductions ?? 0,

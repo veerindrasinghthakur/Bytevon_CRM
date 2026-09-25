@@ -46,6 +46,9 @@ class EmployeePayrollService(BasePublicService):
     async def _employment_display(self, employment_ids: set[int]) -> dict[int, dict[str, str]]:
         if not employment_ids:
             return {}
+        from app.modules.workforce.department.models import Department
+        from app.modules.workforce.models import EmploymentAssignment, Position
+
         rows = (
             await self._session.execute(
                 select(Employment.id, Employment.employee_code, Person.first_name, Person.last_name)
@@ -57,6 +60,50 @@ class EmployeePayrollService(BasePublicService):
         for eid, code, first, last in rows:
             name = f"{(first or '').strip()} {(last or '').strip()}".strip() or f"Employee #{eid}"
             out[int(eid)] = {"name": name, "code": code or f"EMP-{eid}"}
+        # Current assignment (effective_to IS NULL) -> department + position names.
+        asgs = (
+            await self._session.execute(
+                select(
+                    EmploymentAssignment.employment_id,
+                    EmploymentAssignment.department_id,
+                    EmploymentAssignment.position_id,
+                ).where(
+                    EmploymentAssignment.employment_id.in_(list(employment_ids)),
+                    EmploymentAssignment.effective_to.is_(None),
+                )
+            )
+        ).all()
+        dept_ids = {int(d) for _, d, _ in asgs if d is not None}
+        pos_ids = {int(p) for _, _, p in asgs if p is not None}
+        dept_names: dict[int, str] = {}
+        if dept_ids:
+            for did, dname in (
+                await self._session.execute(
+                    select(Department.id, Department.name).where(Department.id.in_(list(dept_ids)))
+                )
+            ).all():
+                dept_names[int(did)] = str(dname)
+        pos_names: dict[int, str] = {}
+        if pos_ids:
+            for pid, pname in (
+                await self._session.execute(
+                    select(Position.id, Position.name).where(Position.id.in_(list(pos_ids)))
+                )
+            ).all():
+                pos_names[int(pid)] = str(pname)
+        for emp_id, dept_id, pos_id in asgs:
+            info = out.get(int(emp_id))
+            if info is None:
+                continue
+            info["department"] = (
+                dept_names.get(int(dept_id)) if dept_id is not None else None
+            ) or "—"
+            info["role"] = (
+                pos_names.get(int(pos_id)) if pos_id is not None else None
+            ) or "—"
+        for info in out.values():
+            info.setdefault("department", "—")
+            info.setdefault("role", "—")
         return out
 
     async def list_employees(
@@ -81,7 +128,7 @@ class EmployeePayrollService(BasePublicService):
             emp_id = getattr(r, "employment_id", None)
             pid = getattr(r, "id", None)
             st = _status_str(r)
-            if status and st.upper() != status.upper():
+            if status and status.strip().upper() != "ALL" and st.upper() != status.strip().upper():
                 continue
             info = display.get(int(emp_id), {}) if emp_id is not None else {}
             gross = _money(r, "gross_salary", "gross_pay")
@@ -94,7 +141,8 @@ class EmployeePayrollService(BasePublicService):
                     "employment_id": emp_id,
                     "name": info.get("name") or f"Employee #{emp_id}",
                     "code": info.get("code") or f"EMP-{emp_id}",
-                    "department": "—",
+                    "department": info.get("department") or "—",
+                    "role": info.get("role") or "—",
                     "status": st,
                     "gross": gross,
                     "earnings": _money(r, "total_earnings", "gross_salary"),
@@ -122,9 +170,18 @@ class EmployeePayrollService(BasePublicService):
             "page": page,
             "pageSize": page_size,
             "metrics": {
+                "totalEmployees": total,
+                "grossSalary": sum(e["gross"] for e in items),
+                "earnings": sum(e["earnings"] for e in items),
+                "deductions": sum(e["deductions"] for e in items),
+                "netPayroll": sum(e["net"] for e in items),
                 "totalGross": sum(e["gross"] for e in items),
                 "totalNet": sum(e["net"] for e in items),
+                "totalEarnings": sum(e["earnings"] for e in items),
+                "totalDeductions": sum(e["deductions"] for e in items),
                 "count": total,
+                "pendingApproval": sum(1 for e in items if e["status"].upper() in ("CALCULATED", "DRAFT", "PENDING_APPROVAL")),
+                "pendingPayment": sum(1 for e in items if e["status"].upper() in ("APPROVED", "PENDING_PAYMENT", "PENDING")),
             },
         }
 

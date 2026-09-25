@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { Can } from '@/shared/rbac'
 import { formatMoney } from '@/shared/mock/data/payroll'
 import { listEmployments } from '@/modules/workforce/api/employment'
 import { usePayrollHistory, useHistoryEmployee } from '../../hooks/history/use-payroll-history'
@@ -81,50 +82,54 @@ export function PayrollHistoryPage() {
         title="Payroll History"
         description="Past paid salary records across the organization. Read-only."
         actions={
-          <Button
+          <ExportButton
+            resource="payroll"
+            filenameStem="payroll-history"
             variant="outline"
             size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}
-          >
-            Export
-          </Button>
+            label="Export"
+          />
         }
       />
 
-      <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
-        <div className="relative w-full sm:w-80">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
-            search
-          </span>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
-            placeholder="Search period, employee, reference..."
-            type="text"
-          />
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col lg:flex-row gap-4 lg:items-center">
+          <div className="relative w-full sm:w-80">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
+              search
+            </span>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
+              placeholder="Search period, employee, reference..."
+              type="text"
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-3 ml-auto lg:mr-3 lg:pr-2">
+            <Select
+              value={monthFilter}
+              onChange={setMonthFilter}
+              aria-label="Filter by month"
+              minWidthClass="min-w-[150px]"
+              options={monthOptions.map((m) => ({
+                value: m,
+                label: m === 'All' ? 'Month: All' : m,
+              }))}
+            />
+            <Select
+              value={departmentFilter}
+              onChange={setDepartmentFilter}
+              aria-label="Filter by department"
+              minWidthClass="min-w-[170px]"
+              options={departmentOptions.map((d) => ({
+                value: d,
+                label: d === 'All' ? 'Department: All' : d,
+              }))}
+            />
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Select
-            value={monthFilter}
-            onChange={setMonthFilter}
-            minWidthClass="min-w-[150px]"
-            options={monthOptions.map((m) => ({
-              value: m,
-              label: m === 'All' ? 'Month: All' : m,
-            }))}
-          />
-          <Select
-            value={departmentFilter}
-            onChange={setDepartmentFilter}
-            minWidthClass="min-w-[170px]"
-            options={departmentOptions.map((d) => ({
-              value: d,
-              label: d === 'All' ? 'Department: All' : d,
-            }))}
-          />
-        </div>
-        <p className="text-caption text-on-surface-variant">
+        <p className="text-caption text-on-surface-variant text-right">
           {historyQuery.isLoading ? 'Loading…' : `${filtered.length} paid records`}
         </p>
       </div>
@@ -241,30 +246,38 @@ function HistoryRow({
       </td>
       <td className="p-4 pr-6 text-right">
         <div className="flex items-center justify-end gap-3">
-          <button
-            type="button"
-            className="text-primary hover:text-secondary text-label-md transition-colors"
-            onClick={() =>
-              safeNavigate(navigate, {
-                to: payrollRoutes.payslipPath,
-                params: { payrollId: record.payrollId ?? record.id },
-              })
-            }
-          >
-            Payslip
-          </button>
-          <button
-            type="button"
-            className="text-on-surface-variant hover:text-secondary text-label-md transition-colors"
-            onClick={() =>
-              safeNavigate(navigate, {
-                to: payrollRoutes.historyEmployeePath,
-                params: { employeeId: record.employeeId },
-              })
-            }
-          >
-            Employee history
-          </button>
+          <Can action="VIEW" resource="payroll">
+            <button
+              type="button"
+              title="Payslip"
+              aria-label="Payslip"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-full text-primary hover:text-secondary hover:bg-surface-container transition-colors"
+              onClick={() =>
+                safeNavigate(navigate, {
+                  to: payrollRoutes.payslipPath,
+                  params: { payrollId: record.payrollId ?? record.id },
+                })
+              }
+            >
+              <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+            </button>
+          </Can>
+          <Can action="VIEW" resource="employment">
+            <button
+              type="button"
+              title="History"
+              aria-label="History"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-full text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-colors"
+              onClick={() =>
+                safeNavigate(navigate, {
+                  to: payrollRoutes.historyEmployeePath,
+                  params: { employeeId: record.employeeId },
+                })
+              }
+            >
+              <span className="material-symbols-outlined text-[20px]">history</span>
+            </button>
+          </Can>
         </div>
       </td>
     </tr>

@@ -8,6 +8,9 @@ import { useWorkingWeeks } from '../../hooks/working_week/use-working-weeks'
 import type { WorkingWeekRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 
 /** Backend: working_days_of_week 0=Mon … 6=Sun */
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
@@ -117,16 +120,24 @@ export function WorkingWeeksPage() {
             Days: 0=Mon … 6=Sun.
           </p>
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => {
-            setShowCreate(true)
-            setFormError(null)
-          }}
-        >
-          Create working week
-        </Button>
+        <div className="flex gap-2">
+          <ExportButton
+            resource="working_week"
+            filenameStem="working-weeks"
+          />
+          <Can action={Action.CREATE} resource="working_week">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setShowCreate(true)
+                setFormError(null)
+              }}
+            >
+              Create working week
+            </Button>
+          </Can>
+        </div>
       </div>
 
       {archiveError && (
@@ -227,14 +238,16 @@ export function WorkingWeeksPage() {
                   </span>
                 </div>
                 {open && (
-                  <ArchiveButton
-                    entityLabel={w.name}
-                    mode="archive"
-                    label="Close version"
-                    size="sm"
-                    isLoading={archiveMut.isPending}
-                    onConfirm={() => archiveMut.mutateAsync(w.id)}
-                  />
+                  <Can action={Action.UPDATE} resource="working_week">
+                    <ArchiveButton
+                      entityLabel={w.name}
+                      mode="archive"
+                      label="Close version"
+                      size="sm"
+                      isLoading={archiveMut.isPending}
+                      onConfirm={() => archiveMut.mutateAsync(w.id)}
+                    />
+                  </Can>
                 )}
               </div>
               <div className="mt-4 flex flex-wrap gap-2">

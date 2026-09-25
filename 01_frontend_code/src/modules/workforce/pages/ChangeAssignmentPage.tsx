@@ -13,6 +13,8 @@ import { workforceRoutes } from '../routes'
 import { changeAssignmentSchema, type ChangeAssignmentForm } from '../schemas/change-assignment-form'
 import { WORK_MODE_OPTIONS } from '../schemas/enums'
 import { useChangeAssignment } from '../hooks/assignment/use-change-assignment'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function ChangeAssignmentPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId: string }
@@ -184,9 +186,11 @@ export function ChangeAssignmentPage() {
             {getApiErrorMessage(saveError, 'Could not save assignment')}
           </p>
         )}
-        <Button type="submit" variant="primary" isLoading={saving}>
-          Save assignment
-        </Button>
+        <Can action={Action.UPDATE} resource="employment">
+          <Button type="submit" variant="primary" isLoading={saving}>
+            Save assignment
+          </Button>
+        </Can>
       </form>
     </div>
   )

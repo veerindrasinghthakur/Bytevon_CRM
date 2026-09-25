@@ -6,6 +6,8 @@ import { useSentNotifications } from '../../hooks/sent/use-sent-notifications'
 import { notificationRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 import { DeliveryStatusPill } from '../../components/sent/DeliveryStatusPill'
 import { SentKpiCards } from '../../components/sent/SentKpiCards'
 
@@ -34,14 +36,16 @@ export function SentNotificationsPage() {
             selectedIds={s.selectionMode ? Array.from(s.selectedIds) : undefined}
             filenameStem="notifications-sent"
           />
-          <Button
-            variant="primary"
-            size="md"
-            leftIcon={<span className="material-symbols-outlined">add_circle</span>}
-            onClick={() => safeNavigate(navigate, { to: notificationRoutes.compose })}
-          >
-            Compose Notification
-          </Button>
+          <Can action={Action.CREATE} resource="notification">
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={<span className="material-symbols-outlined">add_circle</span>}
+              onClick={() => safeNavigate(navigate, { to: notificationRoutes.compose })}
+            >
+              Compose Notification
+            </Button>
+          </Can>
         </div>
       </div>
 

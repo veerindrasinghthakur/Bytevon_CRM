@@ -5,6 +5,8 @@ import { useSalaryDetail } from '../../hooks/salary/use-salary-detail'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 /** Single employee gross-salary view. Revise + history links. */
 export function EmployeeSalaryDetailPage() {
@@ -106,23 +108,25 @@ export function EmployeeSalaryDetailPage() {
           >
             Salary History
           </Button>
-          <Button
-            variant="primary"
-            size="md"
-            leftIcon={
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-                edit_document
-              </span>
-            }
-            onClick={() =>
-              safeNavigate(navigate, {
-                to: payrollRoutes.salaryRevisePath,
-                params: { employeeId },
-              })
-            }
-          >
-            Revise Salary
-          </Button>
+          <Can action={Action.UPDATE} resource="salary">
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  edit_document
+                </span>
+              }
+              onClick={() =>
+                safeNavigate(navigate, {
+                  to: payrollRoutes.salaryRevisePath,
+                  params: { employeeId },
+                })
+              }
+            >
+              Revise Salary
+            </Button>
+          </Can>
         </div>
       </section>
 

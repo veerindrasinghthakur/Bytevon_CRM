@@ -1,6 +1,8 @@
 import { Button } from '@/shared/components/ui/Button'
 import type { EmployeeDetailDto } from '@/shared/schema'
 import { Icon } from './employee-detail-utils'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 type Props = {
   data: EmployeeDetailDto
@@ -107,15 +109,17 @@ export function EmployeeProfileSidebar({ data, fullName, initials, manager, onLi
           </div>
         )}
         {!manager && onLinkDepartment && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            leftIcon={<Icon name="link" />}
-            onClick={onLinkDepartment}
-          >
-            Link department
-          </Button>
+          <Can action={Action.UPDATE} resource="employment">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              leftIcon={<Icon name="link" />}
+              onClick={onLinkDepartment}
+            >
+              Link department
+            </Button>
+          </Can>
         )}
       </div>
     </div>

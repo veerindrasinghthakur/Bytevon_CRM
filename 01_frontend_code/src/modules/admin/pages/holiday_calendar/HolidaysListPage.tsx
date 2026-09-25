@@ -17,6 +17,8 @@ import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 import type { HolidayRow } from '@/shared/schema'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { holidayTypes as TYPES } from '../../schemas/enums'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function HolidaysListPage() {
   const { calendarId } = useParams({ strict: false }) as { calendarId: string }
@@ -145,30 +147,34 @@ export function HolidaysListPage() {
         </div>
         <div className="flex gap-2 flex-wrap">
           {calArchived && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-secondary text-secondary hover:bg-secondary/10"
-              leftIcon={
-                <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
-              }
-              isLoading={restoreCalMut.isPending}
-              onClick={handleRestoreCalendar}
-            >
-              Restore
-            </Button>
+            <Can action={Action.UPDATE} resource="holiday_calendar">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-secondary text-secondary hover:bg-secondary/10"
+                leftIcon={
+                  <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                }
+                isLoading={restoreCalMut.isPending}
+                onClick={handleRestoreCalendar}
+              >
+                Restore
+              </Button>
+            </Can>
           )}
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => {
-              setAdding(true)
-              setSaveError(null)
-            }}
-          >
-            Add Holiday
-          </Button>
+          <Can action={Action.CREATE} resource="holiday_calendar">
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+              onClick={() => {
+                setAdding(true)
+                setSaveError(null)
+              }}
+            >
+              Add Holiday
+            </Button>
+          </Can>
         </div>
       </div>
 
@@ -308,12 +314,14 @@ export function HolidaysListPage() {
                   <td className="px-5 py-3 text-body-sm">{h.holiday_type}</td>
                   <td className="px-5 py-3 text-body-sm">{h.recurring_flag ? 'Yes' : 'No'}</td>
                   <td className="px-5 py-3 text-right">
-                    <DeleteButton
-                      iconOnly
-                      entityLabel={`${h.name} (${h.date})`}
-                      isLoading={deleteMut.isPending}
-                      onConfirm={() => deleteMut.mutateAsync(h.id)}
-                    />
+                    <Can action={Action.DELETE} resource="holiday_calendar">
+                      <DeleteButton
+                        iconOnly
+                        entityLabel={`${h.name} (${h.date})`}
+                        isLoading={deleteMut.isPending}
+                        onConfirm={() => deleteMut.mutateAsync(h.id)}
+                      />
+                    </Can>
                   </td>
                 </tr>
               ))}

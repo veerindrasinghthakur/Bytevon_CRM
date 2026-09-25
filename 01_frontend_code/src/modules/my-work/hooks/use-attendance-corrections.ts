@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '@/modules/auth/context/AuthContext'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
@@ -54,23 +55,54 @@ export function useAttendanceCorrections() {
     placeholderData: (prev) => prev,
   })
 
-  const { data: candidates = [] } = useQuery({
+  const { employmentId: selfEmploymentId } = useAuth()
+
+  const {
+    data: candidates = [],
+    isLoading: candidatesLoading,
+    isError: candidatesError,
+  } = useQuery({
     queryKey: [...queryKeys.myWork.corrections.all, 'candidates'] as const,
     queryFn: listCorrectionCandidates,
   })
 
-  const { data: approvers = [] } = useQuery({
+  const {
+    data: approverDirectory = [],
+    isLoading: approversLoading,
+    isError: approversError,
+  } = useQuery({
     queryKey: queryKeys.myWork.approvers(),
     queryFn: listApproverDirectory,
   })
 
-  // Default to the first approver (department head) once the directory loads,
-  // so the submit button is never stuck disabled on an empty selection.
+  // Server order: requester's department head, then HR, then admin fallback.
+  // Exclude self so department heads are routed to HR/admin (self-approval is
+  // rejected server-side). Prefer department-head titles, then HR titles.
+  const approvers = useMemo(() => {
+    const withoutSelf = approverDirectory.filter((a) =>
+      selfEmploymentId != null && a.employmentId != null
+        ? a.employmentId !== selfEmploymentId
+        : true,
+    )
+    const rank = (a: { title: string }) => {
+      const t = a.title.toLowerCase()
+      if (t.includes('department head')) return 0
+      if (t === 'hr' || t.includes('hr ') || t.includes('human')) return 1
+      if (t.includes('admin')) return 3
+      return 2
+    }
+    return [...withoutSelf].sort((a, b) => rank(a) - rank(b))
+  }, [approverDirectory, selfEmploymentId])
+
+  // Default to the department head (first ordered approver) once the directory
+  // loads, so the submit button is never stuck disabled on an empty selection.
   useEffect(() => {
     if (approvers.length > 0) {
       setApproverId((prev) =>
         prev && approvers.some((a) => a.id === prev) ? prev : (approvers[0]?.id ?? ''),
       )
+    } else {
+      setApproverId('')
     }
   }, [approvers])
 
@@ -125,7 +157,7 @@ export function useAttendanceCorrections() {
       void invalidate.myWorkCorrections(qc)
       setModalOpen(false)
       setReason('')
-      toast.success('Correction submitted')
+      toast.success('Correction submitted to your department head / HR')
     },
     onError: (err) => {
       toast.error(getApiErrorMessage(err, 'Could not submit the correction'))
@@ -135,16 +167,40 @@ export function useAttendanceCorrections() {
   const submit = useCallback(() => {
     const row = candidates.find((c) => c.id === selectedDateId)
     const approver = approvers.find((a) => a.id === approverId)
+    if (candidatesLoading) {
+      toast.error('Attendance days are still loading — please wait')
+      return
+    }
     if (!row) {
-      toast.error('Select an attendance day for the correction')
+      toast.error(
+        candidates.length === 0
+          ? 'No attendance days are eligible for correction'
+          : 'Select an attendance day for the correction',
+      )
       return
     }
     if (!reason.trim()) {
       toast.error('A reason is required to submit the correction')
       return
     }
+    if (approversLoading) {
+      toast.error('Approver list is still loading — please wait')
+      return
+    }
     if (!approver) {
-      toast.error('Select an approver for the correction')
+      toast.error(
+        approvers.length === 0
+          ? 'No approvers available — your department head or HR is not configured'
+          : 'Select your department head or HR as the approver',
+      )
+      return
+    }
+    if (
+      selfEmploymentId != null &&
+      approver.employmentId != null &&
+      approver.employmentId === selfEmploymentId
+    ) {
+      toast.error('You cannot approve your own correction — pick your department head or HR')
       return
     }
     mutation.mutate({
@@ -158,7 +214,7 @@ export function useAttendanceCorrections() {
       approverId: approver.id,
       targetDepartmentId: approver.departmentId,
     })
-  }, [candidates, selectedDateId, reason, approverId, checkIn, checkOut, mutation, approvers])
+  }, [candidates, candidatesLoading, selectedDateId, reason, approverId, checkIn, checkOut, mutation, approvers, approversLoading, selfEmploymentId])
 
   return {
     isLoading,
@@ -166,6 +222,10 @@ export function useAttendanceCorrections() {
     visible,
     total: listData?.total ?? visible.length,
     candidates,
+    candidatesLoading,
+    candidatesError,
+    approversLoading,
+    approversError,
     search: controls.search,
     setSearch: controls.setSearch,
     statusFilter: controls.filters.status,

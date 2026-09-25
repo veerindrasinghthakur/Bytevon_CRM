@@ -10,6 +10,8 @@ import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { ProjectPhaseOptions, ProjectPriorityOptions } from '../../enums'
 import type { AssignMode, PhaseValue, PriorityValue } from '../../types'
 import { useProjectCreate } from '../../hooks/project/use-project-create'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 const ASSIGN_OPTIONS = [
   {
@@ -333,14 +335,16 @@ export function ProjectCreatePage() {
             <Button type="button" variant="ghost" onClick={cancel}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting || createMutation.isPending}
-              rightIcon={<span className="material-symbols-outlined text-sm">arrow_forward</span>}
-            >
-              {assignMode === 'new' ? 'Create project & new team' : 'Create Project'}
-            </Button>
+            <Can action={Action.CREATE} resource="project">
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={isSubmitting || createMutation.isPending}
+                rightIcon={<span className="material-symbols-outlined text-sm">arrow_forward</span>}
+              >
+                {assignMode === 'new' ? 'Create project & new team' : 'Create Project'}
+              </Button>
+            </Can>
           </div>
         </form>
       </div>

@@ -13,6 +13,8 @@ import {
   officeFormSchema,
   type OfficeFormValues,
 } from '../../schemas/offices'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function OfficeFormPage() {
   const navigate = useNavigate()
@@ -114,17 +116,19 @@ export function OfficeFormPage() {
             <Button variant="outline" size="sm" onClick={goLocations}>
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              isLoading={saveMutation.isPending}
-              onClick={handleSubmit((values) => {
-                setError(null)
-                saveMutation.mutate(values)
-              })}
-            >
-              {isEdit ? 'Save Changes' : 'Create Location'}
-            </Button>
+            <Can action={isEdit ? Action.UPDATE : Action.CREATE} resource="office">
+              <Button
+                variant="primary"
+                size="sm"
+                isLoading={saveMutation.isPending}
+                onClick={handleSubmit((values) => {
+                  setError(null)
+                  saveMutation.mutate(values)
+                })}
+              >
+                {isEdit ? 'Save Changes' : 'Create Location'}
+              </Button>
+            </Can>
           </div>
         }
       />

@@ -55,6 +55,8 @@ export type PayrollRunView = 'ready' | 'empty' | 'error' | 'locked'
 export interface PayrollEmployeeListParams {
   search?: string
   status?: string
+  month?: string | number
+  year?: string | number
   page?: number
   pageSize?: number
 }

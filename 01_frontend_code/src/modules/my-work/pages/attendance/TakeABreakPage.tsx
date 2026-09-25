@@ -4,6 +4,8 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../../routes'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 import {
   formatDuration,
@@ -115,9 +117,11 @@ export function TakeABreakPage() {
             {session.note && (
               <p className="text-body-sm text-on-surface-variant italic">“{session.note}”</p>
             )}
-            <Button variant="danger" className="mt-2 min-w-[160px]" onClick={handleStop}>
-              End break
-            </Button>
+            <Can action={Action.CREATE} resource="attendance" minScope="SELF">
+              <Button variant="danger" className="mt-2 min-w-[160px]" onClick={handleStop}>
+                End break
+              </Button>
+            </Can>
           </>
         ) : (
           <>
@@ -170,9 +174,11 @@ export function TakeABreakPage() {
                 />
               </div>
             </div>
-            <Button variant="primary" className="mt-2 min-w-[160px]" onClick={handleStart}>
-              Start break
-            </Button>
+            <Can action={Action.CREATE} resource="attendance" minScope="SELF">
+              <Button variant="primary" className="mt-2 min-w-[160px]" onClick={handleStart}>
+                Start break
+              </Button>
+            </Can>
           </>
         )}
         <span className="sr-only">{tick}</span>

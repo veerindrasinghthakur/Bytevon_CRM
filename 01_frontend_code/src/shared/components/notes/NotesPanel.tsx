@@ -26,6 +26,7 @@ export function NotesPanel({
   referenceType = NoteReferenceType.LEAD,
   referenceId = 0,
   onAdd,
+  canAdd = true,
 }: NotesPanelProps) {
   const [notes, setNotes] = useState<NoteItem[]>(initialNotes)
   const [draft, setDraft] = useState('')
@@ -89,19 +90,21 @@ export function NotesPanel({
         <span className="text-label-sm text-on-surface-variant">{notes.length} notes</span>
       </div>
 
-      <div className="p-4 border-b border-outline-variant space-y-3">
-        <textarea
-          className="w-full min-h-[88px] rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm focus:outline-none focus:border-secondary resize-y"
-          placeholder="Add a note…"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-        />
-        <div className="flex justify-end">
-          <Button variant="primary" size="sm" disabled={!draft.trim() || saving} onClick={() => void add()}>
-            {saving ? 'Saving…' : 'Add note'}
-          </Button>
+      {canAdd && (
+        <div className="p-4 border-b border-outline-variant space-y-3">
+          <textarea
+            className="w-full min-h-[88px] rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm focus:outline-none focus:border-secondary resize-y"
+            placeholder="Add a note…"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          <div className="flex justify-end">
+            <Button variant="primary" size="sm" disabled={!draft.trim() || saving} onClick={() => void add()}>
+              {saving ? 'Saving…' : 'Add note'}
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       <ul className="flex-1 overflow-y-auto max-h-[420px] divide-y divide-outline-variant">
         {notes.length === 0 ? (

@@ -4,6 +4,8 @@ import { cn } from '@/shared/lib/cn'
 import { WorkingHoursLog } from '../../components/attendance/WorkingHoursLog'
 import { ManualAttendanceForm } from '../../components/attendance/ManualAttendanceForm'
 import { useMarkAttendance } from '../../hooks/use-mark-attendance'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function MarkAttendancePage() {
   const m = useMarkAttendance()
@@ -48,6 +50,7 @@ export function MarkAttendancePage() {
             </div>
 
             <div className="flex gap-4 w-full max-w-md mt-2">
+              <Can action={Action.CREATE} resource="attendance" minScope="SELF">
               <button
                 type="button"
                 disabled={m.hasSession || m.submitting || m.status !== 'Present'}
@@ -67,6 +70,8 @@ export function MarkAttendancePage() {
                 </span>
                 <span>Check In</span>
               </button>
+              </Can>
+              <Can action={Action.CREATE} resource="attendance" minScope="SELF">
               <button
                 type="button"
                 disabled={!m.checkedIn || m.submitting}
@@ -81,6 +86,7 @@ export function MarkAttendancePage() {
                 <span className="material-symbols-outlined text-[32px]">logout</span>
                 <span>Check Out</span>
               </button>
+              </Can>
             </div>
           </div>
 

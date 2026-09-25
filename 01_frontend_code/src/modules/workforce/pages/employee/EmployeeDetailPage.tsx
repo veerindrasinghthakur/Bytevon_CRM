@@ -272,14 +272,16 @@ export function EmployeeDetailPage() {
         description={`${data.position?.name ?? '—'} · ${data.department?.name ?? '—'}`}
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<Icon name="download" className="text-lg" />}
-              onClick={downloadProfile}
-            >
-              Download
-            </Button>
+            <Can action={Action.EXPORT} resource="employment">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Icon name="download" className="text-lg" />}
+                onClick={downloadProfile}
+              >
+                Download
+              </Button>
+            </Can>
             <Can action={Action.UPDATE} resource={'employment'}>
               {editing ? (
                 <>
@@ -331,18 +333,20 @@ export function EmployeeDetailPage() {
         </span>
         {data.hasLogin && <span className={loginEnabledClass}>Login: {data.loginEmail}</span>}
         {['RESIGNED', 'TERMINATED', 'ALUMNI'].includes(currentState) && (
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<Icon name="person_add" className="text-lg" />}
-            isLoading={rehireMut.isPending}
-            onClick={() => {
-              if (!window.confirm(`Rehire ${fullName}?`)) return
-              rehireMut.mutate()
-            }}
-          >
-            {rehireMut.isPending ? 'Rehiring…' : 'Rehire'}
-          </Button>
+          <Can action={Action.UPDATE} resource="employment">
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<Icon name="person_add" className="text-lg" />}
+              isLoading={rehireMut.isPending}
+              onClick={() => {
+                if (!window.confirm(`Rehire ${fullName}?`)) return
+                rehireMut.mutate()
+              }}
+            >
+              {rehireMut.isPending ? 'Rehiring…' : 'Rehire'}
+            </Button>
+          </Can>
         )}
       </div>
 

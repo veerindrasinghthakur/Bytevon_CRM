@@ -6,6 +6,7 @@ import { usePayrollReview } from '../../hooks/review/use-payroll-review'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 import { ReviewMetricCard } from '../../components/review/ReviewMetricCard'
 import { RecordPaymentModal } from '../../components/review/RecordPaymentModal'
 
@@ -17,6 +18,12 @@ export function PayrollReviewPage() {
     setShowPayModal,
     paymentRef,
     setPaymentRef,
+    paymentMethod,
+    setPaymentMethod,
+    paymentDate,
+    setPaymentDate,
+    receiptFiles,
+    setReceiptFiles,
     gross,
     totalEarnings,
     totalDeductions,
@@ -42,6 +49,10 @@ export function PayrollReviewPage() {
     return (
       <div className="p-8 space-y-4">
         <p className="text-body-md text-error">Payroll review not found.</p>
+        <p className="text-body-sm text-on-surface-variant">
+          Review links use the payroll ID. Employment IDs resolve automatically when a
+          payroll exists for that employee — otherwise run payroll for the period first.
+        </p>
         <BackButton to={payrollRoutes.monthly} />
       </div>
     )
@@ -305,15 +316,17 @@ export function PayrollReviewPage() {
                 <span className="material-symbols-outlined text-[20px]">edit_note</span>
                 Request Correction
               </button>
-              <button
-                type="button"
-                className="w-full border border-primary text-primary font-medium py-3 px-4 rounded-lg hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                disabled={emp.status === 'Paid'}
-                onClick={() => setShowPayModal(true)}
-              >
-                <span className="material-symbols-outlined text-[20px]">payments</span>
-                Record Payment
-              </button>
+              <Can action={Action.CREATE} resource="payroll">
+                <button
+                  type="button"
+                  className="w-full border border-primary text-primary font-medium py-3 px-4 rounded-lg hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  disabled={emp.status === 'Paid'}
+                  onClick={() => setShowPayModal(true)}
+                >
+                  <span className="material-symbols-outlined text-[20px]">payments</span>
+                  Record Payment
+                </button>
+              </Can>
             </div>
           </section>
         </div>
@@ -327,19 +340,28 @@ export function PayrollReviewPage() {
           amount={netPayable}
           paymentRef={paymentRef}
           setPaymentRef={setPaymentRef}
+          method={paymentMethod}
+          setMethod={setPaymentMethod}
+          paymentDate={paymentDate}
+          setPaymentDate={setPaymentDate}
+          receiptFiles={receiptFiles}
+          setReceiptFiles={setReceiptFiles}
           isPending={payMut.isPending}
           formatMoney={formatMoney}
           onClose={() => setShowPayModal(false)}
           onConfirm={() => {
-            payMut.mutate(paymentRef || undefined, {
-              onSuccess: () => {
-                setShowPayModal(false)
-                safeNavigate(navigate, {
-                  to: payrollRoutes.payslipPath,
-                  params: { payrollId: emp.payrollId ?? emp.id },
-                })
+            payMut.mutate(
+              { ref: paymentRef || undefined },
+              {
+                onSuccess: () => {
+                  setShowPayModal(false)
+                  safeNavigate(navigate, {
+                    to: payrollRoutes.payslipPath,
+                    params: { payrollId: emp.payrollId ?? emp.id },
+                  })
+                },
               },
-            })
+            )
           }}
         />
       )}

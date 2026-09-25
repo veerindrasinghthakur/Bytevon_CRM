@@ -13,6 +13,8 @@ import { getSource } from '../../api/source'
 import { useSources, useSourceLeads } from '../../hooks/source/use-sources'
 import { SourceFormModal } from '../../components/source/SourceFormModal'
 import { salesRoutes } from '../../routes'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 function formatDateTime(value?: string | null): string {
   if (!value) return '—'
@@ -166,40 +168,46 @@ export function SourceDetailPage() {
           <div className="flex justify-end gap-2">
             {!source.isArchived ? (
               <>
-                <Button variant="outline" size="sm" onClick={openEdit}>
-                  Edit
-                </Button>
-                <DeleteButton
-                  entityLabel={source.name}
-                  isLoading={isMutating}
-                  onConfirm={async () => {
-                    try {
-                      await deleteSource(source.id)
-                      close()
-                    } catch (err) {
-                      setActionError(getApiErrorMessage(err, 'Could not delete source'))
-                      throw err
-                    }
-                  }}
-                />
+                <Can action={Action.UPDATE} resource="lead">
+                  <Button variant="outline" size="sm" onClick={openEdit}>
+                    Edit
+                  </Button>
+                </Can>
+                <Can action={Action.DELETE} resource="lead">
+                  <DeleteButton
+                    entityLabel={source.name}
+                    isLoading={isMutating}
+                    onConfirm={async () => {
+                      try {
+                        await deleteSource(source.id)
+                        close()
+                      } catch (err) {
+                        setActionError(getApiErrorMessage(err, 'Could not delete source'))
+                        throw err
+                      }
+                    }}
+                  />
+                </Can>
               </>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  restoreSource(source.id)
-                    .then(() => {
-                      setActionError(null)
-                      void detailQuery.refetch()
-                    })
-                    .catch((err: unknown) =>
-                      setActionError(getApiErrorMessage(err, 'Could not restore source')),
-                    )
-                }
-              >
-                Restore
-              </Button>
+              <Can action={Action.UPDATE} resource="lead">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    restoreSource(source.id)
+                      .then(() => {
+                        setActionError(null)
+                        void detailQuery.refetch()
+                      })
+                      .catch((err: unknown) =>
+                        setActionError(getApiErrorMessage(err, 'Could not restore source')),
+                      )
+                  }
+                >
+                  Restore
+                </Button>
+              </Can>
             )}
           </div>
         </div>

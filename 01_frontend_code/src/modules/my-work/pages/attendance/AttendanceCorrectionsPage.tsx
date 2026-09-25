@@ -11,6 +11,8 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useAttendanceCorrections } from '../../hooks/use-attendance-corrections'
 import { myWorkRoutes } from '../../routes'
 import { CORRECTION_STATUS_OPTIONS, correctionStatusStyles } from '../../schemas/enums'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function AttendanceCorrectionsPage() {
   const navigate = useNavigate()
@@ -169,7 +171,10 @@ export function AttendanceCorrectionsPage() {
               </button>
             </div>
             <div className="p-5 space-y-4 overflow-y-auto flex-1">
-              <Select label="Day" value={c.selectedDateId} onChange={(v) => c.onSelectDay(v)} options={c.candidates.map((day) => ({ value: day.id, label: `${day.date} · ${day.status}` }))} minWidthClass="w-full max-w-none" />
+              <Select label="Day" value={c.selectedDateId} onChange={(v) => c.onSelectDay(v)} options={c.candidates.map((day) => ({ value: day.id, label: `${day.date} · ${day.status}` }))} minWidthClass="w-full max-w-none" placeholder={c.candidatesLoading ? 'Loading days…' : c.candidates.length === 0 ? 'No eligible days' : 'Select day'} />
+              {c.candidatesError && !c.candidatesLoading && (
+                <p className="text-body-sm text-error">Could not load attendance days. Please retry.</p>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-in">Requested check-in</label>
@@ -182,8 +187,14 @@ export function AttendanceCorrectionsPage() {
               </div>
               <div>
                 <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-approver-q">Approver <span className="text-error">*</span></label>
-                <input id="corr-approver-q" value={c.approverQuery} onChange={(e) => c.setApproverQuery(e.target.value)} placeholder="Search department head or upper hierarchy…" className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors mb-2" />
-                <Select value={c.approverId} onChange={c.setApproverId} options={c.filteredApprovers.map((o) => ({ value: o.id, label: `${o.name} (${o.title})` }))} minWidthClass="w-full max-w-none" placeholder="Select approver" />
+                <input id="corr-approver-q" value={c.approverQuery} onChange={(e) => c.setApproverQuery(e.target.value)} placeholder="Search department head or HR…" className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors mb-2" />
+                <Select value={c.approverId} onChange={c.setApproverId} options={c.filteredApprovers.map((o) => ({ value: o.id, label: `${o.name} (${o.title}${o.employmentId != null ? ` · Emp #${o.employmentId}` : ''})` }))} minWidthClass="w-full max-w-none" placeholder={c.approversLoading ? 'Loading approvers…' : c.filteredApprovers.length === 0 ? 'No approvers available' : 'Select department head or HR'} />
+                {c.approversError && !c.approversLoading && (
+                  <p className="text-body-sm text-error mt-1">Could not load approvers. Please retry.</p>
+                )}
+                {!c.approversLoading && !c.approversError && c.filteredApprovers.length === 0 && (
+                  <p className="text-body-sm text-on-surface-variant mt-1">No department head or HR found for your request.</p>
+                )}
               </div>
               <div>
                 <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-reason">Reason <span className="text-error">*</span></label>
@@ -192,7 +203,9 @@ export function AttendanceCorrectionsPage() {
             </div>
             <div className="p-5 border-t border-outline-variant flex justify-end gap-3">
               <Button variant="ghost" size="sm" onClick={() => c.setModalOpen(false)}>Cancel</Button>
-              <Button variant="primary" size="sm" onClick={c.submit} isLoading={c.isSubmitting} disabled={!c.reason.trim() || !c.selectedDateId || !c.approverId}>Submit request</Button>
+              <Can action={Action.CREATE} resource="attendance" minScope="SELF">
+                <Button variant="primary" size="sm" onClick={c.submit} isLoading={c.isSubmitting} disabled={!c.reason.trim() || !c.selectedDateId || !c.approverId}>Submit request</Button>
+              </Can>
             </div>
           </div>
         </div>

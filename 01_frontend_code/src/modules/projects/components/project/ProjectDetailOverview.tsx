@@ -11,6 +11,8 @@ import {
   StatusTimelineCard,
   formatProjectDate,
 } from './project-detail-helpers'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 type Props = {
   project: ProjectDetail
@@ -130,11 +132,13 @@ export function ProjectDetailOverview({
         <section className="bv-surface p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
             <h3 className="text-title-md font-semibold">Assigned Team</h3>
-            {!changingTeam && (
-              <Button type="button" variant="outline" size="sm" onClick={() => setChangingTeam(true)}>
-                {hasTeam ? 'Change team' : 'Assign team'}
-              </Button>
-            )}
+            <Can action={Action.UPDATE} resource="project">
+              {!changingTeam && (
+                <Button type="button" variant="outline" size="sm" onClick={() => setChangingTeam(true)}>
+                  {hasTeam ? 'Change team' : 'Assign team'}
+                </Button>
+              )}
+            </Can>
           </div>
 
           {changingTeam ? (
@@ -152,19 +156,21 @@ export function ProjectDetailOverview({
                 </p>
               )}
               <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  disabled={!selectedTeam || isAssigningTeam}
-                  isLoading={isAssigningTeam}
-                  onClick={() => {
-                    if (!selectedTeam) return
-                    void assignTeam(Number(selectedTeam.id))
-                  }}
-                >
-                  Assign
-                </Button>
+                <Can action={Action.UPDATE} resource="project">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    disabled={!selectedTeam || isAssigningTeam}
+                    isLoading={isAssigningTeam}
+                    onClick={() => {
+                      if (!selectedTeam) return
+                      void assignTeam(Number(selectedTeam.id))
+                    }}
+                  >
+                    Assign
+                  </Button>
+                </Can>
                 <Button
                   type="button"
                   variant="ghost"

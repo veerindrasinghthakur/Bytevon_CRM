@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 /** Two-step remove-member button: first click asks for confirmation. */
 export function RemoveMemberButton({
@@ -46,17 +48,19 @@ export function RemoveMemberButton({
   }
 
   return (
-    <button
-      type="button"
-      title={`Remove ${memberName}`}
-      aria-label={`Remove ${memberName}`}
-      disabled={disabled || employmentId == null}
-      onClick={() => setConfirming(true)}
-      className={cn('text-on-surface-variant hover:text-error disabled:opacity-40 p-1', className)}
-    >
-      <span className="material-symbols-outlined" aria-hidden>
-        delete
-      </span>
-    </button>
+    <Can action={Action.DELETE} resource="project">
+      <button
+        type="button"
+        title={`Remove ${memberName}`}
+        aria-label={`Remove ${memberName}`}
+        disabled={disabled || employmentId == null}
+        onClick={() => setConfirming(true)}
+        className={cn('text-on-surface-variant hover:text-error disabled:opacity-40 p-1', className)}
+      >
+        <span className="material-symbols-outlined" aria-hidden>
+          delete
+        </span>
+      </button>
+    </Can>
   )
 }

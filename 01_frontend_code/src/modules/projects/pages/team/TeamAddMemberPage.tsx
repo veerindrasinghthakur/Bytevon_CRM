@@ -10,6 +10,8 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { projectRoutes } from '../../routes'
 import { TEAM_MEMBER_ROLE_OPTIONS, useTeamAddMembers } from '../../hooks/team/use-team-add-members'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -52,22 +54,24 @@ export function TeamAddMemberPage() {
         title={`Add members — ${m.team?.name ?? ''}`}
         description="Pick employees, set a team role or a custom position, then add them to the team."
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            disabled={!m.canSubmit || m.submitting}
-            onClick={() =>
-              void m.submit().then((ok) => {
-                if (ok) goDetail()
-              })
-            }
-          >
-            {m.submitting
-              ? 'Adding…'
-              : m.selectionList.length > 0
-                ? `Add ${m.selectionList.length} member${m.selectionList.length === 1 ? '' : 's'}`
-                : 'Add members'}
-          </Button>
+          <Can action={Action.UPDATE} resource="project">
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!m.canSubmit || m.submitting}
+              onClick={() =>
+                void m.submit().then((ok) => {
+                  if (ok) goDetail()
+                })
+              }
+            >
+              {m.submitting
+                ? 'Adding…'
+                : m.selectionList.length > 0
+                  ? `Add ${m.selectionList.length} member${m.selectionList.length === 1 ? '' : 's'}`
+                  : 'Add members'}
+            </Button>
+          </Can>
         }
       />
 

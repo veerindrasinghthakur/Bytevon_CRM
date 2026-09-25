@@ -3,6 +3,8 @@ import { Button } from '@/shared/components/ui/Button'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { NoteReferenceType } from '@/shared/schema'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 import { useCreateNote, useNotes, useUpdateNote } from '../../hooks/note/use-notes'
 import type { BackendNote } from '../../api/note'
 
@@ -115,14 +117,16 @@ export function ProjectNotesTab({ projectId }: { projectId: number }) {
           </p>
         )}
         <div className="flex justify-end">
-          <Button
-            variant="primary"
-            size="sm"
-            disabled={!body.trim() || createMutation.isPending}
-            onClick={() => void submit()}
-          >
-            {createMutation.isPending ? 'Saving…' : 'Add note'}
-          </Button>
+          <Can action={Action.CREATE} resource="task">
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!body.trim() || createMutation.isPending}
+              onClick={() => void submit()}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Add note'}
+            </Button>
+          </Can>
         </div>
       </div>
 
@@ -173,14 +177,16 @@ export function ProjectNotesTab({ projectId }: { projectId: number }) {
                       className="w-full rounded-lg border border-outline-variant bg-surface px-3 py-1.5 text-body-sm focus:outline-none focus:border-secondary resize-y"
                     />
                     <div className="flex gap-2">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        disabled={updateMutation.isPending}
-                        onClick={() => void saveEdit()}
-                      >
-                        {updateMutation.isPending ? 'Saving…' : 'Save'}
-                      </Button>
+                      <Can action={Action.UPDATE} resource="task">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          disabled={updateMutation.isPending}
+                          onClick={() => void saveEdit()}
+                        >
+                          {updateMutation.isPending ? 'Saving…' : 'Save'}
+                        </Button>
+                      </Can>
                       <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>
                         Cancel
                       </Button>

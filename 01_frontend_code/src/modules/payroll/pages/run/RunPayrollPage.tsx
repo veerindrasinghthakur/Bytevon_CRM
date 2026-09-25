@@ -6,6 +6,8 @@ import { useRunPayroll } from '../../hooks/run/use-run-payroll'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 import { toast } from '@/shared/hooks/use-toast'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import type { PayrollEmployeeRow } from '../../types'
@@ -232,15 +234,17 @@ export function RunPayrollPage() {
                 </span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={handleGenerate}
-              disabled={isRunning}
-              className="w-full md:w-auto flex items-center justify-center gap-2 font-semibold text-body-md px-8 py-4 rounded-xl bg-primary text-on-primary hover:opacity-90 executive-shadow transition-all disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined">play_arrow</span>
-              {isRunning ? 'Starting…' : 'Generate Payroll'}
-            </button>
+            <Can action={Action.CREATE} resource="payroll">
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={isRunning}
+                className="w-full md:w-auto flex items-center justify-center gap-2 font-semibold text-body-md px-8 py-4 rounded-xl bg-primary text-on-primary hover:opacity-90 executive-shadow transition-all disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined">play_arrow</span>
+                {isRunning ? 'Starting…' : 'Generate Payroll'}
+              </button>
+            </Can>
           </section>
         </div>
       </div>

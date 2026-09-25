@@ -32,6 +32,8 @@ export const leaveRequestSchema = z.object({
   status: leaveStatusSchema,
   appliedOn: z.string(),
   approver: z.string().optional(),
+  approverEmploymentId: z.number().optional(),
+  approverEmployeeCode: z.string().optional(),
   approverRemarks: z.string().optional(),
   decidedOn: z.string().optional(),
   halfDay: z.enum(['start', 'end', 'both']).nullable().optional(),

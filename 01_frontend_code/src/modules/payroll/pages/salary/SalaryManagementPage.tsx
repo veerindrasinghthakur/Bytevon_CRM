@@ -9,6 +9,8 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useSalaryList } from '../../hooks/salary/use-salary-list'
 import { payrollRoutes } from '../../routes'
+import { Can, can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 /** List of all employees with gross salary only. Row → employee salary detail. */
 export function SalaryManagementPage() {
@@ -56,14 +58,16 @@ export function SalaryManagementPage() {
               query={search}
               label="Export"
             />
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">person_add</span>}
-              onClick={() => safeNavigate(navigate, { to: payrollRoutes.salaryNew })}
-            >
-              Add Payroll
-            </Button>
+            <Can action={Action.CREATE} resource="salary">
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">person_add</span>}
+                onClick={() => safeNavigate(navigate, { to: payrollRoutes.salaryNew })}
+              >
+                Add Payroll
+              </Button>
+            </Can>
           </div>
         }
       />
@@ -113,8 +117,12 @@ export function SalaryManagementPage() {
           icon="payments"
           title="No payroll configured yet"
           description="Create the first salary version for an employee to start the payroll flow: salary → calculate → approve → pay."
-          actionLabel="Add Payroll"
-          onAction={() => safeNavigate(navigate, { to: payrollRoutes.salaryNew })}
+          actionLabel={can({ action: Action.CREATE, resource: 'salary' }) ? 'Add Payroll' : undefined}
+          onAction={
+            can({ action: Action.CREATE, resource: 'salary' })
+              ? () => safeNavigate(navigate, { to: payrollRoutes.salaryNew })
+              : undefined
+          }
         />
       ) : (
       <section className="bv-surface overflow-hidden">

@@ -7,6 +7,8 @@ import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useTemplates } from '../../hooks/template/use-templates'
 import type { NotificationTemplate } from '../../api/template'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 type ModalMode = 'create' | 'edit' | null
 
@@ -91,14 +93,16 @@ export function TemplatesListPage() {
         title="Notification templates"
         description="Reusable title/body templates for notifications. Toggle active state per template."
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={openCreate}
-          >
-            Add template
-          </Button>
+          <Can action={Action.CREATE} resource="notification">
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+              onClick={openCreate}
+            >
+              Add template
+            </Button>
+          </Can>
         }
       />
 
@@ -158,6 +162,7 @@ export function TemplatesListPage() {
                     <td className="px-4 py-4 font-mono font-semibold text-on-surface">{t.code}</td>
                     <td className="px-4 py-4 text-body-sm text-on-surface max-w-md truncate">{t.title_template}</td>
                     <td className="px-4 py-4 text-center">
+                      <Can action={Action.UPDATE} resource="notification">
                       <button
                         type="button"
                         role="switch"
@@ -172,6 +177,7 @@ export function TemplatesListPage() {
                           className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${t.is_active ? 'translate-x-6' : 'translate-x-1'}`}
                         />
                       </button>
+                      </Can>
                     </td>
                     {/* Edit entry point hidden with the Actions column (modal editor kept).
                         Restore with the Actions <th> above when row actions return.
@@ -237,7 +243,9 @@ export function TemplatesListPage() {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={closeModal}>Cancel</Button>
-              <Button variant="primary" isLoading={isMutating} onClick={() => void save()}>Save</Button>
+              <Can action={modalMode === 'create' ? Action.CREATE : Action.UPDATE} resource="notification">
+                <Button variant="primary" isLoading={isMutating} onClick={() => void save()}>Save</Button>
+              </Can>
             </div>
           </div>
         </div>

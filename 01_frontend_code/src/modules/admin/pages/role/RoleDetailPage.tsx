@@ -16,6 +16,8 @@ import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 import { listAdminUsers } from '../../api/users'
 import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function RoleDetailPage() {
   const { roleId } = useParams({ strict: false }) as { roleId?: string }
@@ -160,43 +162,41 @@ export function RoleDetailPage() {
           <PageHeader title={role.name} description={role.description} />
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">content_copy</span>}
-            onClick={goDuplicate}
-          >
-            Duplicate
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
-            onClick={goEdit}
-          >
-            Edit Role
-          </Button>
+          <Can action={Action.UPDATE} resource="role">
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
+              onClick={goEdit}
+            >
+              Edit Role
+            </Button>
+          </Can>
           {role.status !== 'Archived' && (
-            <DeleteButton
-              iconOnly
-              entityLabel={role.name}
-              isLoading={deleteMutation.isPending}
-              onConfirm={() => deleteMutation.mutateAsync()}
-            />
+            <Can action={Action.DELETE} resource="role">
+              <DeleteButton
+                iconOnly
+                entityLabel={role.name}
+                isLoading={deleteMutation.isPending}
+                onConfirm={() => deleteMutation.mutateAsync()}
+              />
+            </Can>
           )}
           {role.status === 'Archived' && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-secondary text-secondary hover:bg-secondary/10"
-              leftIcon={
-                <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
-              }
-              isLoading={restoreMutation.isPending}
-              onClick={() => restoreMutation.mutate()}
-            >
-              Restore
-            </Button>
+            <Can action={Action.UPDATE} resource="role">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-secondary text-secondary hover:bg-secondary/10"
+                leftIcon={
+                  <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                }
+                isLoading={restoreMutation.isPending}
+                onClick={() => restoreMutation.mutate()}
+              >
+                Restore
+              </Button>
+            </Can>
           )}
         </div>
       </div>

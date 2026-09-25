@@ -8,6 +8,8 @@ import { cn } from '@/shared/lib/cn'
 import { myWorkRoutes } from '../../routes'
 import { useApplyLeave } from '../../hooks/use-apply-leave'
 import type { LeaveFormValues } from '../../types'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function ApplyLeavePage() {
   const {
@@ -309,15 +311,19 @@ export function ApplyLeavePage() {
               <Button type="button" variant="ghost" onClick={goBackToLeave}>
                 Cancel
               </Button>
-              <SaveDraftButton onClick={handleSaveDraft} />
-              <Button
-                type="submit"
-                variant="primary"
-                isLoading={isSubmitting || submitPending}
-                rightIcon={<span className="material-symbols-outlined text-sm">send</span>}
-              >
-                Submit Request
-              </Button>
+              <Can action={Action.CREATE} resource="leave_request" minScope="SELF">
+                <SaveDraftButton onClick={handleSaveDraft} />
+              </Can>
+              <Can action={Action.CREATE} resource="leave_request" minScope="SELF">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isLoading={isSubmitting || submitPending}
+                  rightIcon={<span className="material-symbols-outlined text-sm">send</span>}
+                >
+                  Submit Request
+                </Button>
+              </Can>
             </div>
           </div>
         </div>

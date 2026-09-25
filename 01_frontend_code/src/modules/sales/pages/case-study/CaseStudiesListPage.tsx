@@ -16,6 +16,9 @@ import { CaseStudyQuickContent } from '../../components/case-study/CaseStudyQuic
 import { CaseStudyMetricsCards } from '../../components/case-study/CaseStudyMetricsCards'
 import { CaseStudyCard } from '../../components/case-study/CaseStudyCard'
 import { shareCaseStudy } from '../../components/case-study/shareCaseStudy'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 
 export function CaseStudiesListPage() {
   const { openPanel } = useQuickOverview()
@@ -75,25 +78,33 @@ export function CaseStudiesListPage() {
           </nav>
         }
         actions={
-          <Button
-            variant="primary"
-            leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-            onClick={() =>
-              openCaseStudyOverview({
-                id: 'new',
-                title: 'New case study',
-                customer: '—',
-                industry: '—',
-                status: 'Draft',
-                impact: '—',
-                revenue: '—',
-                tags: [],
-                summary: 'Create flow not wired yet — use overview for drafts.',
-              })
-            }
-          >
-            New case study
-          </Button>
+          <div className="flex items-center gap-2">
+            <ExportButton
+              resource="lead"
+              filenameStem="case-studies"
+            />
+            <Can action={Action.CREATE} resource="lead">
+              <Button
+                variant="primary"
+                leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+                onClick={() =>
+                  openCaseStudyOverview({
+                    id: 'new',
+                    title: 'New case study',
+                    customer: '—',
+                    industry: '—',
+                    status: 'Draft',
+                    impact: '—',
+                    revenue: '—',
+                    tags: [],
+                    summary: 'Create flow not wired yet — use overview for drafts.',
+                  })
+                }
+              >
+                New case study
+              </Button>
+            </Can>
+          </div>
         }
       />
 

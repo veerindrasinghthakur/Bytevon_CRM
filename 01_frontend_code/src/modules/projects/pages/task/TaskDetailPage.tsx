@@ -11,7 +11,8 @@ import { EntitySearch } from '@/shared/components/forms/EntitySearch'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
-import { Can } from '@/shared/rbac'
+import { Can, useRbac } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 import { useTaskDetail } from '../../hooks/task/use-task-detail'
 import { TaskStatusBadge, TaskPriorityLabel } from '../../components/task/TaskStatusBadge'
 import { TaskDetailSidebar } from '../../components/task/TaskDetailSidebar'
@@ -44,6 +45,7 @@ export function TaskDetailPage() {
     teamId,
     needsTeam,
   } = useTaskDetail(Number.isFinite(id) ? id : undefined)
+  const { can } = useRbac()
 
   useDeletedRedirect({ ready: !isLoading, data: task, error: detailError, listTo: projectRoutes.tasks })
 
@@ -95,16 +97,18 @@ export function TaskDetailPage() {
               <Button variant="ghost" size="sm" onClick={cancelEdit} disabled={isSaving}>
                 Cancel
               </Button>
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                onClick={saveWithAssignee}
-                isLoading={isSaving}
-                disabled={needsTeam}
-              >
-                Save
-              </Button>
+              <Can action={Action.UPDATE} resource="task">
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={saveWithAssignee}
+                  isLoading={isSaving}
+                  disabled={needsTeam}
+                >
+                  Save
+                </Button>
+              </Can>
             </div>
           ) : (
             <div className="flex items-center gap-2 flex-wrap">
@@ -231,7 +235,7 @@ export function TaskDetailPage() {
             )}
           </section>
 
-          <NotesPanel title="Task notes" referenceType="TASK" referenceId={task.id} />
+          <NotesPanel title="Task notes" referenceType="TASK" referenceId={task.id} canAdd={can('CREATE', 'task')} />
         </div>
 
         <TaskDetailSidebar task={task} />

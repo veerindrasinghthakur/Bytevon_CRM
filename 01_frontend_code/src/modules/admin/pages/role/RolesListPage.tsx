@@ -22,6 +22,8 @@ import { useRolesList } from '../../hooks/role/use-roles'
 import type { AdminRole } from '../../types'
 import { cn } from '@/shared/lib/cn'
 import { categoryStyles } from '../../schemas/enums'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 function RoleQuickContent({ role }: { role: AdminRole }) {
   return (
@@ -180,14 +182,16 @@ export function RolesListPage() {
               selectedIds={selectionMode ? Array.from(selectedIds) : undefined}
               filenameStem="roles"
             />
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={goNew}
-            >
-              Add Role
-            </Button>
+            <Can action={Action.CREATE} resource="role">
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                onClick={goNew}
+              >
+                Add Role
+              </Button>
+            </Can>
           </div>
         }
       />

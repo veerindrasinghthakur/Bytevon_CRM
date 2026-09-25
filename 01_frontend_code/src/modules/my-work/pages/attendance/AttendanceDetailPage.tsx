@@ -11,6 +11,8 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { myWorkRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function AttendanceDetailPage() {
   const { attendanceId } = useParams({ strict: false }) as { attendanceId: string }
@@ -56,13 +58,15 @@ export function AttendanceDetailPage() {
         title={`Attendance · ${record.date}`}
         description={user ? `${user.name} · ${user.employeeId}` : undefined}
         actions={
-          <Button
-            variant="outline"
-            leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
-            onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })}
-          >
-            Request correction
-          </Button>
+          <Can action={Action.CREATE} resource="attendance" minScope="SELF">
+            <Button
+              variant="outline"
+              leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
+              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })}
+            >
+              Request correction
+            </Button>
+          </Can>
         }
       />
 

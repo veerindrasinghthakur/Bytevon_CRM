@@ -18,6 +18,8 @@ import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { DEPARTMENT_STATUS_OPTIONS } from '../schemas/enums'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -195,9 +197,11 @@ export function DepartmentCreatePage() {
           <Button type="button" variant="outline" onClick={goList}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" isLoading={saving}>
-            Save Department
-          </Button>
+          <Can action={Action.CREATE} resource="department">
+            <Button type="submit" variant="primary" isLoading={saving}>
+              Save Department
+            </Button>
+          </Can>
         </div>
       </form>
     </div>

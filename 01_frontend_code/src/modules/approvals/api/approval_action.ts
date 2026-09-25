@@ -46,14 +46,17 @@ export async function listApproverOptions(): Promise<ApproverOption[]> {
   return data
 }
 
+export type DecideAction = 'approve' | 'reject' | 'revision'
+
 export async function decideApproval(
   id: string,
-  decision: 'approve' | 'reject',
+  decision: DecideAction,
   comment?: string,
 ): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
     return
   }
+  // Single decide endpoint serves approve / reject / request-revision.
   await apiClient.post(`/approvals/${encodeURIComponent(id)}/${decision}`, { comment })
 }

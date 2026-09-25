@@ -18,6 +18,7 @@ import { can } from '@/shared/rbac'
 import { Action } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import type { ShiftRow } from '@/shared/schema'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 
 function ShiftQuickContent({ s }: { s: ShiftRow }) {
   return (
@@ -105,16 +106,22 @@ export function ShiftsListPage() {
             Working shift templates used on employment assignments
           </p>
         </div>
-        {canCreate && (
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-            onClick={() => safeNavigate(navigate, { to: isWorkforce ? '/workforce/shifts/new' : '/admin/settings/shifts/new' })}
-          >
-            Add shift
-          </Button>
-        )}
+        <div className="flex gap-2">
+          <ExportButton
+            resource="shift"
+            filenameStem="shifts"
+          />
+          {canCreate && (
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+              onClick={() => safeNavigate(navigate, { to: isWorkforce ? '/workforce/shifts/new' : '/admin/settings/shifts/new' })}
+            >
+              Add shift
+            </Button>
+          )}
+        </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bv-surface card-hover p-5">

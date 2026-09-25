@@ -149,6 +149,7 @@ class MonthlyAttendanceSummary(Base, IdentityMixin, TimestampMixin):
     week_off_days: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
     on_leave_days: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
     working_hours: Mapped[Decimal] = mapped_column(Numeric(8, 2), nullable=False, default=0)
+    break_minutes: Mapped[Decimal | None] = mapped_column(Numeric(8, 2), nullable=True)
     overtime_hours: Mapped[Decimal | None] = mapped_column(Numeric(8, 2), nullable=True)
     late_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     early_departure_count: Mapped[int | None] = mapped_column(Integer, nullable=True)

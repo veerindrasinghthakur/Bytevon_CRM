@@ -8,6 +8,9 @@ import { usePositions } from '@/modules/admin/hooks/position/use-positions'
 import type { PositionRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 
 export function PositionsListPage({ basePath = '/workforce/positions' }: { basePath?: string }) {
   const navigate = useNavigate()
@@ -25,14 +28,22 @@ export function PositionsListPage({ basePath = '/workforce/positions' }: { baseP
         title="Positions"
         description="Job positions assigned via employment_assignments"
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => safeNavigate(navigate, { to: `${basePath}/new` })}
-          >
-            Create Position
-          </Button>
+          <div className="flex gap-2">
+            <ExportButton
+              resource="position"
+              filenameStem="positions"
+            />
+            <Can action={Action.CREATE} resource="position">
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                onClick={() => safeNavigate(navigate, { to: `${basePath}/new` })}
+              >
+                Create Position
+              </Button>
+            </Can>
+          </div>
         }
       />
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">

@@ -4,6 +4,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listLeavePolicies } from '../../api/leave'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 
 export function LeavePoliciesPage() {
   const [showHistorical, setShowHistorical] = useState(false)
@@ -23,14 +24,20 @@ export function LeavePoliciesPage() {
         title="Leave policies"
         description="Versioned leave configuration (effective dating)"
         actions={
-          <label className="flex items-center gap-2 text-body-sm text-on-surface-variant cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showHistorical}
-              onChange={(e) => setShowHistorical(e.target.checked)}
+          <div className="flex items-center gap-2">
+            <ExportButton
+              resource="leave_policy"
+              filenameStem="leave-policies"
             />
-            Show historical versions
-          </label>
+            <label className="flex items-center gap-2 text-body-sm text-on-surface-variant cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showHistorical}
+                onChange={(e) => setShowHistorical(e.target.checked)}
+              />
+              Show historical versions
+            </label>
+          </div>
         }
       />
       <div className="bv-surface overflow-hidden">

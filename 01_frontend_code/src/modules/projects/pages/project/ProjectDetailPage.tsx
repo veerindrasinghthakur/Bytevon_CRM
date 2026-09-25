@@ -18,6 +18,8 @@ import { ProjectDetailTasksTab } from '../../components/project/ProjectDetailTas
 import { ProjectDetailDocumentsTab } from '../../components/project/ProjectDetailDocumentsTab'
 import { ProjectNotesTab } from '../../components/project/ProjectNotesTab'
 import { projectRoutes } from '../../routes'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function ProjectDetailPage() {
   const navigate = useNavigate()
@@ -141,14 +143,18 @@ export function ProjectDetailPage() {
               <Button variant="ghost" size="sm" onClick={cancelEdit} disabled={isSaving}>
                 Cancel
               </Button>
-              <Button type="button" variant="primary" size="sm" onClick={() => void save()} isLoading={isSaving}>
-                Save
-              </Button>
+              <Can action={Action.UPDATE} resource="project">
+                <Button type="button" variant="primary" size="sm" onClick={() => void save()} isLoading={isSaving}>
+                  Save
+                </Button>
+              </Can>
             </div>
           ) : (
             <div className="flex items-center gap-2 flex-wrap">
               <ProjectStatusBadge status={project.status} />
-              <EditButton onClick={startEditing} label="Edit Project" />
+              <Can action={Action.UPDATE} resource="project">
+                <EditButton onClick={startEditing} label="Edit Project" />
+              </Can>
               <RefreshButton iconOnly onClick={() => refetch()} />
             </div>
           )

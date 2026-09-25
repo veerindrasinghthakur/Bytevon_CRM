@@ -25,6 +25,8 @@ import {
 } from '../../schemas/enums'
 import { notificationRoutes } from '../../routes'
 import type { NotificationPriority } from '../../types'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 function wrapSelection(
   textarea: HTMLTextAreaElement,
@@ -144,16 +146,20 @@ export function ComposeNotificationPage() {
           >
             Discard
           </Button>
-          <SaveDraftButton isLoading={draftMut.isPending} onClick={() => handleSubmit(onSaveDraft)()} />
-          <Button
-            variant="primary"
-            size="md"
-            leftIcon={<span className="material-symbols-outlined text-[20px]">send</span>}
-            isLoading={sendMut.isPending || isSubmitting}
-            onClick={() => handleSubmit(onSubmit)()}
-          >
-            {scheduleMode === 'later' ? 'Schedule Send' : 'Send Notification'}
-          </Button>
+          <Can action={Action.CREATE} resource="notification">
+            <SaveDraftButton isLoading={draftMut.isPending} onClick={() => handleSubmit(onSaveDraft)()} />
+          </Can>
+          <Can action={Action.CREATE} resource="notification">
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={<span className="material-symbols-outlined text-[20px]">send</span>}
+              isLoading={sendMut.isPending || isSubmitting}
+              onClick={() => handleSubmit(onSubmit)()}
+            >
+              {scheduleMode === 'later' ? 'Schedule Send' : 'Send Notification'}
+            </Button>
+          </Can>
         </div>
       </div>
 

@@ -22,6 +22,7 @@ import {
   useUpdateShift,
 } from '../../hooks/shift/use-shifts'
 import { emptyShift } from '@/shared/mock/data/workforce'
+import { Can } from '@/shared/rbac'
 
 type ShiftStaffRow = {
   employmentId: number
@@ -224,34 +225,42 @@ export function ShiftDetailPage() {
                 Cancel
               </Button>
             )}
-            <Button variant="primary" onClick={onSave} isLoading={saving}>
-              {isNew ? 'Create' : 'Save'}
-            </Button>
+            <Can action={Action.CREATE} resource="shift">
+              <Can action={Action.UPDATE} resource="shift">
+                <Button variant="primary" onClick={onSave} isLoading={saving}>
+                  {isNew ? 'Create' : 'Save'}
+                </Button>
+              </Can>
+            </Can>
           </div>
         ) : (
           <div className="flex gap-2">
             {canUpdate && <EditButton variant="primary" onClick={beginEdit} />}
             {!isNew && shift && !shift.is_archived && (
-              <DeleteButton
-                iconOnly
-                entityLabel={shift.name}
-                isLoading={deleteMut.isPending}
-                onConfirm={handleDelete}
-              />
+              <Can action={Action.DELETE} resource="shift">
+                <DeleteButton
+                  iconOnly
+                  entityLabel={shift.name}
+                  isLoading={deleteMut.isPending}
+                  onConfirm={handleDelete}
+                />
+              </Can>
             )}
             {!isNew && shift?.is_archived && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-secondary text-secondary hover:bg-secondary/10"
-                leftIcon={
-                  <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
-                }
-                isLoading={restoreMut.isPending}
-                onClick={handleRestore}
-              >
-                Restore
-              </Button>
+              <Can action={Action.UPDATE} resource="shift">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-secondary text-secondary hover:bg-secondary/10"
+                  leftIcon={
+                    <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                  }
+                  isLoading={restoreMut.isPending}
+                  onClick={handleRestore}
+                >
+                  Restore
+                </Button>
+              </Can>
             )}
           </div>
         )}

@@ -6,6 +6,8 @@ import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listDepartments } from '../../api/departments'
 import { createEmploymentAssignment } from '../../api/employment'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 /**
  * Popup to search and select a department, then link it to the employment
@@ -125,15 +127,17 @@ export function LinkDepartmentModal({
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            type="button"
-            variant="primary"
-            disabled={!selected || saving}
-            isLoading={saving}
-            onClick={() => void submit()}
-          >
-            Link department
-          </Button>
+          <Can action={Action.UPDATE} resource="employment">
+            <Button
+              type="button"
+              variant="primary"
+              disabled={!selected || saving}
+              isLoading={saving}
+              onClick={() => void submit()}
+            >
+              Link department
+            </Button>
+          </Can>
         </div>
       </div>
     </div>

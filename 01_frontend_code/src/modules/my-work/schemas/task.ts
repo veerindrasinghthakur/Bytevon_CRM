@@ -17,6 +17,8 @@ export const myTaskSchema = z.object({
   id: z.string(),
   name: z.string(),
   project: z.string().optional(),
+  projectId: z.number().optional(),
+  projectName: z.string().optional(),
   priority: taskPrioritySchema,
   dueDate: z.string(),
   status: taskStatusSchema,

@@ -20,6 +20,8 @@ import {
 } from '../../schemas/task-form'
 import { createMyTask, listMyProjects } from '../../api/my-work'
 import { toast } from '@/shared/hooks/use-toast'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 const PRIORITIES: MyTaskPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 
@@ -219,9 +221,11 @@ export function MyTaskCreatePage() {
             <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate, { to: myWorkRoutes.tasks })}>
               Cancel
             </Button>
-            <Button type="submit" variant="primary" isLoading={createMut.isPending}>
-              Create task
-            </Button>
+            <Can action={Action.CREATE} resource="task" minScope="SELF">
+              <Button type="submit" variant="primary" isLoading={createMut.isPending}>
+                Create task
+              </Button>
+            </Can>
           </div>
         </form>
       )}

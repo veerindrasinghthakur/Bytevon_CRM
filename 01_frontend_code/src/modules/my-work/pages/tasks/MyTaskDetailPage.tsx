@@ -11,6 +11,8 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { priorityClass, statusDot } from '../../schemas/enums'
 import { myWorkRoutes } from '../../routes'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function MyTaskDetailPage() {
   const { taskId } = useParams({ strict: false }) as { taskId: string }
@@ -27,7 +29,15 @@ export function MyTaskDetailPage() {
     enabled: Boolean(taskId),
   })
 
-  useDeletedRedirect({ ready: !isLoading, data: task ?? null, error, listTo: myWorkRoutes.tasks })
+  const isNumericIdEarly = /^\d+$/.test(taskId ?? '')
+  // Numeric IDs belong to Projects (/projects/tasks/:id) — keep the inline
+  // error + cross-link visible instead of bouncing back to the list.
+  useDeletedRedirect({
+    ready: !isLoading && !isNumericIdEarly,
+    data: task ?? null,
+    error,
+    listTo: myWorkRoutes.tasks,
+  })
 
   if (isLoading) {
     return (
@@ -38,34 +48,65 @@ export function MyTaskDetailPage() {
     )
   }
 
+  const isNumericId = /^\d+$/.test(taskId ?? '')
+
   if (isError || !task) {
     return (
-      <div className="animate-fade-in">
+      <div className="animate-fade-in space-y-4">
         <PageHeader title="Task details" showBack />
         <ErrorState
           title="Task not found"
-          description={getApiErrorMessage(error, 'This task does not exist or you do not have access to it.')}
+          description={getApiErrorMessage(
+            error,
+            isNumericId
+              ? `My-work task "${taskId}" was not found. Numeric IDs belong to Projects — try opening it there.`
+              : 'This task does not exist or you do not have access to it.',
+          )}
           onRetry={() => void refetch()}
           onBack={() => safeNavigate(navigate, { to: myWorkRoutes.tasks })}
         />
+        {isNumericId && (
+          <div className="bv-surface p-4 flex flex-wrap items-center gap-3">
+            <p className="text-body-sm text-on-surface-variant">
+              Looking for project task #{taskId}?
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                safeNavigate(navigate, {
+                  to: '/projects/tasks/$taskId',
+                  params: { taskId },
+                })
+              }
+            >
+              Open in Projects
+            </Button>
+          </div>
+        )}
       </div>
     )
   }
+
+  const projectName = task.projectName ?? task.project
+  const projectId = task.projectId
 
   return (
     <div className="space-y-8 animate-fade-in">
       <PageHeader
         title={task.name}
-        description={task.project ?? 'No project linked'}
+        description={projectName ?? 'No project linked'}
         showBack
         actions={
-          <Button
-            variant="outline"
-            leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-            onClick={() => console.info('Edit task', task.id)}
-          >
-            Edit
-          </Button>
+          <Can action={Action.UPDATE} resource="task" minScope="SELF">
+            <Button
+              variant="outline"
+              leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
+              onClick={() => console.info('Edit task', task.id)}
+            >
+              Edit
+            </Button>
+          </Can>
         }
       />
 
@@ -74,8 +115,8 @@ export function MyTaskDetailPage() {
           <section className="bv-surface p-6">
             <h3 className="text-title-lg text-on-background mb-4">Overview</h3>
             <p className="text-body-md text-on-surface-variant">
-              {task.project
-                ? `Work item under project “${task.project}”. Estimated effort ${task.estimatedHours ?? 'not set'}.`
+              {projectName
+                ? `Work item under project “${projectName}”. Estimated effort ${task.estimatedHours ?? 'not set'}.`
                 : 'Personal task with no project link yet.'}
             </p>
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -118,7 +159,7 @@ export function MyTaskDetailPage() {
             </div>
             <div>
               <p className="text-label-sm text-on-surface-variant">Project</p>
-              <p className="text-body-md text-on-surface mt-0.5">{task.project ?? '—'}</p>
+              <p className="text-body-md text-on-surface mt-0.5">{projectName ?? '—'}</p>
             </div>
             <div>
               <p className="text-label-sm text-on-surface-variant">Assignee</p>
@@ -132,16 +173,23 @@ export function MyTaskDetailPage() {
               <p className="text-label-sm text-on-surface-variant">Est. time</p>
               <p className="text-body-md text-on-surface mt-0.5">{task.estimatedHours ?? '—'}</p>
             </div>
+            <div className="pt-3 mt-1 border-t border-outline-variant text-caption text-on-surface-variant">
+              {projectName && projectId != null
+                ? `${projectName} · PROJ-${projectId}`
+                : (projectName ?? 'No project linked')}
+            </div>
           </section>
 
           <section className="bv-surface p-4 space-y-2">
-            <Button
-              variant="primary"
-              className="w-full"
-              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.tasksNew })}
-            >
-              Create task
-            </Button>
+            <Can action={Action.CREATE} resource="task" minScope="SELF">
+              <Button
+                variant="primary"
+                className="w-full"
+                onClick={() => safeNavigate(navigate, { to: myWorkRoutes.tasksNew })}
+              >
+                Create task
+              </Button>
+            </Can>
             <Button
               variant="outline"
               className="w-full"

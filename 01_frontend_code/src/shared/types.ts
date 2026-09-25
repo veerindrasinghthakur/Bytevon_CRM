@@ -261,6 +261,8 @@ export interface NotesPanelProps {
   referenceType?: NoteReferenceType
   referenceId?: number
   onAdd?: (body: string) => Promise<NoteItem | void> | NoteItem | void
+  /** When false, the add-note form is hidden but history stays visible. Defaults to true. */
+  canAdd?: boolean
 }
 
 export interface ActivityItem {

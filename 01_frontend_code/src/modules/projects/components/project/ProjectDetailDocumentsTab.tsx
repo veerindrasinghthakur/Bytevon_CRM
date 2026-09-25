@@ -1,5 +1,7 @@
 import { UploadButton } from '@/shared/components/forms/UploadButton'
 import type { ProjectDocument } from '../../types'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 type UploadMutation = {
   mutateAsync: (files: File[]) => Promise<unknown>
@@ -24,13 +26,15 @@ export function ProjectDetailDocumentsTab({
     <section className="bv-surface overflow-hidden">
       <div className="px-5 py-4 border-b border-outline-variant flex justify-between items-center gap-3 flex-wrap">
         <h3 className="font-semibold text-title-md">Documents</h3>
-        <UploadButton
-          onFiles={(files) => {
-            const fileArray = files instanceof FileList ? Array.from(files) : files
-            void uploadDoc.mutateAsync(fileArray).then(() => onUploaded()).catch(() => {})
-          }}
-          isLoading={uploadDoc.isPending}
-        />
+        <Can action={Action.UPDATE} resource="project">
+          <UploadButton
+            onFiles={(files) => {
+              const fileArray = files instanceof FileList ? Array.from(files) : files
+              void uploadDoc.mutateAsync(fileArray).then(() => onUploaded()).catch(() => {})
+            }}
+            isLoading={uploadDoc.isPending}
+          />
+        </Can>
       </div>
       {uploadDoc.isError && (
         <p className="px-5 py-2 text-body-sm text-error" role="alert">

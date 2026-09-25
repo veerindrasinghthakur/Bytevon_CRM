@@ -11,6 +11,9 @@ import { createHolidayCalendar, deleteHolidayCalendar } from '../../api/organiza
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 
 export function HolidayCalendarsPage() {
   const navigate = useNavigate()
@@ -60,14 +63,22 @@ export function HolidayCalendarsPage() {
             Holiday calendars linked to office locations — open a calendar to manage holidays
           </p>
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-          onClick={() => setCreating(true)}
-        >
-          Create Calendar
-        </Button>
+        <div className="flex gap-2">
+          <ExportButton
+            resource="holiday_calendar"
+            filenameStem="holiday-calendars"
+          />
+          <Can action={Action.CREATE} resource="holiday_calendar">
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+              onClick={() => setCreating(true)}
+            >
+              Create Calendar
+            </Button>
+          </Can>
+        </div>
       </div>
 
       {creating && (
@@ -126,28 +137,32 @@ export function HolidayCalendarsPage() {
             <p className="mt-3 text-body-sm text-on-surface-variant">View holidays inside this calendar →</p>
             {!c.is_archived && (
               <div className="mt-3 flex justify-end" onClick={(e) => e.preventDefault()}>
-                <DeleteButton
-                  iconOnly
-                  entityLabel={c.name}
-                  isLoading={deleteMut.isPending}
-                  onConfirm={() => deleteMut.mutateAsync(c.id)}
-                />
+                <Can action={Action.DELETE} resource="holiday_calendar">
+                  <DeleteButton
+                    iconOnly
+                    entityLabel={c.name}
+                    isLoading={deleteMut.isPending}
+                    onConfirm={() => deleteMut.mutateAsync(c.id)}
+                  />
+                </Can>
               </div>
             )}
             {c.is_archived && (
               <div className="mt-3 flex justify-end" onClick={(e) => e.preventDefault()}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-secondary text-secondary hover:bg-secondary/10"
-                  leftIcon={
-                    <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
-                  }
-                  isLoading={restoreMut.isPending}
-                  onClick={() => restoreMut.mutate(c.id)}
-                >
-                  Restore
-                </Button>
+                <Can action={Action.UPDATE} resource="holiday_calendar">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-secondary text-secondary hover:bg-secondary/10"
+                    leftIcon={
+                      <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                    }
+                    isLoading={restoreMut.isPending}
+                    onClick={() => restoreMut.mutate(c.id)}
+                  >
+                    Restore
+                  </Button>
+                </Can>
               </div>
             )}
           </Link>

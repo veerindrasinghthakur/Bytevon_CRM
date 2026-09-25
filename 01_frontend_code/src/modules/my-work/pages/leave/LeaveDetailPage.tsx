@@ -15,18 +15,24 @@ import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { toast } from '@/shared/hooks/use-toast'
 import { myWorkRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
+import { useLeaveThread } from '../../hooks/use-leave-thread'
 
 export function LeaveDetailPage() {
   const { leaveId } = useParams({ strict: false }) as { leaveId: string }
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [confirm, setConfirm] = useState<'withdraw' | 'request-cancel' | null>(null)
+  const [comment, setComment] = useState('')
+  const [cancelRequested, setCancelRequested] = useState(false)
   const requestCancelMut = useMutation({
     mutationFn: (id: string) => requestLeaveCancel(id),
     onSuccess: () => {
       setConfirm(null)
+      setCancelRequested(true)
       void invalidate.myWorkLeave(qc)
-      toast.success('Cancellation request sent to your approver')
+      toast.success('Cancellation sent to your approver for approval')
     },
     onError: (err: unknown) => {
       toast.error(getApiErrorMessage(err, 'Could not request cancellation'))
@@ -59,21 +65,47 @@ export function LeaveDetailPage() {
     queryFn: getMyWorkOverview,
   })
 
+  const matchLeave = (r: { id: string }) =>
+    r.id === leaveId ||
+    r.id.toLowerCase() === `lv-${leaveId}`.toLowerCase() ||
+    r.id.replace(/^lv-/i, '') === leaveId.replace(/^lv-/i, '')
+
   useDeletedRedirect({
     ready: !listQuery.isLoading,
-    data: listQuery.data?.items.find((r) => r.id === leaveId) ?? null,
+    data: listQuery.data?.items.find(matchLeave) ?? null,
     error: listQuery.error,
     listTo: myWorkRoutes.leave,
   })
+
+  const reqMaybe = listQuery.data?.items.find(matchLeave)
+  const thread = useLeaveThread(leaveId ?? '', reqMaybe ? {
+    reason: reqMaybe.reason,
+    appliedOn: reqMaybe.appliedOn,
+    approver: reqMaybe.approver,
+    approverRemarks: reqMaybe.approverRemarks,
+    decidedOn: reqMaybe.decidedOn,
+  } : undefined)
 
   if (listQuery.isLoading || balancesQuery.isLoading) {
     return <PageLoadingSkeleton />
   }
 
-  const req =
-    listQuery.data?.items.find((r) => r.id === leaveId) ?? listQuery.data?.items[0]
+  const req = reqMaybe
   const leaveBalances = balancesQuery.data ?? []
   const currentUser = overviewQuery.data?.user
+
+  const resendToApprover = () => {
+    if (!req) return
+    try {
+      sessionStorage.setItem(
+        'leave-reapply',
+        JSON.stringify({ type: req.type, from: req.from, to: req.to, reason: req.reason }),
+      )
+    } catch {
+      // Storage unavailable — apply page still opens blank.
+    }
+    safeNavigate(navigate, { to: myWorkRoutes.leaveApply })
+  }
 
   if (!req) {
     return (
@@ -89,6 +121,27 @@ export function LeaveDetailPage() {
   const totalAllocated = leaveBalances.reduce((s, b) => s + b.total, 0) || 1
   const remainingAfter =
     totalRemaining - (req.status === 'Pending' || req.status === 'Approved' ? req.days : 0)
+  const approverLabel = req.approver
+    ? `${req.approver}${req.approverEmploymentId != null ? ` (Emp #${req.approverEmploymentId})` : req.approverEmployeeCode ? ` (${req.approverEmployeeCode})` : ''}`
+    : null
+  const isSelfApprover =
+    !!req.approver &&
+    !!currentUser &&
+    (req.approver === currentUser.name ||
+      (req.approverEmploymentId != null &&
+        String(req.approverEmploymentId) === String(currentUser.employeeId).replace(/\D/g, '')))
+  const managerLabel = approverLabel && !isSelfApprover ? approverLabel : approverLabel
+  const withdrawButton = (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={withdrawMut.isPending}
+      leftIcon={<span className="material-symbols-outlined text-base">cancel</span>}
+      onClick={() => setConfirm('withdraw')}
+    >
+      {withdrawMut.isPending ? 'Withdrawing…' : 'Withdraw'}
+    </Button>
+  )
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -110,27 +163,28 @@ export function LeaveDetailPage() {
               {req.status}
             </span>
             {req.status === 'Pending' && (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={withdrawMut.isPending}
-                leftIcon={<span className="material-symbols-outlined text-base">cancel</span>}
-                onClick={() => setConfirm('withdraw')}
+              <Can
+                action={Action.UPDATE}
+                resource="leave_request"
+                minScope="SELF"
+                fallback={withdrawButton}
               >
-                {withdrawMut.isPending ? 'Withdrawing…' : 'Withdraw'}
-              </Button>
+                {withdrawButton}
+              </Can>
             )}
             {req.status === 'Approved' &&
               req.from >= new Date().toISOString().slice(0, 10) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={requestCancelMut.isPending}
-                  leftIcon={<span className="material-symbols-outlined text-base">cancel</span>}
-                  onClick={() => setConfirm('request-cancel')}
-                >
-                  {requestCancelMut.isPending ? 'Requesting…' : 'Request cancellation'}
-                </Button>
+                <Can action={Action.UPDATE} resource="leave_request" minScope="SELF">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={requestCancelMut.isPending}
+                    leftIcon={<span className="material-symbols-outlined text-base">cancel</span>}
+                    onClick={() => setConfirm('request-cancel')}
+                  >
+                    {requestCancelMut.isPending ? 'Requesting…' : 'Request cancellation'}
+                  </Button>
+                </Can>
               )}
           </div>
         }
@@ -199,29 +253,104 @@ export function LeaveDetailPage() {
               <span className="material-symbols-outlined">forum</span> Discussion & Approver Notes
             </h3>
             <div className="space-y-5">
-              {req.approver && (
-                <div className="flex gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined">person</span>
-                  </div>
-                  <div className="flex-1 bg-surface-container-low rounded-xl p-4">
-                    <div className="flex flex-wrap justify-between gap-2 mb-1">
-                      <p className="text-label-md font-bold text-on-surface">
-                        {req.approver} <span className="font-normal text-on-surface-variant">· Manager</span>
-                      </p>
-                      <span className="text-label-sm text-on-surface-variant">{req.appliedOn}</span>
-                    </div>
-                    <p className="text-body-sm text-on-surface">
-                      {req.approverRemarks ||
-                        (req.status === 'Approved'
-                          ? 'Request approved. Enjoy your time off.'
-                          : req.status === 'Rejected'
-                            ? 'Request could not be approved at this time.'
-                            : 'Request received and under review.')}
+              <div className="flex gap-3">
+                <div className="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined">person</span>
+                </div>
+                <div className="flex-1 bg-surface-container-low rounded-xl p-4">
+                  <div className="flex flex-wrap justify-between gap-2 mb-1">
+                    <p className="text-label-md font-bold text-on-surface">
+                      {currentUser?.name ?? 'You'}{' '}
+                      <span className="font-normal text-on-surface-variant">· Requester</span>
                     </p>
+                    <span className="text-label-sm text-on-surface-variant">{req.appliedOn}</span>
+                  </div>
+                  <p className="text-body-sm text-on-surface">{req.reason}</p>
+                </div>
+              </div>
+              {thread.isLoading ? (
+                <p className="text-body-sm text-on-surface-variant">Loading comments…</p>
+              ) : (
+                thread.entries.map((entry) => (
+                  <div key={entry.id} className="flex gap-3">
+                    <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined">supervisor_account</span>
+                    </div>
+                    <div className="flex-1 bg-surface-container-low rounded-xl p-4">
+                      <div className="flex flex-wrap justify-between gap-2 mb-1">
+                        <p className="text-label-md font-bold text-on-surface">
+                          {entry.author}
+                          {entry.authorEmploymentId != null ? ` (Emp #${entry.authorEmploymentId})` : ''}{' '}
+                          <span className="font-normal text-on-surface-variant">· Manager</span>
+                        </p>
+                        <span className="text-label-sm text-on-surface-variant">{entry.createdAt}</span>
+                      </div>
+                      <p className="text-body-sm text-on-surface">{entry.body}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+              {!thread.isLoading && thread.entries.length === 0 && (
+                <>
+                  {managerLabel && (req.status !== 'Pending' || req.approverRemarks || req.decidedOn) && (
+                    <div className="flex gap-3">
+                      <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined">supervisor_account</span>
+                      </div>
+                      <div className="flex-1 bg-surface-container-low rounded-xl p-4">
+                        <div className="flex flex-wrap justify-between gap-2 mb-1">
+                          <p className="text-label-md font-bold text-on-surface">
+                            {managerLabel} <span className="font-normal text-on-surface-variant">· Manager</span>
+                          </p>
+                          <span className="text-label-sm text-on-surface-variant">{req.decidedOn ?? req.appliedOn}</span>
+                        </div>
+                        <p className="text-body-sm text-on-surface">
+                          {req.approverRemarks ||
+                            (req.status === 'Approved'
+                              ? 'Request approved. Enjoy your time off.'
+                              : req.status === 'Rejected'
+                                ? 'Request could not be approved at this time.'
+                                : 'Request received and under review.')}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {req.status === 'Pending' && !req.approverRemarks && !req.decidedOn && (
+                    <p className="text-body-sm text-on-surface-variant">
+                      {managerLabel ? `Waiting on ${managerLabel}.` : 'Waiting on your manager.'}
+                    </p>
+                  )}
+                </>
+              )}
+              <div className="flex gap-3 pt-1">
+                <div className="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined">chat</span>
+                </div>
+                <div className="flex-1 space-y-2">
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={2}
+                    placeholder="Add a comment for your approver…"
+                    className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm resize-none focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={!comment.trim() || thread.isPosting}
+                      onClick={() => {
+                        const text = comment.trim()
+                        if (!text) return
+                        setComment('')
+                        thread.postComment(text)
+                      }}
+                    >
+                      {thread.isPosting ? 'Posting…' : 'Post comment'}
+                    </Button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </section>
         </div>
@@ -247,7 +376,7 @@ export function LeaveDetailPage() {
                   <div>
                     <p className="text-label-md font-bold text-secondary">Manager Review</p>
                     <p className="text-label-sm text-on-surface-variant">
-                      In Progress{req.approver ? ` · waiting on ${req.approver}` : ''}
+                      In Progress{managerLabel ? ` · waiting on ${managerLabel}` : ''}
                     </p>
                   </div>
                 </div>
@@ -267,7 +396,7 @@ export function LeaveDetailPage() {
                   <div>
                     <p className="text-label-md font-bold text-on-surface">
                       {req.status === 'Approved' ? 'Approved' : 'Rejected'}
-                      {req.approver ? ` by ${req.approver}` : ''}
+                      {managerLabel ? ` by ${managerLabel}` : ''}
                     </p>
                     <p className="text-label-sm text-on-surface-variant">
                       {[req.decidedOn, req.approverRemarks].filter(Boolean).join(' · ') || '—'}
@@ -312,10 +441,15 @@ export function LeaveDetailPage() {
           <section className="bv-surface p-5 space-y-3">
             <div>
               <p className="text-label-sm text-on-surface-variant">Approver</p>
-              <p className="text-body-md text-on-surface mt-0.5">{req.approver ?? '—'}</p>
+              <p className="text-body-md text-on-surface mt-0.5">{managerLabel ?? '—'}</p>
             </div>
             <div className="pt-2 space-y-2">
-              <Button variant="primary" className="w-full" onClick={() => safeNavigate(navigate, { to: myWorkRoutes.leaveApply })}>
+              {(cancelRequested || req.status === 'Cancelled') && (
+                <p className="text-label-sm text-on-surface-variant bg-surface-container-low rounded-lg p-3">
+                  Cancellation sent to your approver for approval. You will be notified once decided.
+                </p>
+              )}
+              <Button variant="primary" className="w-full" onClick={resendToApprover}>
                 Apply again
               </Button>
               <Button variant="ghost" className="w-full" onClick={() => safeNavigate(navigate, { to: myWorkRoutes.leave })}>

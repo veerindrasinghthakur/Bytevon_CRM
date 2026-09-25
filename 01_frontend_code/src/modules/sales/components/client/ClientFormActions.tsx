@@ -1,4 +1,6 @@
 import { Button } from '@/shared/components/ui/Button'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 type Props = {
   isEdit: boolean
@@ -10,9 +12,11 @@ type Props = {
 export function ClientFormActions({ isEdit, saving, onCancel }: Props) {
   return (
     <div className="flex items-center gap-3">
-      <Button type="submit" variant="primary" isLoading={saving}>
-        {isEdit ? 'Save changes' : 'Create client'}
-      </Button>
+      <Can action={isEdit ? Action.UPDATE : Action.CREATE} resource="client">
+        <Button type="submit" variant="primary" isLoading={saving}>
+          {isEdit ? 'Save changes' : 'Create client'}
+        </Button>
+      </Can>
       <Button type="button" variant="ghost" onClick={onCancel}>
         Cancel
       </Button>

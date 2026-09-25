@@ -4,6 +4,8 @@ import { Select } from '@/shared/components/ui/Select'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../../routes'
 import { MANUAL_ATTENDANCE_REASONS } from '../../schemas/enums'
+import { Can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 
 export function ManualAttendanceForm({
   manualDate,
@@ -131,9 +133,11 @@ export function ManualAttendanceForm({
           >
             Discard
           </Button>
-          <Button variant="primary" onClick={onSubmit}>
-            Request Approval
-          </Button>
+          <Can action={Action.CREATE} resource="attendance" minScope="SELF">
+            <Button variant="primary" onClick={onSubmit}>
+              Request Approval
+            </Button>
+          </Can>
         </div>
       </div>
     </div>

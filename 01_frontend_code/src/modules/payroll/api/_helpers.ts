@@ -106,7 +106,10 @@ function mapStatus(s: unknown): PayrollEmployeeRow['status'] {
 }
 
 export function normalizeEmployee(raw: Record<string, unknown>): PayrollEmployeeRow {
-  const name = String(raw.name ?? `Employee #${raw.employmentId ?? raw.id ?? ''}`)
+  const employmentIdRaw = raw.employmentId ?? raw.employment_id ?? raw.id ?? ''
+  const name = String(
+    raw.name ?? raw.full_name ?? raw.fullName ?? `Employee #${employmentIdRaw}`,
+  )
   const initials =
     String(raw.initials ?? '')
       .trim() ||
@@ -128,16 +131,25 @@ export function normalizeEmployee(raw: Record<string, unknown>): PayrollEmployee
         ? String(raw.employmentId ?? raw.employment_id)
         : undefined,
     name,
-    code: String(raw.code ?? `EMP-${raw.employmentId ?? raw.id ?? ''}`),
-    role: String(raw.role ?? '—'),
-    department: String(raw.department ?? '—'),
+    code: String(
+      raw.code ?? raw.employee_code ?? raw.employeeCode ?? `EMP-${employmentIdRaw}`,
+    ),
+    role: String(
+      raw.role ?? raw.role_name ?? raw.title ?? raw.position ?? raw.designation ?? '—',
+    ),
+    department: String(
+      raw.department ?? raw.department_name ?? raw.dept ?? '—',
+    ),
     initials,
     gross: num(raw.gross),
     earnings: num(raw.earnings),
     deductions: num(raw.deductions),
     net: num(raw.net),
     status: mapStatus(raw.status),
-    paymentRef: raw.paymentRef != null ? String(raw.paymentRef) : undefined,
+    paymentRef:
+      raw.paymentRef != null || raw.payment_reference != null
+        ? String(raw.paymentRef ?? raw.payment_reference)
+        : undefined,
     effectiveFrom:
       raw.effectiveFrom != null
         ? String(raw.effectiveFrom)
@@ -273,6 +285,118 @@ export function buildOrgPaidHistory(): OrgPayrollHistoryRecord[] {  const fromHi
 export { paginateItems, DEFAULT_LIST_PAGE, DEFAULT_LIST_PAGE_SIZE, computeMonthlySummary }
 
 /**
+ * Backend GET /payroll/{payroll_id} returns a FLAT MonthlyPayrollResponse
+ * (id, employment_id, gross_salary, items[]…). Detail pages need the nested
+ * review/payslip shapes, so project the flat row here. Employee display
+ * (name/code/department/role) comes from the employees-list row when available.
+ */
+export function toReviewDetail(
+  flat: Record<string, unknown>,
+  empRow?: PayrollEmployeeRow | null,
+): import('../types').PayrollReviewDetail {
+  const employmentId = String(flat.employment_id ?? flat.employmentId ?? empRow?.employmentId ?? '')
+  const year = num(flat.year, new Date().getFullYear())
+  const monthIndex = num(flat.month ?? flat.monthIndex, new Date().getMonth() + 1)
+  const items = (Array.isArray(flat.items) ? flat.items : []) as Array<Record<string, unknown>>
+  const earnings = items
+    .filter((i) => String(i.type).toUpperCase() === 'EARNING')
+    .map((i) => ({ name: String(i.name ?? ''), amount: num(i.amount) }))
+  const deductions = items
+    .filter((i) => String(i.type).toUpperCase() === 'DEDUCTION')
+    .map((i) => ({ name: String(i.name ?? ''), amount: num(i.amount) }))
+  const adjustments = items
+    .filter((i) => String(i.type).toUpperCase() === 'ADJUSTMENT')
+    .map((i, idx) => ({
+      id: String(i.id ?? idx),
+      title: String(i.name ?? 'Adjustment'),
+      detail: String(i.description ?? ''),
+      amount: num(i.amount),
+    }))
+  const gross = num(flat.gross_salary ?? flat.gross ?? empRow?.gross)
+  const totalEarnings = num(flat.total_earnings ?? flat.totalEarnings ?? empRow?.earnings)
+  const totalDeductions = num(flat.total_deductions ?? flat.totalDeductions ?? empRow?.deductions)
+  const netAdjustments = adjustments.reduce((s, a) => s + a.amount, 0)
+  const netPayable = num(flat.net_salary ?? flat.netSalary ?? flat.net ?? empRow?.net)
+  const payable = num(flat.payable_days ?? flat.payableDays)
+  const lop = num(flat.lop_days ?? flat.lopDays)
+  const employee: PayrollEmployeeRow = empRow
+    ? {
+        ...empRow,
+        payrollId: String(flat.payroll_id ?? flat.payrollId ?? flat.id ?? empRow.payrollId ?? empRow.id),
+        gross,
+        earnings: totalEarnings,
+        deductions: totalDeductions,
+        net: netPayable,
+        status: mapStatus(flat.status),
+        paymentRef:
+          flat.payment_reference != null || flat.paymentReference != null
+            ? String(flat.payment_reference ?? flat.paymentReference)
+            : empRow.paymentRef,
+      }
+    : normalizeEmployee({ ...flat, id: flat.id, payrollId: flat.payroll_id ?? flat.id })
+  return {
+    employee,
+    periodLabel: `${monthName(monthIndex)} ${year}`,
+    attendance: {
+      workingDays: payable + lop,
+      presentDays: payable,
+      paidLeave: 0,
+      lopDays: lop,
+      workingHours: 0,
+      overtimeHours: 0,
+    },
+    earnings,
+    deductions,
+    adjustments,
+    gross,
+    totalEarnings,
+    totalDeductions,
+    netAdjustments,
+    netPayable,
+  }
+}
+
+/** Flat payroll row + employee row → payslip detail shape. */
+export function toPayslipDetail(
+  flat: Record<string, unknown>,
+  empRow?: PayrollEmployeeRow | null,
+): import('../types').PayslipDetail {
+  const review = toReviewDetail(flat, empRow)
+  const paymentDate = flat.payment_date ?? flat.paymentDate ?? flat.paidOn
+  return {
+    employee: review.employee,
+    periodLabel: review.periodLabel,
+    paymentDate:
+      paymentDate != null && String(paymentDate).trim() !== '' ? String(paymentDate) : '—',
+    paymentMethod: String(flat.payment_method ?? flat.paymentMethod ?? 'Bank Transfer'),
+    referenceNumber: String(
+      flat.payment_reference ?? flat.paymentReference ?? review.employee.paymentRef ?? '—',
+    ),
+    earnings: review.earnings,
+    deductions: review.deductions,
+    adjustments: review.adjustments,
+    gross: review.gross,
+    totalEarnings: review.totalEarnings,
+    totalDeductions: review.totalDeductions,
+    netAdjustments: review.netAdjustments,
+    net: review.netPayable,
+  }
+}
+
+/** Employee display row for an employment (name/code/department/role). */
+export async function fetchEmployeeRow(
+  employmentId: string,
+  fetcher: () => Promise<PayrollEmployeeListResponse>,
+): Promise<PayrollEmployeeRow | null> {
+  try {
+    const list = await fetcher()
+    return list.items.find((e) => String(e.employmentId ?? '') === String(employmentId)) ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
  * Header fallback for salary/history pages when the employment has no
  * calculated monthly rows yet (fresh or future-dated first version).
  * Maps a workforce employee detail DTO (any shape) to a display row.
@@ -296,14 +420,16 @@ export function fallbackEmployeeRow(detail: unknown, id: string): PayrollEmploye
       .join('')
       .slice(0, 2)
       .toUpperCase() || 'E'
+  const department = d.department ?? employment.department ?? (d as Record<string, unknown>).department_name
+  const role = d.role ?? employment.role ?? (d as Record<string, unknown>).position ?? (d as Record<string, unknown>).title
   return {
     id: String(employment.id ?? d.id ?? id),
     payrollId: undefined,
     employmentId: id,
     name,
     code,
-    role: '—',
-    department: '—',
+    role: role != null && String(role).trim() !== '' ? String(role) : '—',
+    department: department != null && String(department).trim() !== '' ? String(department) : '—',
     initials,
     gross: 0,
     earnings: 0,

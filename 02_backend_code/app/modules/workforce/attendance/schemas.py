@@ -161,6 +161,7 @@ class MonthlySummaryResponse(BaseModel):
     week_off_days: Decimal
     on_leave_days: Decimal
     working_hours: Decimal
+    break_minutes: Decimal | None = None
     overtime_hours: Decimal | None = None
     late_count: int | None = None
     early_departure_count: int | None = None

@@ -12,8 +12,11 @@ import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
-import type { PayrollRunView } from '../../types'
-import { DEMO_VIEW_OPTIONS, MONTH_OPTIONS, YEAR_OPTIONS, PAYROLL_STATUS_OPTIONS } from '../../schemas/enums'
+import { can } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
+import { env } from '@/config/env'
+import type { PayrollEmployeeRow, PayrollRunView } from '../../types'
+import { MONTH_OPTIONS, YEAR_OPTIONS, PAYROLL_STATUS_OPTIONS } from '../../schemas/enums'
 import { MonthlySummaryCard } from '../../components/monthly/MonthlySummaryCard'
 
 export function MonthlyPayrollPage() {
@@ -31,14 +34,16 @@ export function MonthlyPayrollPage() {
     error,
     refetch,
   } = useMonthlyPayroll()
-  const [view, setView] = useState<PayrollRunView>('ready')
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [month, setMonth] = useState('8')
   const [year, setYear] = useState('2026')
 
   const rows = filtered
   const allPaid = rows.length > 0 && rows.every((r) => r.status === 'Paid')
-  const effectiveView: PayrollRunView = view === 'ready' && allPaid ? 'locked' : view
+  // Real view state derived from data (demo picker removed): locked when the
+  // whole run is paid, empty when no rows, ready otherwise.
+  const effectiveView: PayrollRunView =
+    isLoading ? 'ready' : rows.length === 0 ? 'empty' : allPaid ? 'locked' : 'ready'
 
   const summaryCards = useMemo(() => {
     if (!summary) return null
@@ -71,17 +76,6 @@ export function MonthlyPayrollPage() {
       <PageHeader
         title="Monthly Payroll"
         description="Review employee payroll calculations, approvals and payments."
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="text-label-sm text-on-surface-variant">Demo state</label>
-            <Select
-              value={view}
-              onChange={(v) => setView(v as PayrollRunView)}
-              minWidthClass="min-w-[140px]"
-              options={[...DEMO_VIEW_OPTIONS]}
-            />
-          </div>
-        }
       />
 
       {effectiveView === 'empty' && (
@@ -89,8 +83,12 @@ export function MonthlyPayrollPage() {
           icon="payments"
           title="No payroll run for this period"
           description="Generate monthly payroll to calculate gross, earnings, deductions, and net pay for active employees."
-          actionLabel="Run payroll"
-          onAction={() => safeNavigate(navigate, { to: payrollRoutes.run })}
+          actionLabel={can({ action: Action.CREATE, resource: 'payroll' }) ? 'Run payroll' : undefined}
+          onAction={
+            can({ action: Action.CREATE, resource: 'payroll' })
+              ? () => safeNavigate(navigate, { to: payrollRoutes.run })
+              : undefined
+          }
         >
           <Button
             variant="outline"
@@ -102,15 +100,12 @@ export function MonthlyPayrollPage() {
         </EmptyState>
       )}
 
-      {effectiveView === 'error' && (
+      {isError && (
         <div className="max-w-lg mx-auto">
           <ErrorState
-            title="Payroll generation failed"
-            description="An unexpected error occurred while calculating tax deductions. Retry generation or return to the dashboard."
-            onRetry={() => {
-              setView('ready')
-              void refetch()
-            }}
+            title="Payroll failed to load"
+            description={getApiErrorMessage(error, 'Could not load monthly payroll.')}
+            onRetry={() => void refetch()}
             onBack={() => safeNavigate(navigate, { to: payrollRoutes.root })}
           />
           <div className="mt-4 border-t border-outline-variant pt-4">
@@ -129,7 +124,7 @@ export function MonthlyPayrollPage() {
             </button>
             {detailsOpen && (
               <pre className="mt-3 rounded-lg bg-on-background text-surface-container-lowest p-4 text-xs font-mono overflow-x-auto">
-                {`Error: ERR_TAX_DEDUCTION_FAILED\nContext: Department ENG_001\nTimestamp: 2026-08-18T14:32:01.000Z`}
+                {getApiErrorMessage(error, 'Unknown error')}
               </pre>
             )}
           </div>
@@ -220,16 +215,12 @@ export function MonthlyPayrollPage() {
                     <th className="p-4 text-label-bold text-on-surface-variant text-right">Net Salary</th>
                     <th className="p-4 text-label-bold text-on-surface-variant">Status</th>
                     <th className="p-4 text-label-bold text-on-surface-variant">Payment Ref</th>
-                    {/* Actions column hidden (View/Payslip/Review/Approve/Pay) — restore
-                        the block below. NOTE: this removes the approve/pay entry points
-                        until a quick-view flow exists for payroll rows.
                     <th className="p-4 text-label-bold text-on-surface-variant text-right">Actions</th>
-                    */}
                   </tr>
                 </thead>
                 <tbody className="text-body-md">
                   {rows.map((r) => (
-                    <tr key={r.id} className="border-b border-outline-variant zebra-row h-[72px]">
+                    <tr key={r.payrollId ?? r.id} className="border-b border-outline-variant zebra-row h-[72px]">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-semibold border border-outline-variant">
@@ -258,101 +249,115 @@ export function MonthlyPayrollPage() {
                         </span>
                       </td>
                       <td className="p-4 text-on-surface-variant text-caption">{r.paymentRef ?? '—'}</td>
-                      {/* Row actions hidden (View/Payslip/Review/Approve/Pay) — see <th> note.
                       <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {effectiveView === 'locked' || r.status === 'Paid' ? (
-                            <>
-                              <button
-                                type="button"
-                                className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
-                                onClick={() =>
-                                  safeNavigate(navigate, {
-                                    to: payrollRoutes.payslipPath,
-                                    params: { payrollId: r.payrollId ?? r.id },
-                                  })
-                                }
-                              >
-                                View
-                              </button>
-                              <button
-                                type="button"
-                                className="text-on-surface-variant hover:text-secondary transition-colors"
-                                title="Payslip"
-                                onClick={() =>
-                                  safeNavigate(navigate, {
-                                    to: payrollRoutes.payslipPath,
-                                    params: { payrollId: r.payrollId ?? r.id },
-                                  })
-                                }
-                              >
-                                <span className="material-symbols-outlined text-xl">receipt_long</span>
-                              </button>
-                            </>
-                          ) : r.status === 'Calculated' ? (
-                            <>
-                              <button
-                                type="button"
-                                className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
-                                onClick={() =>
-                                  safeNavigate(navigate, {
-                                    to: payrollRoutes.reviewPath,
-                                    params: { payrollId: r.payrollId ?? r.id },
-                                  })
-                                }
-                              >
-                                Review
-                              </button>
-                              <button
-                                type="button"
-                                className="bg-primary text-on-primary px-3 py-1.5 rounded text-label-sm hover:opacity-90 transition-all"
-                                onClick={() =>
-                                  safeNavigate(navigate, {
-                                    to: payrollRoutes.reviewPath,
-                                    params: { payrollId: r.payrollId ?? r.id },
-                                  })
-                                }
-                              >
-                                Approve
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                type="button"
-                                className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
-                                onClick={() =>
-                                  safeNavigate(navigate, {
-                                    to: payrollRoutes.reviewPath,
-                                    params: { payrollId: r.payrollId ?? r.id },
-                                  })
-                                }
-                              >
-                                View
-                              </button>
-                              <button
-                                type="button"
-                                className="border border-primary text-primary px-3 py-1.5 rounded text-label-sm hover:bg-surface-container-low transition-colors"
-                                onClick={() =>
-                                  safeNavigate(navigate, {
-                                    to: payrollRoutes.reviewPath,
-                                    params: { payrollId: r.payrollId ?? r.id },
-                                  })
-                                }
-                              >
-                                Pay
-                              </button>
-                            </>
-                          )}
-                        </div>
+                        <MonthlyRowActions
+                          row={r}
+                          locked={effectiveView === 'locked'}
+                          navigate={navigate}
+                        />
                       </td>
-                      */}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Resolve the real payroll id for a table row. Live rows always carry
+ * payrollId; numeric ids are DB payroll PKs. Anything else (a row without a
+ * calculated payroll) renders no actions instead of a broken detail link.
+ */
+function realPayrollId(row: PayrollEmployeeRow): string | undefined {
+  if (row.payrollId) return row.payrollId
+  if (/^\d+$/.test(row.id)) return row.id
+  // Mock-mode rows (e1…) resolve through the mock store.
+  if (env.useMockApi) return row.id
+  return undefined
+}
+
+function MonthlyRowActions({
+  row: r,
+  locked,
+  navigate,
+}: {
+  row: PayrollEmployeeRow
+  locked: boolean
+  navigate: ReturnType<typeof useNavigate>
+}) {
+  const pid = realPayrollId(r)
+  if (!pid) {
+    return <span className="text-caption text-on-surface-variant">—</span>
+  }
+  const goDetail = () =>
+    safeNavigate(navigate, {
+      to: payrollRoutes.monthlyDetailPath,
+      params: { payrollId: pid },
+    })
+  const goPayslip = () =>
+    safeNavigate(navigate, {
+      to: payrollRoutes.payslipPath,
+      params: { payrollId: pid },
+    })
+  return (
+    <div className="flex items-center justify-end gap-2">
+      {locked || r.status === 'Paid' ? (
+        <>
+          <button
+            type="button"
+            className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
+            onClick={goDetail}
+          >
+            View
+          </button>
+          <button
+            type="button"
+            className="text-on-surface-variant hover:text-secondary transition-colors"
+            title="Payslip"
+            aria-label="Payslip"
+            onClick={goPayslip}
+          >
+            <span className="material-symbols-outlined text-xl">receipt_long</span>
+          </button>
+        </>
+      ) : r.status === 'Calculated' ? (
+        <>
+          <button
+            type="button"
+            className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
+            onClick={goDetail}
+          >
+            Review
+          </button>
+          <button
+            type="button"
+            className="bg-primary text-on-primary px-3 py-1.5 rounded text-label-sm hover:opacity-90 transition-all"
+            onClick={goDetail}
+          >
+            Approve
+          </button>
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
+            onClick={goDetail}
+          >
+            View
+          </button>
+          <button
+            type="button"
+            className="border border-primary text-primary px-3 py-1.5 rounded text-label-sm hover:bg-surface-container-low transition-colors"
+            onClick={goDetail}
+          >
+            Pay
+          </button>
         </>
       )}
     </div>
