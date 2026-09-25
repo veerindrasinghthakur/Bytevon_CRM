@@ -8,7 +8,6 @@ export {
   markAllNotificationsRead,
   archiveNotification,
   archiveReadNotifications,
-  setNotificationStatus,
 } from './center'
 export { computeSentKpis, listSentNotifications } from './sent'
 export type { SentListParams } from './sent'

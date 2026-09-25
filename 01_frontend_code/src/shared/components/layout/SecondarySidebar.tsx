@@ -82,6 +82,8 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'center', label: 'Notification Center', icon: 'notifications', to: '/notifications' },
       { id: 'sent', label: 'Sent', icon: 'send', to: '/notifications/sent' },
       { id: 'compose', label: 'Compose', icon: 'edit_notifications', to: '/notifications/compose' },
+      { id: 'templates', label: 'Templates', icon: 'description', to: '/notifications/templates' },
+      { id: 'preferences', label: 'Preferences', icon: 'tune', to: '/notifications/preferences' },
       { id: 'settings', label: 'Settings', icon: 'settings', to: '/notifications/settings' },
     ],
   },

@@ -26,6 +26,7 @@ class ComposeBody(BaseModel):
     broadcastAll: bool = False
     template_code: str | None = None
     channels: dict[str, bool] = Field(default_factory=dict)
+    attachment_ids: list[int] = Field(default_factory=list)
 
 
 class NotifyRequest(BaseModel):

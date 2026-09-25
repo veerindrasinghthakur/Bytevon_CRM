@@ -171,6 +171,23 @@ class RequestService(BasePublicService):
                 f"{data.end_date.isoformat()} ({days} day(s)) is pending approval."
             ),
         )
+        # New-approval-needed: notify the resolved approver (dept head -> HR -> admin).
+        try:
+            from app.modules.notifications.recipients import resolve_approver
+
+            approver_id = await resolve_approver(self._session, data.employment_id)
+            if approver_id is not None:
+                await self._notify(
+                    employment_id=approver_id,
+                    title="New leave approval needed",
+                    body=(
+                        f"Leave request #{leave_req.id} ({type_row.code}, "
+                        f"{data.start_date.isoformat()} → {data.end_date.isoformat()}) "
+                        f"needs your decision."
+                    ),
+                )
+        except Exception:
+            logger.exception("approver notify failed for leave %s", leave_req.id)
         return self._to_response(leave_req, type_row.code)
 
     async def _resolve_target_department(

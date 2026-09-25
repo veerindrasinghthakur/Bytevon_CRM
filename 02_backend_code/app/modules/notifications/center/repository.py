@@ -35,6 +35,7 @@ class CenterRepository(BaseRepository):
             .where(
                 Notification.recipient_type == recipient_type,
                 Notification.recipient_id == recipient_id,
+                Notification.is_deleted.is_(False),
             )
             .order_by(Notification.created_at.desc())
             .limit(limit)
@@ -49,6 +50,7 @@ class CenterRepository(BaseRepository):
             Notification.recipient_type == recipient_type,
             Notification.recipient_id == recipient_id,
             Notification.status == NotificationStatus.UNREAD,
+            Notification.is_deleted.is_(False),
         )
         result = await self.execute(stmt)
         return int(result.scalar() or 0)

@@ -10,11 +10,7 @@ export function NotificationCard({
   onPressStart,
   onPressEnd,
   onPressCancel,
-  onArchive,
-  onMarkRead,
-  onFullDetail,
-  menuOpen,
-  onMenuToggle,
+  onDelete,
 }: {
   n: AppNotification
   active: boolean
@@ -24,11 +20,7 @@ export function NotificationCard({
   onPressStart: () => void
   onPressEnd: () => void
   onPressCancel: () => void
-  onArchive: () => void
-  onMarkRead: () => void
-  onFullDetail: () => void
-  menuOpen: boolean
-  onMenuToggle: () => void
+  onDelete: () => void
 }) {
   return (
     <div
@@ -99,49 +91,16 @@ export function NotificationCard({
       <div className="absolute top-3 right-3">
         <button
           type="button"
-          className="p-1 rounded hover:bg-surface-container text-on-surface-variant"
-          aria-label="Actions"
+          className="p-1 rounded hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors"
+          aria-label="Delete notification"
+          title="Delete"
           onClick={(e) => {
             e.stopPropagation()
-            onMenuToggle()
+            onDelete()
           }}
         >
-          <span className="material-symbols-outlined text-[20px]">more_vert</span>
+          <span className="material-symbols-outlined text-[20px]">delete_outline</span>
         </button>
-        {menuOpen && (
-          <div className="absolute right-0 top-8 z-20 w-44 rounded-lg border border-outline-variant bg-surface-container-lowest shadow-lg py-1">
-            <button
-              type="button"
-              className="w-full text-left px-3 py-2 text-body-sm hover:bg-surface-container"
-              onClick={(e) => {
-                e.stopPropagation()
-                onFullDetail()
-              }}
-            >
-              Open full detail
-            </button>
-            <button
-              type="button"
-              className="w-full text-left px-3 py-2 text-body-sm hover:bg-surface-container"
-              onClick={(e) => {
-                e.stopPropagation()
-                onMarkRead()
-              }}
-            >
-              Mark as read
-            </button>
-            <button
-              type="button"
-              className="w-full text-left px-3 py-2 text-body-sm text-error hover:bg-error/10"
-              onClick={(e) => {
-                e.stopPropagation()
-                onArchive()
-              }}
-            >
-              Archive
-            </button>
-          </div>
-        )}
       </div>
     </div>
   )

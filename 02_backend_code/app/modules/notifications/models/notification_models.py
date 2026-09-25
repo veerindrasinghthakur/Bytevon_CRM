@@ -84,9 +84,78 @@ class Notification(Base, IdentityMixin, CreatedAtMixin):
     expires_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    is_deleted: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     template: Mapped[NotificationTemplate | None] = relationship(
         "NotificationTemplate"
+    )
+
+
+class NotificationAttachment(Base, IdentityMixin, CreatedAtMixin):
+    """Real file attachment for a notification (Minio object + metadata).
+
+    Uploaded before send (notification_id NULL); linked when the compose
+    fan-out persists the notification rows.
+    """
+
+    __tablename__ = "notification_attachments"
+
+    notification_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("notifications.id"), nullable=True, index=True
+    )
+    file_reference: Mapped[str] = mapped_column(Text, nullable=False)
+    file_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(120), nullable=False)
+    file_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    uploaded_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class NotificationDraft(Base, IdentityMixin, TimestampMixin):
+    """Saved compose draft owned by one employment (mirrors compose payload)."""
+
+    __tablename__ = "notification_drafts"
+
+    owner_employment_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("employments.id"), nullable=False, index=True
+    )
+    title: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    body: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    priority: Mapped[str] = mapped_column(String(20), nullable=False, default="Normal")
+    module_ctx: Mapped[str] = mapped_column(String(100), nullable=False, default="")
+    broadcast_all: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    roles: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    employment_ids: Mapped[list] = mapped_column(
+        JSONB, nullable=False, server_default="[]"
+    )
+    channels: Mapped[dict[str, Any]] = mapped_column(
+        JSONB, nullable=False, server_default="{}"
+    )
+    template_code: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    schedule_mode: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="now"
+    )
+    schedule_at: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
+
+class NotificationSetting(Base):
+    """Global notification settings KV (channels, triggers, batch, quiet)."""
+
+    __tablename__ = "notification_settings"
+
+    key: Mapped[str] = mapped_column(String(50), primary_key=True)
+    value: Mapped[dict[str, Any] | list] = mapped_column(JSONB, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
     )
 
 

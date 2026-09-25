@@ -8,7 +8,6 @@ from fastapi import APIRouter, Depends, status
 from app.core.authorization import require_permission
 from app.modules.notifications.compose.schemas import (
     ComposeBody,
-    MessageResponse,
     NotificationResponse,
     NotifyBulkRequest,
     NotifyRequest,
@@ -49,22 +48,9 @@ async def compose(
     body: ComposeBody,
     service: ComposeServiceDep,
 ) -> dict[str, Any]:
-    if not body.employment_ids:
-        return {"queued": 0, "sentRows": []}
     try:
-        rows = await service.notify_bulk(
-            NotifyBulkRequest(
-                employment_ids=body.employment_ids,
-                template_code=body.template_code,
-                title=body.title or None,
-                body=body.body or None,
-            )
-        )
-        return {"queued": len(rows), "sentRows": []}
+        queued = await service.compose_broadcast(body)
+        return {"queued": queued, "sentRows": []}
     except Exception:
         return {"queued": 0, "sentRows": []}
 
-
-@router.post("/drafts", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_permission("notification", "CREATE", "SELF"))])
-async def save_draft(body: ComposeBody) -> MessageResponse:
-    return MessageResponse(message="draft accepted")

@@ -19,6 +19,7 @@ export const composeNotificationFormSchema = z.object({
   scheduleMode: z.enum(['now', 'later']).default('now'),
   scheduleAt: z.string().optional(),
   attachmentNames: z.array(z.string()).optional(),
+  attachment_ids: z.array(z.number()).optional(),
 })
 
 export type ComposeNotificationForm = z.infer<typeof composeNotificationFormSchema>

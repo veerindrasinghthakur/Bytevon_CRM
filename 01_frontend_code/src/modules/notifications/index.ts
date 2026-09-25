@@ -8,6 +8,7 @@ export { NotificationPreferencesPage } from './pages/preference/NotificationPref
 export { createNotificationRoutes, notificationRoutes } from './routes'
 
 export * from './api/notifications'
+export { useNotificationBell } from './hooks/center/use-notification-bell'
 export { useNotificationCenter } from './hooks/center/use-notification-center'
 export { useSentNotifications } from './hooks/sent/use-sent-notifications'
 export { useNotificationSettings } from './hooks/settings/use-notification-settings'

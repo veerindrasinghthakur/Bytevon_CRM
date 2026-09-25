@@ -174,6 +174,7 @@ export const DEFAULT_RAIL_ITEMS: RailItem[] = [
   { id: 'workforce', icon: 'groups', label: 'Workforce', to: '/workforce', visible: true },
   { id: 'payroll', icon: 'payments', label: 'Payroll', to: '/payroll', visible: true },
   { id: 'approvals', icon: 'fact_check', label: 'Approvals', to: '/approvals', visible: true },
+  { id: 'notifications', icon: 'notifications', label: 'Notifications', to: '/notifications', visible: true },
   { id: 'admin', icon: 'admin_panel_settings', label: 'Administration', to: '/admin', visible: true },
 ]
 

@@ -1,46 +1,24 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { useNotificationCenter } from '../../hooks/center/use-notification-center'
-import type { AppNotification } from '../../types'
-import { notificationStatusDotClass } from '../../schemas/enums'
 import { notificationRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { Can } from '@/shared/rbac'
 import { Action } from '@/shared/schema'
-import { NotificationQuickContent } from '../../components/center/NotificationQuickContent'
 import { NotificationCard } from '../../components/center/NotificationCard'
 import { CenterKpiCards } from '../../components/center/CenterKpiCards'
 import { CenterFilterBar } from '../../components/center/CenterFilterBar'
-import { NotificationPreviewPanel } from '../../components/center/NotificationPreviewPanel'
+import { NotificationInlineDetail } from '../../components/center/NotificationInlineDetail'
 
 export function NotificationCenterPage() {
   const navigate = useNavigate()
-  const { openPanel } = useQuickOverview()
   const c = useNotificationCenter()
 
-  const goDetail = (id: string) =>
-    safeNavigate(navigate, {
-      to: notificationRoutes.detailPath,
-      params: { notificationId: id },
-    })
-
-  const openNotificationOverview = (n: AppNotification) => {
-    c.selectNotification(n.id)
-    openPanel({
-      title: n.title,
-      subtitle: [n.module, n.timeAgo].filter(Boolean).join(' · '),
-      icon: n.icon || 'notifications',
-      status: n.status,
-      statusDotClass: notificationStatusDotClass(n.priority, n.status),
-      content: <NotificationQuickContent n={n} />,
-      fullRecordLabel: 'Open full detail',
-      onOpenFull: () => goDetail(n.id),
-      secondaryLabel: n.status === 'Unread' ? 'Mark as read' : undefined,
-      onSecondary: n.status === 'Unread' ? () => c.markRead(n.id) : undefined,
-      widthClass: 'max-w-[520px]',
-    })
+  // Clicking an entry selects it (marks read) and shows its full detail in
+  // the right section — no drawer, no separate preview bar.
+  const openNotificationDetail = (id: string) => {
+    c.selectNotification(id)
   }
 
   if (c.isLoading) {
@@ -161,16 +139,12 @@ export function NotificationCenterPage() {
               selectionMode={c.selectionMode}
               onSelect={() => {
                 if (c.selectionMode) c.toggleOne(n.id)
-                else openNotificationOverview(n)
+                else openNotificationDetail(n.id)
               }}
               onPressStart={() => c.onRowPressStart(n.id)}
-              onPressEnd={() => c.onRowPressEnd(n.id, () => openNotificationOverview(n))}
+              onPressEnd={() => c.onRowPressEnd(n.id, () => openNotificationDetail(n.id))}
               onPressCancel={c.onRowPressCancel}
-              onArchive={() => c.archiveOne(n.id)}
-              onMarkRead={() => c.markRead(n.id)}
-              onFullDetail={() => goDetail(n.id)}
-              menuOpen={c.menuOpenId === n.id}
-              onMenuToggle={() => c.setMenuOpenId(c.menuOpenId === n.id ? null : n.id)}
+              onDelete={() => c.deleteOne(n.id)}
             />
           ))}
           {c.filtered.length === 0 && (
@@ -183,10 +157,13 @@ export function NotificationCenterPage() {
           )}
         </div>
 
-        <NotificationPreviewPanel
-          selected={c.selected}
+        <NotificationInlineDetail
+          notificationId={c.selected?.id ?? null}
+          fallback={c.selected}
           onMarkRead={c.markRead}
           onArchive={c.archiveOne}
+          onDelete={c.deleteOne}
+          markReadPending={c.markReadPending}
           onOpenRelated={(href) => safeNavigate(navigate, { to: href as never })}
         />
       </section>

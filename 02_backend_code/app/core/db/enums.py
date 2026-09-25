@@ -337,6 +337,7 @@ class DocumentLinkType(StrEnum):
     PROJECT = "PROJECT"
     TASK = "TASK"
     CLIENT = "CLIENT"
+    NOTIFICATION = "NOTIFICATION"
 
 
 # ---------------------------------------------------------------------------

@@ -244,9 +244,12 @@ export async function listPendingCorrections(): Promise<PendingCorrection[]> {
 export async function decideCorrection(
   approvalRequestId: number,
   decision: 'approve' | 'reject',
+  reason?: string,
 ): Promise<void> {
   if (!env.useMockApi) {
-    await apiClient.post(`/approvals/${approvalRequestId}/${decision}`, {})
+    await apiClient.post(`/approvals/${approvalRequestId}/${decision}`, {
+      ...(reason?.trim() ? { remarks: reason.trim() } : {}),
+    })
     return
   }
   await delay(300)

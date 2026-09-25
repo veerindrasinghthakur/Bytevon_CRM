@@ -1,16 +1,20 @@
-import { Link, useRouterState } from '@tanstack/react-router'
+import { useState } from 'react'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
 import { HeaderBreakChip } from './HeaderBreakChip'
 import { HeaderAttendanceSummary } from './HeaderAttendanceSummary'
 import { HeaderProps } from '@/shared/types'
-import { notificationRoutes } from '@/modules/notifications/routes'
+import { notificationRoutes, useNotificationBell } from '@/modules/notifications'
 import { profileRoutes } from '@/modules/my-work/routes'
-import { looseLinkProps } from '@/shared/lib/safeNavigate'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 
 export const HEADER_HEIGHT_PX = 56
 
 export function Header({ title, className, style }: HeaderProps) {
+  const navigate = useNavigate()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const bell = useNotificationBell()
+  const [bellOpen, setBellOpen] = useState(false)
   const isProfileActive = pathname === '/profile' || pathname.startsWith('/profile/')
   const isNotificationsActive =
     pathname === '/notifications' || pathname.startsWith('/notifications/')
@@ -55,32 +59,92 @@ export function Header({ title, className, style }: HeaderProps) {
         <HeaderBreakChip active={isBreakActive} />
         <HeaderAttendanceSummary />
 
-        <Link
-          {...looseLinkProps({
-            to: notificationRoutes.center,
-            'aria-label': 'My notifications',
-            title: 'Notifications',
-            className: cn(
+        <div className="relative">
+          <button
+            type="button"
+            aria-label={`My notifications${bell.unread > 0 ? `, ${bell.unread} unread` : ''}`}
+            title="Notifications"
+            onClick={() => setBellOpen((o) => !o)}
+            className={cn(
               'relative inline-flex items-center justify-center rounded-full p-2',
               'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
-              isNotificationsActive && 'bg-[#e8f1ff] text-secondary',
-            ),
-          })}
-        >
-          <span
-            className="material-symbols-outlined"
-            aria-hidden="true"
-            style={
-              isNotificationsActive ? { fontVariationSettings: "'FILL' 1" } : undefined
-            }
+              (isNotificationsActive || bellOpen) && 'bg-[#e8f1ff] text-secondary',
+            )}
           >
-            notifications
-          </span>
-          {!isNotificationsActive && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface" />
+            <span
+              className="material-symbols-outlined"
+              aria-hidden="true"
+              style={
+                isNotificationsActive ? { fontVariationSettings: "'FILL' 1" } : undefined
+              }
+            >
+              notifications
+            </span>
+            {bell.unread > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-error text-white text-[11px] font-bold flex items-center justify-center ring-2 ring-surface">
+                {bell.unread > 99 ? '99+' : bell.unread}
+              </span>
+            )}
+          </button>
+          {bellOpen && (
+            <>
+              <button
+                type="button"
+                aria-label="Close notifications"
+                className="fixed inset-0 z-40 cursor-default bg-transparent"
+                onClick={() => setBellOpen(false)}
+              />
+              <div className="absolute right-0 top-11 z-50 w-80 bv-surface executive-shadow rounded-xl overflow-hidden">
+                <div className="px-4 py-3 border-b border-outline-variant flex items-center justify-between">
+                  <p className="text-label-md font-semibold text-on-background">
+                    Notifications{bell.unread > 0 ? ` (${bell.unread} unread)` : ''}
+                  </p>
+                  <button
+                    type="button"
+                    className="text-label-md text-secondary hover:underline"
+                    onClick={() => {
+                      setBellOpen(false)
+                      safeNavigate(navigate, { to: notificationRoutes.center })
+                    }}
+                  >
+                    View all
+                  </button>
+                </div>
+                {bell.latest.length === 0 ? (
+                  <p className="px-4 py-6 text-body-sm text-on-surface-variant text-center">
+                    {bell.isLoading ? 'Loading…' : 'No unread notifications.'}
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-outline-variant/40 max-h-80 overflow-y-auto">
+                    {bell.latest.map((n) => (
+                      <li key={n.id}>
+                        <button
+                          type="button"
+                          className="w-full text-left px-4 py-3 hover:bg-surface-container-low transition-colors"
+                          onClick={() => {
+                            setBellOpen(false)
+                            safeNavigate(navigate, {
+                              to: notificationRoutes.detailPath,
+                              params: { notificationId: n.id },
+                            })
+                          }}
+                        >
+                          <p className="text-body-sm font-semibold text-on-background line-clamp-1">
+                            {n.title}
+                          </p>
+                          <p className="text-body-sm text-on-surface-variant line-clamp-1 mt-0.5">
+                            {n.body}
+                          </p>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
           )}
-        </Link>
+        </div>
 
         <Link
           {...looseLinkProps({

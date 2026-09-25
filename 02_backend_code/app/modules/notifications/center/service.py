@@ -40,17 +40,30 @@ class CenterService(BasePublicService):
         )
         return {"unread": count}
 
-    async def mark_read(
+    async def get_notification(
         self, notification_id: int, *, employment_id: int
     ) -> NotificationResponse:
-        notif = await self._repo.get_notification_by_id(notification_id)
-        if notif is None:
-            raise NotFoundError("Notification not found")
+        notif = self._owned(
+            await self._repo.get_notification_by_id(notification_id), employment_id
+        )
+        return NotificationResponse.model_validate(notif)
+
+    def _owned(self, notif, employment_id: int):
         if (
-            notif.recipient_type != NotificationRecipientType.EMPLOYMENT
+            notif is None
+            or notif.is_deleted
+            or notif.recipient_type != NotificationRecipientType.EMPLOYMENT
             or notif.recipient_id != employment_id
         ):
             raise NotFoundError("Notification not found")
+        return notif
+
+    async def mark_read(
+        self, notification_id: int, *, employment_id: int
+    ) -> NotificationResponse:
+        notif = self._owned(
+            await self._repo.get_notification_by_id(notification_id), employment_id
+        )
         if notif.status == NotificationStatus.UNREAD:
             notif.status = NotificationStatus.READ
             notif.read_at = datetime.now(UTC)
@@ -60,17 +73,24 @@ class CenterService(BasePublicService):
     async def archive(
         self, notification_id: int, *, employment_id: int
     ) -> NotificationResponse:
-        notif = await self._repo.get_notification_by_id(notification_id)
-        if notif is None:
-            raise NotFoundError("Notification not found")
-        if (
-            notif.recipient_type != NotificationRecipientType.EMPLOYMENT
-            or notif.recipient_id != employment_id
-        ):
-            raise NotFoundError("Notification not found")
+        notif = self._owned(
+            await self._repo.get_notification_by_id(notification_id), employment_id
+        )
         notif.status = NotificationStatus.ARCHIVED
         notif.archived_at = datetime.now(UTC)
         if notif.read_at is None:
             notif.read_at = notif.archived_at
+        await self._commit()
+        return NotificationResponse.model_validate(notif)
+
+    async def soft_delete(
+        self, notification_id: int, *, employment_id: int
+    ) -> NotificationResponse:
+        """Soft-delete (bin) with the same ownership check as read/archive."""
+        notif = self._owned(
+            await self._repo.get_notification_by_id(notification_id), employment_id
+        )
+        notif.is_deleted = True
+        notif.deleted_at = datetime.now(UTC)
         await self._commit()
         return NotificationResponse.model_validate(notif)

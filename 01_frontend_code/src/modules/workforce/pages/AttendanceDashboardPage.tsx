@@ -4,6 +4,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Button } from '@/shared/components/ui/Button'
+import { Modal } from '@/shared/components/ui/Modal'
 import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
@@ -60,6 +61,18 @@ function prettyDay(s: string): string {
   return parseISO(s).toLocaleDateString(undefined, { weekday: 'short' })
 }
 
+function shortTime(value: string | null): string {
+  if (!value) return '—'
+  const m = value.match(/T(\d{2}):(\d{2})/)
+  if (m) {
+    const h = Number(m[1])
+    const suffix = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 === 0 ? 12 : h % 12
+    return `${String(h12).padStart(2, '0')}:${m[2]} ${suffix}`
+  }
+  return value
+}
+
 function initials(name: string): string {
   return (
     name
@@ -81,6 +94,16 @@ export function AttendanceDashboardPage() {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [actionError, setActionError] = useState<string | null>(null)
+  const [pendingDecision, setPendingDecision] = useState<{
+    approvalRequestId: number
+    decision: 'approve' | 'reject'
+    employmentName: string
+    attendanceDate: string | null
+    requestedCheckIn: string | null
+    requestedCheckOut: string | null
+    reason: string
+  } | null>(null)
+  const [decisionReason, setDecisionReason] = useState('')
 
   const isToday = dateStr === todayISO
   const weekEnd = useMemo(() => addDaysISO(weekStart, 6), [weekStart])
@@ -227,13 +250,47 @@ export function AttendanceDashboardPage() {
     )
   }
 
-  const decide = (approvalRequestId: number | null, decision: 'approve' | 'reject') => {
+  const askDecide = (correction: {
+    approval_request_id: number | null
+    employment_name: string | null
+    attendance_date: string | null
+    requested_check_in: string | null
+    requested_check_out: string | null
+    reason: string
+  }, decision: 'approve' | 'reject') => {
     setActionError(null)
-    if (approvalRequestId == null) return
-    if (!window.confirm(`Confirm ${decision} of this correction?`)) return
+    if (correction.approval_request_id == null) return
+    setDecisionReason('')
+    setPendingDecision({
+      approvalRequestId: correction.approval_request_id,
+      decision,
+      employmentName: correction.employment_name ?? '—',
+      attendanceDate: correction.attendance_date,
+      requestedCheckIn: correction.requested_check_in,
+      requestedCheckOut: correction.requested_check_out,
+      reason: correction.reason,
+    })
+  }
+
+  const confirmDecide = () => {
+    if (!pendingDecision) return
+    if (pendingDecision.decision === 'reject' && !decisionReason.trim()) {
+      setActionError('A reason is required to reject a correction')
+      return
+    }
     decideMut.mutate(
-      { approvalRequestId, decision },
-      { onError: (e) => setActionError(getApiErrorMessage(e, `Could not ${decision} correction`)) },
+      {
+        approvalRequestId: pendingDecision.approvalRequestId,
+        decision: pendingDecision.decision,
+        reason: decisionReason.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          setPendingDecision(null)
+          setDecisionReason('')
+        },
+        onError: (e) => setActionError(getApiErrorMessage(e, `Could not ${pendingDecision.decision} correction`)),
+      },
     )
   }
 
@@ -524,6 +581,11 @@ export function AttendanceDashboardPage() {
                     <span className="text-body-sm font-medium">{c.employment_name ?? '—'}</span>
                     <span className="text-caption text-on-surface-variant">{c.attendance_date ?? ''}</span>
                   </div>
+                  {(c.requested_check_in || c.requested_check_out) && (
+                    <p className="text-caption text-on-surface-variant mt-1">
+                      Requested: {shortTime(c.requested_check_in)} – {shortTime(c.requested_check_out)}
+                    </p>
+                  )}
                   <p className="text-caption text-on-surface-variant mt-1">&ldquo;{c.reason}&rdquo;</p>
                   {c.approval_request_id != null && (
                     <div className="mt-2 flex gap-2">
@@ -532,7 +594,7 @@ export function AttendanceDashboardPage() {
                           variant="primary"
                           className="!py-1 !px-2 !text-[11px]"
                           isLoading={decideMut.isPending}
-                          onClick={() => decide(c.approval_request_id, 'approve')}
+                          onClick={() => askDecide(c, 'approve')}
                         >
                           Approve
                         </Button>
@@ -541,7 +603,8 @@ export function AttendanceDashboardPage() {
                         <Button
                           variant="outline"
                           className="!py-1 !px-2 !text-[11px]"
-                          onClick={() => decide(c.approval_request_id, 'reject')}
+                          disabled={decideMut.isPending}
+                          onClick={() => askDecide(c, 'reject')}
                         >
                           Reject
                         </Button>
@@ -554,6 +617,60 @@ export function AttendanceDashboardPage() {
           )}
         </section>
       </div>
+
+      {pendingDecision && (
+        <Modal
+          title={pendingDecision.decision === 'approve' ? 'Approve correction' : 'Reject correction'}
+          onClose={() => !decideMut.isPending && setPendingDecision(null)}
+        >
+          <div className="space-y-4">
+            <div className="bg-surface-container-low rounded-lg p-4 text-body-sm space-y-1">
+              <p><span className="text-on-surface-variant">Employee: </span><span className="font-semibold">{pendingDecision.employmentName}</span></p>
+              <p><span className="text-on-surface-variant">Date: </span><span className="font-semibold">{pendingDecision.attendanceDate ?? '—'}</span></p>
+              <p>
+                <span className="text-on-surface-variant">Requested: </span>
+                <span className="font-semibold">
+                  {shortTime(pendingDecision.requestedCheckIn)} – {shortTime(pendingDecision.requestedCheckOut)}
+                </span>
+              </p>
+              <p><span className="text-on-surface-variant">Reason: </span>&ldquo;{pendingDecision.reason}&rdquo;</p>
+            </div>
+            <div>
+              <label className="block text-label-md mb-1">
+                {pendingDecision.decision === 'reject' ? 'Reason (required)' : 'Note (optional)'}
+              </label>
+              <textarea
+                value={decisionReason}
+                onChange={(e) => setDecisionReason(e.target.value)}
+                rows={3}
+                placeholder={
+                  pendingDecision.decision === 'reject'
+                    ? 'Why is this correction rejected?'
+                    : 'Optional note for the employee…'
+                }
+                className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm resize-none focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" disabled={decideMut.isPending} onClick={() => setPendingDecision(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant={pendingDecision.decision === 'approve' ? 'primary' : 'danger'}
+                size="sm"
+                disabled={decideMut.isPending || (pendingDecision.decision === 'reject' && !decisionReason.trim())}
+                onClick={confirmDecide}
+              >
+                {decideMut.isPending
+                  ? 'Confirming…'
+                  : pendingDecision.decision === 'approve'
+                    ? 'Confirm Approve'
+                    : 'Confirm Reject'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

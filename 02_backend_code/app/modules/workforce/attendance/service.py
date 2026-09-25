@@ -188,6 +188,22 @@ class AttendanceService(BasePublicService):
         await self._commit()
         await self._session.refresh(correction)
         await self._audit("attendance_correction.submitted", correction.id, actor_employment_id)
+        # New-approval-needed: notify the resolved approver (dept head -> HR -> admin).
+        try:
+            from app.modules.notifications.recipients import resolve_approver
+
+            approver_id = await resolve_approver(self._session, actor_employment_id)
+            if approver_id is not None:
+                await self._notify(
+                    employment_id=approver_id,
+                    title="New attendance approval needed",
+                    body=(
+                        f"Attendance correction #{correction.id} for "
+                        f"{day.attendance_date.isoformat()} needs your decision."
+                    ),
+                )
+        except Exception:
+            logger.exception("approver notify failed for correction %s", correction.id)
         return CorrectionResponse.model_validate(correction)
 
     async def today_list(
@@ -387,12 +403,26 @@ class AttendanceService(BasePublicService):
             await self._audit("attendance_correction.approved", correction.id, actor)
             if day:
                 await self.rebuild_monthly_summary(day.employment_id, day.attendance_date.year, day.attendance_date.month, actor_employment_id=actor)
+            # Decision -> requester (mirrors the leave decision-notify pattern).
+            if day is not None:
+                await self._notify(
+                    employment_id=day.employment_id,
+                    title="Attendance correction approved",
+                    body=f"Correction #{correction.id} for {day.attendance_date.isoformat()} was approved.",
+                )
         elif status_str == ApprovalStatus.REJECTED.value:
             if correction.status == AttendanceCorrectionStatus.REJECTED:
                 return
             correction.status = AttendanceCorrectionStatus.REJECTED
             await self._commit()
             await self._audit("attendance_correction.rejected", correction.id, actor)
+            day = await self._repo.get_day_by_id(correction.attendance_day_id)
+            if day is not None:
+                await self._notify(
+                    employment_id=day.employment_id,
+                    title="Attendance correction rejected",
+                    body=f"Correction #{correction.id} for {day.attendance_date.isoformat()} was rejected.",
+                )
 
     async def create_policy(self, data: AttendancePolicyCreate, *, actor_employment_id: int | None = None) -> AttendancePolicyResponse:
         current = await self._repo.get_current_policy(as_of=data.effective_from)

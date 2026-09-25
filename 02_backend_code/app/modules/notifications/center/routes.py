@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.core.authorization import AuthContext, require_permission
 from app.core.db.enums import NotificationStatus
-from app.modules.notifications.center.schemas import MessageResponse, NotificationResponse
+from app.modules.notifications.center.schemas import NotificationResponse
 from app.modules.notifications.dependencies import CenterServiceDep
 
 router = APIRouter(prefix="/notifications", tags=["Notifications — Center"])
@@ -42,6 +42,24 @@ async def unread_count(
     return await service.unread_count(auth.employment_id)
 
 
+@router.get("/inbox/{notification_id}", response_model=NotificationResponse)
+async def get_notification(
+    notification_id: int,
+    service: CenterServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("notification", "VIEW", "SELF"))],
+) -> NotificationResponse:
+    return await service.get_notification(notification_id, employment_id=auth.employment_id)
+
+
+@router.get("/{notification_id}", response_model=NotificationResponse)
+async def get_notification_short(
+    notification_id: int,
+    service: CenterServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("notification", "VIEW", "SELF"))],
+) -> NotificationResponse:
+    return await service.get_notification(notification_id, employment_id=auth.employment_id)
+
+
 @router.post("/inbox/{notification_id}/read", response_model=NotificationResponse)
 async def mark_read(
     notification_id: int,
@@ -60,22 +78,22 @@ async def mark_read_short(
     return await service.mark_read(notification_id, employment_id=auth.employment_id)
 
 
-@router.post("/read-all", response_model=MessageResponse)
+@router.post("/read-all")
 async def mark_all_read(
     service: CenterServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("notification", "UPDATE", "SELF"))],
-) -> MessageResponse:
+) -> dict[str, int]:
     items = await service.list_inbox(
         auth.employment_id, status=NotificationStatus.UNREAD, limit=200, offset=0
     )
-    n = 0
+    n = failed = 0
     for row in items:
         try:
             await service.mark_read(row.id, employment_id=auth.employment_id)
             n += 1
         except Exception:
-            continue
-    return MessageResponse(message="ok", queued=n)
+            failed += 1
+    return {"read": n, "failed": failed}
 
 
 @router.post("/inbox/{notification_id}/archive", response_model=NotificationResponse)
@@ -96,19 +114,37 @@ async def archive_short(
     return await service.archive(notification_id, employment_id=auth.employment_id)
 
 
-@router.post("/archive-read", response_model=MessageResponse)
+@router.post("/archive-read")
 async def archive_read(
     service: CenterServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("notification", "UPDATE", "SELF"))],
-) -> MessageResponse:
+) -> dict[str, int]:
     items = await service.list_inbox(
         auth.employment_id, status=NotificationStatus.READ, limit=200, offset=0
     )
-    n = 0
+    n = failed = 0
     for row in items:
         try:
             await service.archive(row.id, employment_id=auth.employment_id)
             n += 1
         except Exception:
-            continue
-    return MessageResponse(message="ok", queued=n)
+            failed += 1
+    return {"archived": n, "failed": failed}
+
+
+@router.delete("/inbox/{notification_id}", response_model=NotificationResponse)
+async def delete_notification(
+    notification_id: int,
+    service: CenterServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("notification", "UPDATE", "SELF"))],
+) -> NotificationResponse:
+    return await service.soft_delete(notification_id, employment_id=auth.employment_id)
+
+
+@router.delete("/{notification_id}", response_model=NotificationResponse)
+async def delete_notification_short(
+    notification_id: int,
+    service: CenterServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("notification", "UPDATE", "SELF"))],
+) -> NotificationResponse:
+    return await service.soft_delete(notification_id, employment_id=auth.employment_id)

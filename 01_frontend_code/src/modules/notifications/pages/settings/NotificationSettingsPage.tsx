@@ -1,120 +1,36 @@
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
 import { useNotificationSettings } from '../../hooks/settings/use-notification-settings'
-import {
-  notificationSettingsFormSchema,
-  type NotificationSettingsForm,
-} from '../../schemas/settings-form'
 import { cn } from '@/shared/lib/cn'
 import { Can } from '@/shared/rbac'
 import { Action } from '@/shared/schema'
 
-function Toggle({
-  checked,
-  onChange,
-  disabled = false,
-}: {
-  checked: boolean
-  onChange: () => void
-  disabled?: boolean
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={onChange}
-      disabled={disabled}
-      className={cn(
-        'w-10 h-5 rounded-full relative transition-colors shrink-0',
-        checked ? 'bg-secondary' : 'bg-outline-variant',
-        disabled && 'opacity-50 cursor-not-allowed',
-      )}
-    >
-      <span
-        className={cn(
-          'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow',
-          checked && 'translate-x-5',
-        )}
-      />
-    </button>
-  )
-}
-
 export function NotificationSettingsPage() {
   const s = useNotificationSettings()
-
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
-    formState: { isSubmitting, isDirty },
-    reset,
-  } = useForm<NotificationSettingsForm>({
-    resolver: zodResolver(notificationSettingsFormSchema),
-    defaultValues: {
-      channelEnabled: s.channelEnabled,
-      triggerEnabled: Object.fromEntries(s.triggers.map((t) => [t.id, t.enabled])),
-      freq: s.freq,
-      quietOn: s.quietOn,
-      quietStart: s.quietStart,
-      quietEnd: s.quietEnd,
-    },
-  })
-
-  const [baseline, setBaseline] = useState<NotificationSettingsForm | null>(null)
-
-  useEffect(() => {
-    if (!baseline && s.channelCards.length && s.triggers.length) {
-      const initial: NotificationSettingsForm = {
-        channelEnabled: s.channelEnabled,
-        triggerEnabled: Object.fromEntries(s.triggers.map((t) => [t.id, t.enabled])),
-        freq: s.freq,
-        quietOn: s.quietOn,
-        quietStart: s.quietStart,
-        quietEnd: s.quietEnd,
-      }
-      setBaseline(initial)
-      reset(initial)
-    }
-  }, [s.channelCards, s.triggers, baseline, reset, s.channelEnabled, s.freq, s.quietOn, s.quietStart, s.quietEnd])
-
-  const channelEnabled = watch('channelEnabled')
-  const triggerEnabled = watch('triggerEnabled')
-  const freq = watch('freq')
-  const quietOn = watch('quietOn')
-  const quietStart = watch('quietStart')
-  const quietEnd = watch('quietEnd')
+    formState: { isSubmitting },
+  } = s.form
+  const {
+    channelEnabled,
+    triggerEnabled,
+    freq,
+    quietOn,
+    isDirty,
+    isSaving,
+    exemptions,
+  } = s
 
   if (s.isLoading) {
     return <div className="py-16 text-center text-on-surface-variant">Loading settings…</div>
   }
 
-  const onSubmit = (data: NotificationSettingsForm) => {
-    Object.entries(data.channelEnabled).forEach(([id, enabled]) => {
-      if (channelEnabled[id] !== enabled) s.toggleChannel(id)
-    })
-    Object.entries(data.triggerEnabled).forEach(([id, enabled]) => {
-      if (triggerEnabled[id] !== enabled) s.toggleTrigger(id)
-    })
-    if (data.freq !== freq) s.setFreq(data.freq)
-    if (data.quietOn !== quietOn) s.setQuietOn(data.quietOn)
-    if (data.quietStart !== quietStart) s.setQuietStart(data.quietStart)
-    if (data.quietEnd !== quietEnd) s.setQuietEnd(data.quietEnd)
-    s.save()
-    setBaseline(data)
-  }
-
   const onDiscard = () => {
-    if (baseline) reset(baseline)
     s.discard()
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={(e) => void s.save(e)}>
       <div className="space-y-10 animate-fade-in">
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
@@ -129,7 +45,7 @@ export function NotificationSettingsPage() {
                 Discard Changes
               </Button>
               <Can action={Action.UPDATE} resource="notification">
-                <Button variant="primary" size="md" type="submit" isLoading={isSubmitting}>
+                <Button variant="primary" size="md" type="submit" isLoading={isSubmitting || isSaving}>
                   Save Settings
                 </Button>
               </Can>
@@ -155,15 +71,23 @@ export function NotificationSettingsPage() {
                   <div className="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center">
                     <span className="material-symbols-outlined text-deep-navy">{c.icon}</span>
                   </div>
-                  <Toggle
-                    checked={channelEnabled[c.id] ?? false}
-                    onChange={() =>
-                      setValue('channelEnabled', {
-                        ...channelEnabled,
-                        [c.id]: !channelEnabled[c.id],
-                      })
-                    }
-                  />
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={channelEnabled[c.id] ?? false}
+                    onClick={() => s.toggleChannel(c.id)}
+                    className={cn(
+                      'w-10 h-5 rounded-full relative transition-colors shrink-0',
+                      (channelEnabled[c.id] ?? false) ? 'bg-secondary' : 'bg-outline-variant',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow',
+                        (channelEnabled[c.id] ?? false) && 'translate-x-5',
+                      )}
+                    />
+                  </button>
                 </div>
                 <h4 className="text-title-lg font-semibold text-deep-navy mb-1">{c.title}</h4>
                 <p className="text-body-sm text-on-surface-variant mb-4">{c.description}</p>
@@ -225,15 +149,23 @@ export function NotificationSettingsPage() {
                     </td>
                     <td className="py-4 px-6 text-on-surface-variant text-body-sm">{t.lastTriggered}</td>
                     <td className="py-4 px-6">
-                      <Toggle
-                        checked={triggerEnabled[t.id] ?? false}
-                        onChange={() =>
-                          setValue('triggerEnabled', {
-                            ...triggerEnabled,
-                            [t.id]: !triggerEnabled[t.id],
-                          })
-                        }
-                      />
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={triggerEnabled[t.id] ?? false}
+                        onClick={() => s.toggleTrigger(t.id)}
+                        className={cn(
+                          'w-10 h-5 rounded-full relative transition-colors shrink-0',
+                          (triggerEnabled[t.id] ?? false) ? 'bg-secondary' : 'bg-outline-variant',
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow',
+                            (triggerEnabled[t.id] ?? false) && 'translate-x-5',
+                          )}
+                        />
+                      </button>
                     </td>
                     <td className="py-4 px-6 text-right">
                       <button type="button" className="text-on-surface-variant hover:text-deep-navy transition-colors">
@@ -312,7 +244,23 @@ export function NotificationSettingsPage() {
                     Suppress non-critical alerts during specified periods.
                   </p>
                 </div>
-                <Toggle checked={quietOn} onChange={() => setValue('quietOn', !quietOn)} />
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={quietOn}
+                  onClick={() => s.setQuietOn(!quietOn)}
+                  className={cn(
+                    'w-10 h-5 rounded-full relative transition-colors shrink-0',
+                    quietOn ? 'bg-secondary' : 'bg-outline-variant',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow',
+                      quietOn && 'translate-x-5',
+                    )}
+                  />
+                </button>
               </div>
               <div className={cn('grid grid-cols-2 gap-4', !quietOn && 'opacity-50 pointer-events-none')}>
                 <div>
@@ -335,12 +283,11 @@ export function NotificationSettingsPage() {
               <div className="mt-6">
                 <label className="block text-label-md text-deep-navy mb-3">Exemptions</label>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-4 py-2 bg-surface-container text-deep-navy rounded-full flex items-center gap-2 text-sm border border-outline-variant">
-                    <span className="material-symbols-outlined text-[18px]">verified_user</span> Security Alerts
-                  </span>
-                  <span className="px-4 py-2 bg-surface-container text-deep-navy rounded-full flex items-center gap-2 text-sm border border-outline-variant">
-                    <span className="material-symbols-outlined text-[18px]">warning</span> System Down
-                  </span>
+                  {exemptions.map((name) => (
+                    <span key={name} className="px-4 py-2 bg-surface-container text-deep-navy rounded-full flex items-center gap-2 text-sm border border-outline-variant">
+                      <span className="material-symbols-outlined text-[18px]">verified_user</span> {name}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>

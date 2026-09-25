@@ -40,6 +40,36 @@ class ComposeService(BasePublicService):
         self._repo = ComposeRepository(session)
 
     async def notify(self, data: NotifyRequest) -> NotificationResponse | None:
+        # DEPARTMENT/TEAM fan-out: snapshot membership now and persist one
+        # EMPLOYMENT row per member (no retroactive updates on later changes).
+        if data.recipient_type != NotificationRecipientType.EMPLOYMENT:
+            from app.modules.notifications.recipients import resolve_employment_ids
+
+            try:
+                member_ids = await resolve_employment_ids(
+                    self._session, data.recipient_type, data.recipient_id
+                )
+            except Exception:
+                logger.exception("recipient fan-out failed")
+                return None
+            first: NotificationResponse | None = None
+            for emp_id in member_ids:
+                result = await self.notify(
+                    NotifyRequest(
+                        recipient_type=NotificationRecipientType.EMPLOYMENT,
+                        recipient_id=emp_id,
+                        template_code=data.template_code,
+                        title=data.title,
+                        body=data.body,
+                        payload=data.payload,
+                        channel=data.channel,
+                        action=data.action,
+                        expires_at=data.expires_at,
+                    )
+                )
+                if result is not None and first is None:
+                    first = result
+            return first
         try:
             if data.recipient_type == NotificationRecipientType.EMPLOYMENT:
                 enabled = await self._repo.is_channel_enabled(
@@ -80,6 +110,56 @@ class ComposeService(BasePublicService):
             except Exception:
                 pass
             return None
+
+    #: frontend compose channel keys -> backend channels (SMS/PUSH deferred).
+    COMPOSE_CHANNEL_MAP = {
+        "inapp": NotificationChannel.IN_APP,
+        "in_app": NotificationChannel.IN_APP,
+        "email": NotificationChannel.EMAIL,
+    }
+
+    async def compose_broadcast(self, body) -> int:
+        """Compose form send: broadcastAll -> all active employments, fan out
+        per selected channel (IN_APP + EMAIL only). Returns queued count."""
+        from app.modules.notifications.compose.schemas import ComposeBody
+        from app.modules.notifications.recipients import all_active_employment_ids
+
+        assert isinstance(body, ComposeBody)
+        employment_ids = list(body.employment_ids)
+        if body.broadcastAll:
+            employment_ids = await all_active_employment_ids(self._session)
+        if not employment_ids:
+            return 0
+        wanted: list[NotificationChannel] = []
+        for key, on in (body.channels or {}).items():
+            mapped = self.COMPOSE_CHANNEL_MAP.get(str(key).lower()) if on else None
+            if mapped is not None and mapped not in wanted:
+                wanted.append(mapped)
+        if not wanted:
+            wanted = [NotificationChannel.IN_APP]
+        queued = 0
+        sent_ids: list[int] = []
+        for channel in wanted:
+            rows = await self.notify_bulk(
+                NotifyBulkRequest(
+                    employment_ids=employment_ids,
+                    template_code=body.template_code,
+                    title=body.title or None,
+                    body=body.body or None,
+                    channel=channel,
+                )
+            )
+            queued += len(rows)
+            sent_ids.extend(r.id for r in rows)
+        if body.attachment_ids and sent_ids:
+            from app.modules.notifications.attachments.service import (
+                AttachmentService,
+            )
+
+            await AttachmentService(self._session).link_to_notifications(
+                list(body.attachment_ids), sent_ids
+            )
+        return queued
 
     async def notify_bulk(
         self, data: NotifyBulkRequest

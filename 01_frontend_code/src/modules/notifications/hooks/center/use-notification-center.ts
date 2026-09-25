@@ -6,13 +6,56 @@ import {
   archiveNotification,
   archiveReadNotifications,
   computeInboxKpis,
+  deleteNotification,
   listAllInboxNotifications,
   listInboxNotifications,
   markAllNotificationsRead,
   markNotificationRead,
 } from '../../api/center'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { toast } from '@/shared/hooks/use-toast'
 import type { AppNotification, NotificationTab, NotificationTabId } from '../../types'
+
+function isRow(value: unknown): value is AppNotification {
+  return typeof value === 'object' && value !== null && 'id' in value && 'status' in value
+}
+
+/** Instantly reflect a status change across every cached inbox/detail query. */
+function patchCachedStatus(
+  qc: ReturnType<typeof useQueryClient>,
+  id: string | null,
+  status: AppNotification['status'] | null,
+  remove = false,
+  from: AppNotification['status'] | null = null,
+) {
+  const apply = (n: unknown): unknown => {
+    if (!isRow(n)) return n
+    if (id !== null && String(n.id) !== id) return n
+    if (from !== null && n.status !== from) return n
+    return { ...n, status: status ?? n.status }
+  }
+  qc.setQueriesData({ queryKey: queryKeys.notifications.all }, (old: unknown) => {
+    if (Array.isArray(old)) {
+      const next = (old as unknown[]).map(apply)
+      return remove && id !== null
+        ? next.filter((n) => !(isRow(n) && String(n.id) === id))
+        : next
+    }
+    if (old && typeof old === 'object' && 'items' in old && Array.isArray((old as { items: unknown }).items)) {
+      const items = (old as { items: unknown[] }).items.map(apply)
+      const visible =
+        remove && id !== null
+          ? items.filter((n) => !(isRow(n) && String(n.id) === id))
+          : items
+      return { ...old, items: visible }
+    }
+    if (isRow(old) && id !== null && String(old.id) === id) {
+      return apply(old)
+    }
+    return old
+  })
+}
 
 export type { NotificationTabId }
 
@@ -88,19 +131,51 @@ export function useNotificationCenter() {
 
   const markReadMut = useMutation({
     mutationFn: markNotificationRead,
+    onMutate: (id) => patchCachedStatus(qc, id, 'Read'),
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not mark as read'))
+      void invalidate.notifications(qc)
+    },
     onSuccess: () => void invalidate.notifications(qc),
   })
   const markAllMut = useMutation({
     mutationFn: markAllNotificationsRead,
+    onMutate: () => patchCachedStatus(qc, null, 'Read', false, 'Unread'),
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not mark all as read'))
+      void invalidate.notifications(qc)
+    },
     onSuccess: () => void invalidate.notifications(qc),
   })
   const archiveMut = useMutation({
     mutationFn: archiveNotification,
+    onMutate: (id) => patchCachedStatus(qc, id, 'Archived'),
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not archive'))
+      void invalidate.notifications(qc)
+    },
     onSuccess: () => void invalidate.notifications(qc),
   })
   const archiveReadMut = useMutation({
     mutationFn: archiveReadNotifications,
+    onMutate: () => patchCachedStatus(qc, null, 'Archived', false, 'Read'),
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not archive read items'))
+      void invalidate.notifications(qc)
+    },
     onSuccess: () => void invalidate.notifications(qc),
+  })
+  const deleteMut = useMutation({
+    mutationFn: deleteNotification,
+    onMutate: (id) => patchCachedStatus(qc, id, null, true),
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not delete'))
+      void invalidate.notifications(qc)
+    },
+    onSuccess: () => {
+      setMenuOpenId(null)
+      void invalidate.notifications(qc)
+    },
   })
 
   const selected =
@@ -159,7 +234,9 @@ export function useNotificationCenter() {
     markAllRead: () => markAllMut.mutate(),
     archiveRead: () => archiveReadMut.mutate(),
     markRead: (id: string) => markReadMut.mutate(id),
+    markReadPending: markReadMut.isPending,
     archiveOne: (id: string) => archiveMut.mutate(id),
+    deleteOne: (id: string) => deleteMut.mutate(id),
     menuOpenId,
     setMenuOpenId,
     selectionMode: selection.selectionMode,

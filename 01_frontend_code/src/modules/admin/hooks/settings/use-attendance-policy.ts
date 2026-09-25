@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getAttendanceSettings, updateAttendanceSettings } from '../../api/settings'
@@ -49,13 +50,17 @@ export function useAttendancePolicy() {
     },
   })
 
+  // Memoized: a fresh `?? []` every render changed identity each pass,
+  // retriggering the page's reset effect into an infinite update loop.
+  const shifts = useMemo(() => shiftsQuery.data?.items ?? [], [shiftsQuery.data])
+
   return {
     policy: policyQuery.data,
     policyLoading: policyQuery.isLoading,
     policyError: policyQuery.error,
     refetchPolicy: policyQuery.refetch,
     metrics: metricsQuery.data,
-    shifts: shiftsQuery.data?.items ?? [],
+    shifts,
     shiftsLoading: shiftsQuery.isLoading,
     savePolicy: saveMut.mutateAsync,
     isSaving: saveMut.isPending,

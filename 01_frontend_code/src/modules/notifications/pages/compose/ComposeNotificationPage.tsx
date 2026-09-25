@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
@@ -11,7 +11,9 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { cn } from '@/shared/lib/cn'
 import { invalidate } from '@/shared/lib/query-keys'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { saveNotificationDraft, sendNotification } from '../../api/compose'
+import { sendNotification } from '../../api/compose'
+import { createDraft, deleteDraft, listDrafts, type DraftInput } from '../../api/drafts'
+import { uploadAttachment } from '../../api/attachments'
 import {
   composeNotificationFormSchema,
   emptyComposeForm,
@@ -92,8 +94,33 @@ export function ComposeNotificationPage() {
   const [toast, setToast] = useState<string | null>(null)
   const [roleQuery, setRoleQuery] = useState('')
 
+  const draftsQuery = useQuery({
+    queryKey: ['notifications', 'drafts'] as const,
+    queryFn: listDrafts,
+  })
+
+  const toDraftInput = (data: ComposeNotificationForm): DraftInput => ({
+    title: data.title,
+    body: data.body,
+    priority: data.priority,
+    module_ctx: data.moduleCtx ?? '',
+    broadcast_all: data.broadcastAll,
+    roles: data.roles,
+    channels: data.channels as Record<string, unknown>,
+    schedule_mode: data.scheduleMode,
+    schedule_at: data.scheduleAt ?? null,
+  })
+
   const sendMut = useMutation({
-    mutationFn: sendNotification,
+    mutationFn: async (data: ComposeNotificationForm) => {
+      // Upload attachments for real first, then send with their ids.
+      const attachmentIds: number[] = []
+      for (const f of files) {
+        const uploaded = await uploadAttachment(f)
+        attachmentIds.push(uploaded.id)
+      }
+      return sendNotification({ ...data, attachment_ids: attachmentIds } as ComposeNotificationForm)
+    },
     onSuccess: (res) => {
       void invalidate.notifications(qc)
       setToast(
@@ -103,14 +130,24 @@ export function ComposeNotificationPage() {
       )
       window.setTimeout(() => safeNavigate(navigate, { to: notificationRoutes.sent }), 900)
     },
+    onError: () => {
+      setToast('Could not send — attachments or delivery failed.')
+      window.setTimeout(() => setToast(null), 3000)
+    },
   })
 
   const draftMut = useMutation({
-    mutationFn: saveNotificationDraft,
+    mutationFn: (data: ComposeNotificationForm) => createDraft(toDraftInput(data)),
     onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['notifications', 'drafts'] })
       setToast('Draft saved.')
       window.setTimeout(() => setToast(null), 2000)
     },
+  })
+
+  const deleteDraftMut = useMutation({
+    mutationFn: deleteDraft,
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['notifications', 'drafts'] }),
   })
 
   const onSubmit = (data: ComposeNotificationForm) => {
@@ -119,6 +156,21 @@ export function ComposeNotificationPage() {
 
   const onSaveDraft = (data: ComposeNotificationForm) => {
     draftMut.mutate(data)
+  }
+
+  const loadDraft = (id: number) => {
+    const d = draftsQuery.data?.find((x) => x.id === id)
+    if (!d) return
+    setValue('title', d.title)
+    setValue('body', d.body)
+    setValue('priority', d.priority as ComposeNotificationForm['priority'])
+    setValue('moduleCtx', d.module_ctx)
+    setValue('broadcastAll', d.broadcast_all)
+    setValue('roles', d.roles)
+    setValue('scheduleMode', (d.schedule_mode === 'later' ? 'later' : 'now') as 'now' | 'later')
+    setValue('scheduleAt', d.schedule_at ?? undefined)
+    setToast('Draft loaded.')
+    window.setTimeout(() => setToast(null), 2000)
   }
 
   const roleMatches = COMPOSE_ROLE_SUGGESTIONS.filter(
@@ -167,6 +219,41 @@ export function ComposeNotificationPage() {
         <div className="rounded-lg border border-secondary/30 bg-secondary/10 px-4 py-3 text-label-md text-secondary">
           {toast}
         </div>
+      )}
+
+      {(draftsQuery.data?.length ?? 0) > 0 && (
+        <section className="bv-surface p-4">
+          <h3 className="text-label-md font-semibold text-on-surface-variant uppercase tracking-wider mb-3">
+            Saved drafts ({draftsQuery.data?.length})
+          </h3>
+          <ul className="divide-y divide-outline-variant/40">
+            {draftsQuery.data?.map((d) => (
+              <li key={d.id} className="py-2 flex items-center gap-3 justify-between">
+                <div className="min-w-0">
+                  <p className="text-body-md font-medium text-on-background truncate">
+                    {d.title || '(untitled draft)'}
+                  </p>
+                  <p className="text-label-sm text-on-surface-variant">
+                    {d.priority} · {new Date(d.updated_at).toLocaleString()}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button variant="outline" size="sm" onClick={() => loadDraft(d.id)}>
+                    Load
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={deleteDraftMut.isPending}
+                    onClick={() => deleteDraftMut.mutate(d.id)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -389,13 +476,12 @@ export function ComposeNotificationPage() {
               <h3 className="text-title-lg font-semibold text-on-background mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">hub</span> Channels
               </h3>
-              <p className="text-[11px] text-on-surface-variant mb-3">V1: In-App + Email. SMS disabled.</p>
+              <p className="text-[11px] text-on-surface-variant mb-3">V1: In-App + Email.</p>
               <div className="space-y-2">
                 {(
                   [
                     { key: 'inApp' as const, icon: 'dashboard', label: 'In-App Dashboard', disabled: false },
                     { key: 'email' as const, icon: 'mail', label: 'Official Email', disabled: false },
-                    { key: 'sms' as const, icon: 'sms', label: 'SMS Alert (disabled)', disabled: true },
                     { key: 'push' as const, icon: 'notifications_active', label: 'Mobile Push', disabled: false },
                   ] as const
                 ).map((c) => (

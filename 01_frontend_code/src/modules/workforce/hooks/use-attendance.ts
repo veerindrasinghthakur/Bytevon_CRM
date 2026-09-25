@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { toast } from '@/shared/hooks/use-toast'
 import {
   decideCorrection,
   getAttendanceDashboard,
@@ -68,12 +70,20 @@ export function useDecideCorrection() {
     mutationFn: ({
       approvalRequestId,
       decision,
+      reason,
     }: {
       approvalRequestId: number
       decision: 'approve' | 'reject'
-    }) => decideCorrection(approvalRequestId, decision),
-    onSuccess: () => {
+      reason?: string
+    }) => decideCorrection(approvalRequestId, decision, reason),
+    onSuccess: (_v, input) => {
       void qc.invalidateQueries({ queryKey: queryKeys.workforce.attendance.all })
+      toast.success(
+        input.decision === 'approve' ? 'Correction approved' : 'Correction rejected',
+      )
+    },
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Could not decide the correction'))
     },
   })
 }

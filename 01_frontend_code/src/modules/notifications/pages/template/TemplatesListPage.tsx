@@ -151,9 +151,7 @@ export function TemplatesListPage() {
                   <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Code</th>
                   <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Title template</th>
                   <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">Active</th>
-                  {/* Actions column hidden — restore the block below when row actions return.
                   <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
-                  */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -179,14 +177,13 @@ export function TemplatesListPage() {
                       </button>
                       </Can>
                     </td>
-                    {/* Edit entry point hidden with the Actions column (modal editor kept).
-                        Restore with the Actions <th> above when row actions return.
                     <td className="px-4 py-4 text-right">
-                      <Button variant="outline" size="sm" onClick={() => openEdit(t)}>
-                        Edit
-                      </Button>
+                      <Can action={Action.UPDATE} resource="notification">
+                        <Button variant="outline" size="sm" onClick={() => openEdit(t)}>
+                          Edit
+                        </Button>
+                      </Can>
                     </td>
-                    */}
                   </tr>
                 ))}
                 {filtered.length === 0 && !isLoading && !isFetching && (
