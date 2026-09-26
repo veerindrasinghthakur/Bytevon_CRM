@@ -12,12 +12,12 @@ import { requireView } from '@/shared/rbac/require-permission'
 /** Variable grant: any approval VIEW opens the center; data is scope-filtered server-side. */
 const requireApprovalView = () => requireView('approval')
 
-const ApprovalCenterPage = lazyPage(() => import('./pages/request/ApprovalCenterPage'), 'ApprovalCenterPage')
+const ApprovalCenterPage = lazyPage(() => import('./pages/ApprovalCenterPage'), 'ApprovalCenterPage')
 const PendingApprovalsPage = lazyPage(
-  () => import('./pages/approval_action/PendingApprovalsPage'),
+  () => import('./pages/PendingApprovalsPage'),
   'PendingApprovalsPage',
 )
-const ApprovalDetailPage = lazyPage(() => import('./pages/request/ApprovalDetailPage'), 'ApprovalDetailPage')
+const ApprovalDetailPage = lazyPage(() => import('./pages/ApprovalDetailPage'), 'ApprovalDetailPage')
 
 /** Path helpers — always navigate via these + safeNavigate (no string literals in pages). */
 export const approvalRoutes = {

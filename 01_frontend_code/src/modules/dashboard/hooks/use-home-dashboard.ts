@@ -10,8 +10,8 @@ import {
   HOME_SECTIONS,
   MAX_QUICK_ACTIONS,
   isGateAllowed,
-  type DashboardSectionId,
-} from '../catalog'
+} from '../lib/dashboard-catalog'
+import type { DashboardSectionId } from '../types/dashboard.types'
 
 export function useHomeDashboard() {
   const exec = useExecutiveDashboard()

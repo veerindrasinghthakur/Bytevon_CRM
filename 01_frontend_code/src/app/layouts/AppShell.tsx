@@ -14,6 +14,7 @@ export function AppShell() {
     toggleRail,
     isSecondaryCollapsed,
     toggleSecondary,
+    isMobile,
     headerStyle,
     mainStyle,
     handleLogout,
@@ -30,12 +31,16 @@ export function AppShell() {
             void handleLogout()
           }}
         />
-        <SecondarySidebar isCollapsed={isSecondaryCollapsed} onToggle={toggleSecondary} />
+        <SecondarySidebar
+          isCollapsed={isSecondaryCollapsed}
+          onToggle={toggleSecondary}
+          overlay={isMobile}
+        />
       </div>
 
-      <Header style={headerStyle} />
+      <Header style={headerStyle} onMenu={isMobile ? toggleSecondary : undefined} />
 
-      <main className="flex-1 bg-background overflow-y-auto p-margin-desktop" style={mainStyle}>
+      <main className="flex-1 bg-background overflow-y-auto p-4 sm:p-6 lg:p-margin-desktop" style={mainStyle}>
         <Outlet />
       </main>
 

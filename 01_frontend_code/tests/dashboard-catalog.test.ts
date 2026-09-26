@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { HOME_QUICK_ACTIONS, MAX_QUICK_ACTIONS } from '@/modules/dashboard/catalog'
+import { HOME_QUICK_ACTIONS, MAX_QUICK_ACTIONS } from '@/modules/dashboard/lib/dashboard-catalog'
 
 describe('dashboard catalog', () => {
   it('caps quick actions at MAX_QUICK_ACTIONS with unique ids', () => {

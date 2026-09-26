@@ -301,13 +301,10 @@ export function UserDetailPage() {
           <Section title="Status">
             <span
               className={cn(
-                'inline-flex px-3 py-1 rounded-full text-label-sm font-medium border',
-                d.status === 'Active' &&
-                  'bg-[var(--color-success-emerald)]/10 text-[var(--color-success-emerald)] border-[var(--color-success-emerald)]/30',
-                d.status === 'Locked' &&
-                  'bg-[var(--color-error-red)]/10 text-[var(--color-error-red)] border-[var(--color-error-red)]/30',
-                d.status === 'Inactive' &&
-                  'bg-surface-container text-on-surface-variant border-outline-variant',
+                'status-badge',
+                d.status === 'Active' && 'status-success',
+                d.status === 'Locked' && 'status-error',
+                d.status === 'Inactive' && 'status-neutral',
               )}
             >
               {d.status}

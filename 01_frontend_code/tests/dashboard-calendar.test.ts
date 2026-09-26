@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildMonthGrid, CALENDAR_DAY_LABELS } from '@/modules/dashboard/calendar'
+import { buildMonthGrid, CALENDAR_DAY_LABELS } from '@/modules/dashboard/lib/dashboard-calendar'
 
 describe('dashboard calendar', () => {
   it('day labels intentionally abbreviate (dupes) so consumers must use index keys', () => {

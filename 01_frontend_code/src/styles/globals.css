@@ -220,10 +220,6 @@
     color: var(--color-on-secondary-container);
     border-color: color-mix(in srgb, var(--color-electric-blue) 30%, transparent);
   }
-/* Dark mode text color adjustment for status-info badge */
-  .status-info {
-    color: var(--color-on-secondary);
-}
   .status-neutral {
     background-color: var(--color-surface-container);
     color: var(--color-on-surface-variant);

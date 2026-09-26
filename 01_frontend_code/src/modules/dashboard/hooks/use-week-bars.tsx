@@ -1,30 +1,9 @@
 import { cn } from '@/shared/lib/cn'
-import type { ReactElement } from 'react'
-
-const WEEK_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
-
-type BreakMarker = {
-  id: string
-  startPct: number
-  endPct?: number
-}
-
-type WeekBarData =
-  | number
-  | {
-      pct: number
-      isWeekend?: boolean
-      breakMarkers?: BreakMarker[]
-    }
-
-interface UseWeekBarsOptions {
-  weekBars: WeekBarData[]
-  todayIndex: number
-}
-
-interface UseWeekBarsReturn {
-  weekBarElements: ReactElement[]
-}
+import { WEEK_LABELS } from '../lib/dashboard-calendar'
+import type {
+  UseWeekBarsOptions,
+  UseWeekBarsReturn,
+} from '../types/dashboard.types'
 
 export function useWeekBars({ weekBars, todayIndex }: UseWeekBarsOptions): UseWeekBarsReturn {
   const weekBarElements = weekBars.map((bar, i) => {

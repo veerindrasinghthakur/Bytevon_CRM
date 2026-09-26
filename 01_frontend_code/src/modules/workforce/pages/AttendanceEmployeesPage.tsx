@@ -79,7 +79,8 @@ export function AttendanceEmployeesPage() {
             aria-label="Filter by status"
           />
         </div>
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[720px] text-left">
           <thead>
             <tr className="bg-surface-container-low/50 border-b border-outline-variant/30">
               <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Employee</th>
@@ -130,6 +131,7 @@ export function AttendanceEmployeesPage() {
             ))}
           </tbody>
         </table>
+        </div>
         {filtered.length === 0 && (
           <div className="px-6 py-16 text-center text-body-sm text-on-surface-variant">
             No records match your filters.

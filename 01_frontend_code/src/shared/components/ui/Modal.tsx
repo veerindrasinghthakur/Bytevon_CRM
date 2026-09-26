@@ -24,7 +24,7 @@ export function Modal({ title, children, onClose, danger, wide, closeOnEscape = 
 
   return (
     <Portal>
-      <div className="fixed inset-0 bg-on-surface/20 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="fixed inset-0 modal-overlay z-40" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div className={cn('bv-surface executive-shadow w-full my-auto', wide ? 'max-w-2xl' : 'max-w-md')}>
           <div

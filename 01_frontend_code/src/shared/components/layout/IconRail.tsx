@@ -75,7 +75,7 @@ export function IconRail({
             'w-7 h-7 rounded-full flex items-center justify-center',
             'text-on-primary bg-deep-navy border border-sidebar-item-active',
             'shadow-md',
-            'opacity-0 group-hover:opacity-100 focus:opacity-100',
+            'opacity-0 group-hover:opacity-100 focus:opacity-100 max-md:opacity-100',
             'transition-opacity duration-150',
             'hover:bg-sidebar-item-active hover:text-on-primary',
           )}

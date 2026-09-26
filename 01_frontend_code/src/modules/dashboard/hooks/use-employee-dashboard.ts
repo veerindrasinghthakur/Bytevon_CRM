@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useRbac } from '@/shared/rbac'
 import { Action } from '@/shared/schema'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { getEmployeeDashboard } from '../api/dashboard'
+import { getEmployeeDashboard } from '../api/dashboard-api'
 
 export function useEmployeeDashboard() {
   const { can, isLoading: rbacLoading } = useRbac()

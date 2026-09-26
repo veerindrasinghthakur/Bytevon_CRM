@@ -10,7 +10,7 @@ import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 
 export const HEADER_HEIGHT_PX = 56
 
-export function Header({ title, className, style }: HeaderProps) {
+export function Header({ title, className, style, onMenu }: HeaderProps & { onMenu?: () => void }) {
   const navigate = useNavigate()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const bell = useNotificationBell()
@@ -24,13 +24,25 @@ export function Header({ title, className, style }: HeaderProps) {
     <header
       className={cn(
         'fixed top-0 right-0 z-40 h-14 bg-surface border-b border-outline-variant',
-        'flex items-center justify-between px-margin-desktop',
+        'flex items-center justify-between px-4 sm:px-6 lg:px-margin-desktop',
         className,
       )}
       style={style}
       data-shell-header="v2"
     >
-      <div className="flex items-center gap-4 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+        {onMenu && (
+          <button
+            type="button"
+            onClick={onMenu}
+            className="md:hidden inline-flex items-center justify-center rounded-lg p-2 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue"
+            aria-label="Open navigation menu"
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">
+              menu
+            </span>
+          </button>
+        )}
         {title && (
           <h2 className="text-body-md font-semibold text-on-background truncate hidden md:block">
             {title}
@@ -38,7 +50,7 @@ export function Header({ title, className, style }: HeaderProps) {
         )}
       </div>
 
-      <div className="flex-1 flex justify-center max-w-md mx-4">
+      <div className="hidden min-[480px]:flex flex-1 justify-center max-w-md mx-4">
         <div className="flex items-center w-full max-w-xs bg-surface-container-low rounded-lg px-3 py-1.5 border border-outline-variant focus-within:border-electric-blue">
           <span
             className="material-symbols-outlined text-on-surface-variant mr-2 text-lg"
@@ -69,7 +81,7 @@ export function Header({ title, className, style }: HeaderProps) {
               'relative inline-flex items-center justify-center rounded-full p-2',
               'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
-              (isNotificationsActive || bellOpen) && 'bg-[#e8f1ff] text-secondary',
+              (isNotificationsActive || bellOpen) && 'bg-secondary-container/60 text-secondary',
             )}
           >
             <span

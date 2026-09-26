@@ -43,7 +43,7 @@ import type {
   ApproverOption,
   WeekHourBar,
 } from '../types'
-import type { ApprovalRow } from '@/modules/approvals/types'
+import type { ApprovalRow } from '@/modules/approvals/types/request.types'
 
 export interface MyWorkListParams {
   search?: string

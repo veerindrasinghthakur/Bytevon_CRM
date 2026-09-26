@@ -499,7 +499,8 @@ export function AttendanceDashboardPage() {
               )}
             </div>
           </div>
-          <table className="w-full text-left">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left">
             <thead>
               <tr className="bg-surface-container-low/50 border-b border-outline-variant/30">
                 <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Employee</th>
@@ -552,6 +553,7 @@ export function AttendanceDashboardPage() {
               )}
             </tbody>
           </table>
+          </div>
         </section>
 
         <section className="bv-surface p-5">

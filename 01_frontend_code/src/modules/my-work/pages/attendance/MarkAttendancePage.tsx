@@ -29,7 +29,10 @@ export function MarkAttendancePage() {
       />
 
       {m.manualToast && (
-        <div className="rounded-lg border border-secondary/30 bg-secondary-container/40 px-4 py-3 text-label-md text-on-secondary-container">
+        <div
+          role="status"
+          className="rounded-lg border border-secondary/30 bg-secondary-container/40 px-4 py-3 text-label-md text-on-secondary-container"
+        >
           {m.manualToast}
         </div>
       )}
@@ -44,8 +47,12 @@ export function MarkAttendancePage() {
           </div>
 
           <div className="flex flex-col items-center justify-center py-8">
-            <div className="w-48 h-48 rounded-full border-8 border-surface-container-high bg-surface-container-low flex flex-col items-center justify-center mb-6 executive-shadow">
-              <span className="text-5xl font-bold text-secondary tracking-tighter">{m.timeLabel}</span>
+            <div
+              className="w-40 h-40 sm:w-48 sm:h-48 rounded-full border-8 border-surface-container-high bg-surface-container-low flex flex-col items-center justify-center mb-6 executive-shadow"
+              role="timer"
+              aria-label={`Current time ${m.timeLabel} ${m.ampm}`}
+            >
+              <span className="text-4xl sm:text-5xl font-bold text-secondary tracking-tighter tabular-nums">{m.timeLabel}</span>
               <span className="text-label-md text-on-surface-variant font-medium">{m.ampm}</span>
             </div>
 
@@ -55,8 +62,10 @@ export function MarkAttendancePage() {
                 type="button"
                 disabled={m.hasSession || m.submitting || m.status !== 'Present'}
                 onClick={m.handleCheckIn}
+                aria-label="Check in now"
                 className={cn(
                   'flex-1 py-4 rounded-xl font-semibold flex flex-col items-center justify-center gap-1 executive-shadow',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60 focus-visible:ring-offset-2',
                   m.hasSession || m.status !== 'Present'
                     ? 'bg-surface-container text-on-surface-variant opacity-50 cursor-not-allowed'
                     : 'bg-secondary text-on-secondary shadow-secondary/20 hover:opacity-95 cursor-pointer',
@@ -76,8 +85,10 @@ export function MarkAttendancePage() {
                 type="button"
                 disabled={!m.checkedIn || m.submitting}
                 onClick={m.handleCheckOut}
+                aria-label="Check out now"
                 className={cn(
                   'flex-1 py-4 rounded-xl font-semibold flex flex-col items-center justify-center gap-1 border border-outline-variant transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60 focus-visible:ring-offset-2',
                   !m.checkedIn
                     ? 'text-on-surface-variant opacity-50 cursor-not-allowed'
                     : 'text-on-background hover:bg-surface-container cursor-pointer',
@@ -90,7 +101,7 @@ export function MarkAttendancePage() {
             </div>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-outline-variant flex justify-around">
+          <div className="mt-6 pt-6 border-t border-outline-variant flex flex-wrap justify-around gap-4">
             <div className="text-center">
               <p className="text-label-sm text-on-surface-variant uppercase">Shift Starts</p>
               <p className="text-title-lg font-bold text-on-background">09:00 AM</p>
@@ -125,9 +136,11 @@ export function MarkAttendancePage() {
                   key={s.id}
                   type="button"
                   disabled={!s.enabled}
+                  aria-pressed={s.enabled && m.status === s.id}
                   onClick={() => s.enabled && m.setStatus(s.id)}
                   className={cn(
                     'flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60 focus-visible:ring-offset-2',
                     !s.enabled && 'opacity-40 cursor-not-allowed',
                     s.enabled && m.status === s.id
                       ? 'border-secondary bg-secondary-container/50 text-secondary cursor-pointer'

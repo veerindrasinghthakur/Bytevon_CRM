@@ -1,0 +1,158 @@
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: bytevon-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+    networks:
+      - bytevon
+
+
+  minio:
+    image: elestio/minio:latest
+    container_name: bytevon-minio
+    restart: unless-stopped
+
+    command: server /data --console-address ":9001"
+
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+
+    volumes:
+      - minio_data:/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:9000/minio/health/live || exit 1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+    networks:
+      - bytevon
+
+
+  backend:
+    build:
+      context: ./02_backend_code
+      dockerfile: Dockerfile
+
+    container_name: bytevon-backend
+    restart: unless-stopped
+
+    environment:
+      APP_NAME: ${APP_NAME}
+      APP_ENV: ${APP_ENV}
+      DEBUG: ${DEBUG}
+      API_V1_PREFIX: ${API_V1_PREFIX}
+
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_ECHO: ${DATABASE_ECHO}
+
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      JWT_ACCESS_TTL_MINUTES: ${JWT_ACCESS_TTL_MINUTES}
+      JWT_REFRESH_TTL_DAYS: ${JWT_REFRESH_TTL_DAYS}
+
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      FRONTEND_URL: ${FRONTEND_URL}
+
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_SECURE: ${MINIO_SECURE}
+
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:8000/health"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+    networks:
+      - bytevon
+
+
+  frontend:
+    build:
+      context: ./01_frontend_code
+      dockerfile: Dockerfile
+
+      args:
+        VITE_USE_MOCK_API: ${VITE_USE_MOCK_API}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+
+    container_name: bytevon-frontend
+    restart: unless-stopped
+
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    networks:
+      - bytevon
+
+
+networks:
+
+  bytevon:
+    driver: bridge
+
+
+volumes:
+
+  postgres_data:
+    name: bytevon_postgres_data
+
+  minio_data:
+    name: bytevon_minio_data

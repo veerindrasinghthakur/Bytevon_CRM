@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { getApprovalKpis, getApprovalDetail, listMyRequests } from '@/modules/approvals/api/request'
-import { listApproverOptions, listPendingApprovals } from '@/modules/approvals/api/approval_action'
+import { getApprovalKpis, getApprovalDetail, listMyRequests } from '@/modules/approvals/api/request-api'
+import { listApproverOptions, listPendingApprovals } from '@/modules/approvals/api/approval-action-api'
 
 describe('approvals mock API', () => {
   it('returns KPI totals', async () => {

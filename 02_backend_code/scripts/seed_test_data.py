@@ -22,7 +22,7 @@ from app.core.db.enums import Action, EmploymentState, EmploymentType, ScopeName
 from app.core.security.password_manager import PasswordManager
 from app.modules.admin.location.models import Location
 from app.modules.admin.settings.models import OrganizationSettings
-from app.modules.admin.shift.models import Shift
+from app.modules.workforce.shift.models import Shift
 from app.modules.auth.models import Login, Person
 from app.modules.rbac.models import Permission, Resource, Role, RolePermission, Scope
 from app.modules.sales.models import Client, Lead
@@ -99,7 +99,15 @@ async def seed() -> None:
         for name, _desc in DEPARTMENTS:
             await get_or_create(session, Department, defaults={}, name=name)
 
-        await session.execute(delete(Location))
+        # Restart-safe: only remove locations that no assignment references.
+        # A blanket delete(Location) violates fk_employment_assignments_location_id
+        # on container restarts (assignments from a previous run point at them).
+        referenced_locations = select(EmploymentAssignment.location_id).where(
+            EmploymentAssignment.location_id.isnot(None)
+        )
+        await session.execute(
+            delete(Location).where(Location.id.not_in(referenced_locations))
+        )
         await session.flush()
 
         for city, country in LOCATIONS:

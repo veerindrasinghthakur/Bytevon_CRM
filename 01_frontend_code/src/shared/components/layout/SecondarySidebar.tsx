@@ -1,6 +1,8 @@
 import { cn } from '@/shared/lib/cn'
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { HEADER_HEIGHT_PX } from './Header'
+import { RAIL_MOBILE_COLLAPSED_WIDTH } from './IconRail'
 import { useSecondaryNav } from '@/shared/hooks/useSecondaryNav'
 import type { SecondaryNavGroup, SecondaryNavItem } from '@/shared/types'
 
@@ -108,20 +110,44 @@ export const SECONDARY_EXPANDED_WIDTH = 240
 interface SecondarySidebarProps {
   isCollapsed: boolean
   onToggle: () => void
+  /** Mobile: render as an overlay drawer instead of in-flow sidebar. */
+  overlay?: boolean
 }
 
-export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProps) {
+export function SecondarySidebar({ isCollapsed, onToggle, overlay = false }: SecondarySidebarProps) {
   const { group, items, isItemActive } = useSecondaryNav()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+
+  // Close the overlay drawer on navigation.
+  useEffect(() => {
+    if (overlay && !isCollapsed) onToggle()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
 
   if (items.length === 0) return null
+  // On mobile the collapsed strip is hidden; the Header menu button opens the drawer.
+  if (overlay && isCollapsed) return null
+  const showOverlay = overlay && !isCollapsed
 
   return (
+    <>
+      {showOverlay && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="fixed inset-0 z-40 modal-overlay md:hidden"
+          onClick={onToggle}
+        />
+      )}
     <nav
       className={cn(
         'h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col',
         'overflow-hidden shrink-0 transition-sidebar',
         isCollapsed ? 'w-16' : 'w-60',
+        showOverlay &&
+          'fixed z-50 shadow-soft max-md:w-60',
       )}
+      style={showOverlay ? { left: RAIL_MOBILE_COLLAPSED_WIDTH, top: 0 } : undefined}
       aria-label="Secondary navigation"
     >
       <div
@@ -175,8 +201,8 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                       : 'w-full px-3 py-3.5 rounded-r-lg gap-3',
                     active
                       ? isCollapsed
-                        ? 'bg-[#e8f1ff] text-secondary border-transparent'
-                        : 'bg-[#e8f1ff] text-secondary font-semibold border-secondary'
+                        ? 'bg-secondary-container/60 text-secondary border-transparent'
+                        : 'bg-secondary-container/60 text-secondary font-semibold border-secondary'
                       : isCollapsed
                         ? 'text-on-surface-variant hover:bg-surface-container border-transparent'
                         : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background border-transparent',
@@ -216,5 +242,6 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
         </ul>
       </div>
     </nav>
+    </>
   )
 }
