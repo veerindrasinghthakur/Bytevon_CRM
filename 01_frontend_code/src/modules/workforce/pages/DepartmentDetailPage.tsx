@@ -281,7 +281,7 @@ export function DepartmentDetailPage() {
                 <Button variant="outline" onClick={cancelEdit}>
                   Cancel
                 </Button>
-                <Can action={Action.UPDATE} resource="department">
+                <Can action={Action.UPDATE} resource="department" minScope="DEPARTMENT">
                   <Button variant="primary" onClick={saveEdit} isLoading={isMutating}>
                     Save
                   </Button>
@@ -289,7 +289,7 @@ export function DepartmentDetailPage() {
               </div>
             ) : (
               <div className="flex gap-2">
-                <Can action={Action.UPDATE} resource="department">
+                <Can action={Action.UPDATE} resource="department" minScope="DEPARTMENT">
                   <Button
                     variant="outline"
                     leftIcon={<span className="material-symbols-outlined">edit</span>}
@@ -299,7 +299,7 @@ export function DepartmentDetailPage() {
                   </Button>
                 </Can>
                 {!d.isArchived && (
-                  <Can action={Action.DELETE} resource="department">
+                  <Can action={Action.DELETE} resource="department" minScope="DEPARTMENT">
                     <DeleteButton
                       iconOnly
                       entityLabel={d?.name}
@@ -310,7 +310,7 @@ export function DepartmentDetailPage() {
                   </Can>
                 )}
                 {d.isArchived && (
-                  <Can action={Action.UPDATE} resource="department">
+                  <Can action={Action.UPDATE} resource="department" minScope="DEPARTMENT">
                     <Button
                       variant="outline"
                       size="sm"
@@ -372,7 +372,7 @@ export function DepartmentDetailPage() {
             </Button>
           ) : (
             !hasHead && (
-              <Can action={Action.UPDATE} resource="department">
+              <Can action={Action.UPDATE} resource="department" minScope="DEPARTMENT">
                 <Button
                   variant="primary"
                   size="sm"
@@ -400,7 +400,7 @@ export function DepartmentDetailPage() {
               <Button variant="ghost" size="sm" onClick={() => setAssignHeadOpen(false)}>
                 Cancel
               </Button>
-              <Can action={Action.UPDATE} resource="department">
+              <Can action={Action.UPDATE} resource="department" minScope="DEPARTMENT">
                 <Button
                   variant="primary"
                   size="sm"
@@ -468,7 +468,7 @@ export function DepartmentDetailPage() {
           <h3 className="text-title-lg font-semibold">Members</h3>
           <div className="flex items-center gap-3">
             <span className="text-sm text-on-surface-variant">{staff.length} people</span>
-            <Can action={Action.UPDATE} resource={'department'}>
+            <Can action={Action.UPDATE} resource={'department'} minScope="DEPARTMENT">
               <Button
                 variant="primary"
                 size="sm"
@@ -486,7 +486,7 @@ export function DepartmentDetailPage() {
             <Icon name="group_off" className="text-5xl" />
             <p>No employees assigned yet.</p>
             {!isEditing && (
-              <Can action={Action.UPDATE} resource={'department'}>
+              <Can action={Action.UPDATE} resource={'department'} minScope="DEPARTMENT">
                 <Button variant="primary" size="sm" onClick={() => void openAdd()}>
                   Add Member
                 </Button>
@@ -627,7 +627,7 @@ export function DepartmentDetailPage() {
                   <Button variant="ghost" onClick={() => setMode('choose')}>
                     Back
                   </Button>
-                  <Can action={Action.UPDATE} resource="department">
+                  <Can action={Action.UPDATE} resource="department" minScope="DEPARTMENT">
                     <Button
                       variant="primary"
                       disabled={!selectedEmp || isMutating}
@@ -661,7 +661,7 @@ export function DepartmentDetailPage() {
               <Button variant="ghost" onClick={() => setRemoveTarget(null)}>
                 Cancel
               </Button>
-              <Can action={Action.UPDATE} resource="department">
+              <Can action={Action.UPDATE} resource="department" minScope="DEPARTMENT">
                 <Button variant="primary" isLoading={isMutating} onClick={() => void confirmRemove()}>
                   Remove
                 </Button>

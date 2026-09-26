@@ -19,6 +19,7 @@ import {
   upsertClientInLists,
   mergeClient,
 } from '../sales-cache'
+import { useScopeParams } from '@/shared/rbac'
 
 export function useClientsQuery(filters?: ClientListParams) {
   const params: ClientListParams = {
@@ -30,9 +31,11 @@ export function useClientsQuery(filters?: ClientListParams) {
     page: filters?.page,
     pageSize: filters?.pageSize,
   }
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedParams = useScopeParams('client', params)
   return useQuery({
-    queryKey: queryKeys.sales.clients.list(params),
-    queryFn: () => listClients(params),
+    queryKey: queryKeys.sales.clients.list(scopedParams),
+    queryFn: () => listClients(scopedParams),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
     placeholderData: (prev) => prev,

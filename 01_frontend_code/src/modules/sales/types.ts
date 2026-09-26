@@ -143,6 +143,8 @@ export type LeadListParams = {
   pageSize?: number
   dateFrom?: string
   dateTo?: string
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }
 
 export type ClientListParams = {
@@ -153,6 +155,8 @@ export type ClientListParams = {
   pageSize?: number
   dateFrom?: string
   dateTo?: string
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }
 
 export type CaseStudyListParams = {
@@ -160,6 +164,8 @@ export type CaseStudyListParams = {
   status?: string
   page?: number
   pageSize?: number
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }
 
 export type LeadListData = { items: Lead[]; total: number; metrics: SalesMetric[] }

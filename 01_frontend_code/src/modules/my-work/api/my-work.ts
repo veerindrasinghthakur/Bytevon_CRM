@@ -54,6 +54,8 @@ export interface MyWorkListParams {
   sortOrder?: 'asc' | 'desc'
   dateFrom?: string
   dateTo?: string
+  /** Data-boundary hint; backend enforces from auth token (SELF for self-service). */
+  scope?: string
 }
 
 /**

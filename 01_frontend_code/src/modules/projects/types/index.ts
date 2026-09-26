@@ -49,6 +49,8 @@ export type ProjectListParams = {
   pageSize?: number
   dateFrom?: string
   dateTo?: string
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }
 
 /** Cached project list response structure. */

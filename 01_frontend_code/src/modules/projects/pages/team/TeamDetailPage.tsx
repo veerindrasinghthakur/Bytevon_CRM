@@ -98,7 +98,7 @@ export function TeamDetailPage() {
                 <Icon name="groups" className="text-secondary" /> Team Members
               </h2>
               <div className="flex gap-2">
-                <Can action="UPDATE" resource="project">
+                <Can action="UPDATE" resource="project" minScope="TEAM">
                   {!changingHead ? (
                     <Button
                       variant="outline"
@@ -186,7 +186,7 @@ export function TeamDetailPage() {
                       {m.department ? ` · ${m.department}` : ''}
                     </p>
                   </div>
-                  <Can action="DELETE" resource="project">
+                  <Can action="DELETE" resource="project" minScope="TEAM">
                     <RemoveMemberButton
                       memberName={m.name}
                       employmentId={m.employmentId}

@@ -58,7 +58,7 @@ export function SalaryManagementPage() {
               query={search}
               label="Export"
             />
-            <Can action={Action.CREATE} resource="salary">
+            <Can action={Action.CREATE} resource="salary" minScope="ORGANIZATION">
               <Button
                 variant="primary"
                 size="sm"

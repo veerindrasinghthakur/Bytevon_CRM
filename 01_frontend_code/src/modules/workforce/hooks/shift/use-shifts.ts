@@ -3,10 +3,13 @@ import { createShift, deleteShift, getShift, getShifts, restoreShift, updateShif
 import { listEmployeesOnShift } from '@/modules/workforce/api/departments'
 import type { ShiftRow } from '@/shared/schema'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { useDataScope } from '@/shared/rbac'
 
 export function useShiftsList(includeArchived = true) {
+  // Cache partitioned per data boundary; backend enforces from auth token.
+  const scope = useDataScope('shift')
   return useQuery({
-    queryKey: queryKeys.organization.shifts.list({ includeArchived }),
+    queryKey: queryKeys.organization.shifts.list({ includeArchived, scope }),
     queryFn: () => getShifts({ includeArchived }),
   })
 }

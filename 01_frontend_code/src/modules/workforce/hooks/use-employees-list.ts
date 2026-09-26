@@ -7,6 +7,7 @@ import { getPositions } from '@/modules/admin/api/position'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import { computeEmploymentListMetrics } from '@/shared/compute/workforce-metrics'
 import { EMPLOYMENT_STATES, EMPLOYMENT_TYPES } from '../schemas/enums'
+import { useScopeParams } from '@/shared/rbac'
 
 const FILTER_DEFAULTS = {
   dept: 'all',
@@ -30,16 +31,21 @@ export function useEmployeesList() {
     pageSize: controls.pageSize,
   }
 
+  // Scope-tagged: backend enforces the boundary server-side; the key
+  // stays partitioned per boundary so caches never leak across scopes.
+  const scopedFilters = useScopeParams('employment', listFilters)
+
   const employeesQuery = useQuery({
-    queryKey: queryKeys.workforce.employees.list(listFilters),
+    queryKey: queryKeys.workforce.employees.list(scopedFilters),
     queryFn: () =>
       listEmployments({
-        search: listFilters.search,
-        department: listFilters.department,
-        state: listFilters.state,
-        type: listFilters.type,
-        page: listFilters.page,
-        pageSize: listFilters.pageSize,
+        search: scopedFilters.search,
+        department: scopedFilters.department,
+        state: scopedFilters.state,
+        type: scopedFilters.type,
+        page: scopedFilters.page,
+        pageSize: scopedFilters.pageSize,
+        scope: scopedFilters.scope,
       }),
   })
 

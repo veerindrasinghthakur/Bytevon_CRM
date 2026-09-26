@@ -589,7 +589,7 @@ export function AttendanceDashboardPage() {
                   <p className="text-caption text-on-surface-variant mt-1">&ldquo;{c.reason}&rdquo;</p>
                   {c.approval_request_id != null && (
                     <div className="mt-2 flex gap-2">
-                      <Can action={Action.APPROVE} resource="attendance">
+                      <Can action={Action.APPROVE} resource="attendance" minScope="TEAM">
                         <Button
                           variant="primary"
                           className="!py-1 !px-2 !text-[11px]"
@@ -599,11 +599,10 @@ export function AttendanceDashboardPage() {
                           Approve
                         </Button>
                       </Can>
-                      <Can action={Action.APPROVE} resource="attendance">
+                      <Can action={Action.APPROVE} resource="attendance" minScope="TEAM">
                         <Button
                           variant="outline"
                           className="!py-1 !px-2 !text-[11px]"
-                          disabled={decideMut.isPending}
                           onClick={() => askDecide(c, 'reject')}
                         >
                           Reject

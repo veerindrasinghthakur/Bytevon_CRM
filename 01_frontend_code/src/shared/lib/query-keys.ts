@@ -80,7 +80,8 @@ export const queryKeys = {
     },
     settings: () => ['organization', 'settings'] as const,
     workingWeeks: () => ['organization', 'working-weeks'] as const,
-    positions: (includeArchived?: boolean) => ['organization', 'positions', { includeArchived }] as const,
+    positions: (filters?: { includeArchived?: boolean; scope?: string }) =>
+      ['organization', 'positions', filters ?? {}] as const,
   },
   workforce: {
     departments: {

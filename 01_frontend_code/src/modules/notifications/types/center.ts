@@ -19,4 +19,6 @@ export interface InboxListParams {
   moduleFilter?: string
   page?: number
   pageSize?: number
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }

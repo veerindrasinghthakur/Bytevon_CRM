@@ -17,7 +17,7 @@ export { getCurrentEmploymentId, setCurrentEmploymentId } from './session'
 export { fetchEffectiveAuthorization, fetchResources, type BackendResource } from './api'
 export { buildEffectiveAuthorization } from './build-effective'
 export { canWith, hasPermission, type CanArgs } from './can'
-export { useRbac, invalidateRbac, type UseRbacResult } from './use-rbac'
+export { useRbac, useDataScope, useScopeParams, invalidateRbac, type UseRbacResult } from './use-rbac'
 export { Can } from './Can.tsx'
 export { requirePermission, requireView, type RequirePermissionOpts } from './require-permission'
 

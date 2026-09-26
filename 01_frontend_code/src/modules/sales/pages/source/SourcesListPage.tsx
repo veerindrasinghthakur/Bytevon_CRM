@@ -150,7 +150,7 @@ export function SourcesListPage() {
               resource="lead"
               filenameStem="sources"
             />
-            <Can action={Action.CREATE} resource="lead">
+            <Can action={Action.CREATE} resource="lead" minScope="SELF">
               <Button
                 variant="primary"
                 size="sm"

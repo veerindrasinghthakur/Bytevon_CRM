@@ -198,6 +198,13 @@ export interface RbacResource {
   id: number
   name: string
   description?: string | null
+  /**
+   * Backend-driven sensitive-data marker (proposal, unsigned).
+   * Optional and behavior-neutral until the backend contract lands:
+   * absent/false = normal resource. No UI or save logic may branch
+   * on this until #1/#2 sign-off.
+   */
+  sensitive?: boolean
 }
 
 export interface RbacPermission {
@@ -299,6 +306,8 @@ export interface AuditListParams {
   dateTo?: string
   timeFrom?: string
   timeTo?: string
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }
 
 export interface AuditFilters {
@@ -342,4 +351,6 @@ export type AdminUserListParams = {
   dateTo?: string
   page?: number
   pageSize?: number
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }

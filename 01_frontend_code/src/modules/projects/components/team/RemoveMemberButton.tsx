@@ -48,7 +48,7 @@ export function RemoveMemberButton({
   }
 
   return (
-    <Can action={Action.DELETE} resource="project">
+    <Can action={Action.DELETE} resource="project" minScope="TEAM">
       <button
         type="button"
         title={`Remove ${memberName}`}

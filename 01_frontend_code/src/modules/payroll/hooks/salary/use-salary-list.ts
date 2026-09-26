@@ -3,6 +3,7 @@ import { queryKeys } from '@/shared/lib/query-keys'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { formatMoney } from '@/shared/mock/data/payroll'
 import { listOpenSalaries, listUnconfiguredEmploymentIds } from '../../api/salary'
+import { useDataScope } from '@/shared/rbac'
 
 export function useSalaryList() {
   const controls = useListControls({
@@ -10,9 +11,11 @@ export function useSalaryList() {
     pagination: { pageSize: 20 },
   })
   const search = controls.debouncedSearch.trim() || undefined
+  // Cache partitioned per data boundary; backend enforces from auth token.
+  const scope = useDataScope('salary')
 
   const query = useQuery({
-    queryKey: [...queryKeys.payroll.employees.all, 'open-salaries', search ?? ''],
+    queryKey: [...queryKeys.payroll.employees.all, 'open-salaries', search ?? '', scope],
     queryFn: () => listOpenSalaries(search),
     placeholderData: (prev) => prev,
   })

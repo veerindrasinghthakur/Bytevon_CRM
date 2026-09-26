@@ -335,7 +335,7 @@ export function ProjectCreatePage() {
             <Button type="button" variant="ghost" onClick={cancel}>
               Cancel
             </Button>
-            <Can action={Action.CREATE} resource="project">
+            <Can action={Action.CREATE} resource="project" minScope="SELF">
               <Button
                 type="submit"
                 variant="primary"

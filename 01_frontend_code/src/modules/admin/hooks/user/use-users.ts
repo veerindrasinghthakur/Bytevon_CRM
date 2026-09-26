@@ -4,6 +4,7 @@ import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listAdminUsers } from '../../api/user'
 import type { AdminUserListItem } from '../../types'
+import { useScopeParams } from '@/shared/rbac'
 
 const FILTER_DEFAULTS = {
   status: 'All' as 'All' | 'Active' | 'Inactive' | 'Locked',
@@ -30,9 +31,12 @@ export function useUsersList() {
     pageSize: controls.pageSize,
   }
 
+  // Scope-tagged (ORG for admin resources); key stays partitioned per scope.
+  const scopedParams = useScopeParams('user', listParams)
+
   const usersQuery = useQuery({
-    queryKey: queryKeys.admin.users.list(listParams),
-    queryFn: () => listAdminUsers(listParams),
+    queryKey: queryKeys.admin.users.list(scopedParams),
+    queryFn: () => listAdminUsers(scopedParams),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
     placeholderData: (prev) => prev,

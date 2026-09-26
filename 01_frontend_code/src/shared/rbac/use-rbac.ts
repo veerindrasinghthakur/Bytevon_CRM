@@ -10,6 +10,7 @@ import { canWith, type CanArgs } from './can'
 import { getCurrentEmploymentId } from './session'
 import type { EffectiveAuthorization } from './types'
 import { emptyPermissions } from './types'
+import { dataScopeFor, withAuthScope } from './scope'
 
 export type UseRbacResult = {
   permissions: EffectiveAuthorization['permissions']
@@ -69,6 +70,29 @@ export function useRbac(employmentId?: number | null): UseRbacResult {
     }),
     [auth, id, query.isLoading, query.isError, can, canDo, refresh],
   )
+}
+
+/**
+ * Data boundary for a resource from effective auth (per-resource max scope,
+ * else overall). Backend remains authoritative — this is a request hint
+ * that also keeps caches partitioned per boundary.
+ */
+export function useDataScope(resource: string): ScopeName {
+  const { auth } = useRbac()
+  return dataScopeFor(auth, resource)
+}
+
+/**
+ * Merge the caller's data scope into list/filter params without
+ * overwriting an explicit caller scope. Pass the result to both the
+ * queryKey and the queryFn so caches stay partitioned per boundary.
+ */
+export function useScopeParams<T extends Record<string, unknown>>(
+  resource: string,
+  params: T,
+): T & { scope: ScopeName } {
+  const { auth } = useRbac()
+  return withAuthScope(params, auth, resource) as T & { scope: ScopeName }
 }
 
 export function invalidateRbac(qc: {

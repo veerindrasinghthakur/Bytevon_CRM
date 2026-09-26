@@ -54,7 +54,7 @@ export function TeamAddMemberPage() {
         title={`Add members — ${m.team?.name ?? ''}`}
         description="Pick employees, set a team role or a custom position, then add them to the team."
         actions={
-          <Can action={Action.UPDATE} resource="project">
+          <Can action={Action.UPDATE} resource="project" minScope="TEAM">
             <Button
               variant="primary"
               size="sm"

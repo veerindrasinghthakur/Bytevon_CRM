@@ -2,15 +2,18 @@ import { useQuery } from '@tanstack/react-query'
 import { getApprovalKpis } from '../../api/request'
 import { listPendingApprovals } from '../../api/approval_action'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { useDataScope } from '@/shared/rbac'
 
 export function useApprovalCenter() {
+  // Cache partitioned per data boundary; backend enforces from auth token.
+  const scope = useDataScope('approval')
   const kpisQuery = useQuery({
-    queryKey: queryKeys.approvals.all,
+    queryKey: [...queryKeys.approvals.all, scope],
     queryFn: getApprovalKpis,
   })
 
   const pendingQuery = useQuery({
-    queryKey: queryKeys.approvals.pending({}),
+    queryKey: queryKeys.approvals.pending({ scope }),
     queryFn: () => listPendingApprovals(),
   })
 

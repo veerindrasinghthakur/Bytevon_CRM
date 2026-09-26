@@ -156,7 +156,9 @@ export async function listPermissionCatalog(): Promise<PermissionCatalog> {
   }
 
   const [resourcesRes, permissionsRes] = await Promise.all([
-    apiClient.get<Array<{ id: number; name: string; description?: string | null }>>('/rbac/resources'),
+    apiClient.get<
+      Array<{ id: number; name: string; description?: string | null; sensitive?: boolean }>
+    >('/rbac/resources'),
     apiClient.get<
       Array<{
         id: number
@@ -172,6 +174,8 @@ export async function listPermissionCatalog(): Promise<PermissionCatalog> {
     id: r.id,
     name: r.name,
     description: r.description ?? null,
+    // Passthrough only (proposal, unsigned): no consumer branches on this yet.
+    sensitive: r.sensitive ?? false,
   }))
   const nameById = Object.fromEntries(resources.map((r) => [r.id, r.name]))
 

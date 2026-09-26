@@ -160,7 +160,7 @@ export function MyRequestsPage() {
         title="My Requests"
         description="Track and manage every organizational request you submitted and its status."
         actions={
-          <ExportButton resource="approval_request" filenameStem="my-requests" label="Export" />
+          <ExportButton resource="approval" filenameStem="my-requests" label="Export" />
         }
       />
 

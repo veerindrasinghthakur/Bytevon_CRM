@@ -280,7 +280,7 @@ export function PayrollReviewPage() {
               </div>
             </div>
             <div className="p-6 bg-surface-bright border-t border-outline-variant flex flex-col gap-3">
-              <Can action="APPROVE" resource="payroll">
+              <Can action="APPROVE" resource="payroll" minScope="ORGANIZATION">
                 <button
                   type="button"
                   className="w-full bg-primary text-on-primary font-medium py-3 px-4 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center gap-2 executive-shadow disabled:opacity-50"
@@ -292,7 +292,7 @@ export function PayrollReviewPage() {
                 </button>
               </Can>
               {emp.status === 'Approved' && (
-                <Can action="APPROVE" resource="payroll">
+                <Can action="APPROVE" resource="payroll" minScope="ORGANIZATION">
                   <button
                     type="button"
                     className="w-full bg-surface-container-lowest border border-error/40 text-error font-medium py-3 px-4 rounded-lg hover:bg-error/5 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
@@ -316,7 +316,7 @@ export function PayrollReviewPage() {
                 <span className="material-symbols-outlined text-[20px]">edit_note</span>
                 Request Correction
               </button>
-              <Can action={Action.CREATE} resource="payroll">
+              <Can action={Action.CREATE} resource="payroll" minScope="ORGANIZATION">
                 <button
                   type="button"
                   className="w-full border border-primary text-primary font-medium py-3 px-4 rounded-lg hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2 disabled:opacity-50"

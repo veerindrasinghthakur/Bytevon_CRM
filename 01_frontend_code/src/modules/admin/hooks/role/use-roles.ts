@@ -10,6 +10,7 @@ import {
   roleFilterCategoryOptions as CATEGORY_OPTIONS,
   roleFilterStatusOptions as STATUS_OPTIONS,
 } from '../../schemas/enums'
+import { useScopeParams } from '@/shared/rbac'
 
 const FILTER_DEFAULTS = {
   status: 'All' as RoleStatusFilter,
@@ -29,10 +30,13 @@ export function useRolesList() {
     pageSize: controls.pageSize,
   }
 
+  // Scope-tagged (ORG for admin resources); key stays partitioned per scope.
+  const scopedParams = useScopeParams('role', listParams)
+
   const rolesQuery = useQuery({
-    queryKey: queryKeys.admin.roles.list(listParams),
+    queryKey: queryKeys.admin.roles.list(scopedParams),
     queryFn: async () => {
-      const result = await listAdminRoles(listParams)
+      const result = await listAdminRoles(scopedParams)
       if (Array.isArray(result)) {
         return { items: result, total: result.length }
       }

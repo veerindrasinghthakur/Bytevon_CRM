@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { listPendingApprovals } from '../../api/approval_action'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { useScopeParams } from '@/shared/rbac'
 
 const FILTER_DEFAULTS = {
   type: 'All',
@@ -14,17 +15,21 @@ export function usePendingApprovals() {
     filterDefaults: FILTER_DEFAULTS,
   })
 
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedParams = useScopeParams('approval', {
+    search: controls.debouncedSearch,
+    type: controls.filters.type,
+    priority: controls.filters.priority,
+  })
+
   const query = useQuery({
-    queryKey: queryKeys.approvals.pending({
-      search: controls.debouncedSearch,
-      type: controls.filters.type,
-      priority: controls.filters.priority,
-    }),
+    queryKey: queryKeys.approvals.pending(scopedParams),
     queryFn: () =>
       listPendingApprovals({
         search: controls.debouncedSearch || undefined,
         type: controls.filters.type,
         priority: controls.filters.priority,
+        scope: scopedParams.scope,
       }),
   })
 

@@ -41,6 +41,8 @@ export interface SentListParams {
   statusFilter?: string
   page?: number
   pageSize?: number
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }
 
 export async function listSentNotifications(params: SentListParams = {}): Promise<SentListResponse> {

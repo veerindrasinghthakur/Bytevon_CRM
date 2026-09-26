@@ -129,7 +129,7 @@ export function AddSalaryPage() {
             <Button variant="outline" size="sm" onClick={backToList} disabled={saveMut.isPending}>
               Cancel
             </Button>
-            <Can action={Action.CREATE} resource="salary">
+            <Can action={Action.CREATE} resource="salary" minScope="ORGANIZATION">
               <Button variant="primary" size="sm" onClick={() => void onSubmit()} disabled={saveMut.isPending || !employmentId}>
                 {saveMut.isPending ? 'Creating…' : 'Create Salary'}
               </Button>

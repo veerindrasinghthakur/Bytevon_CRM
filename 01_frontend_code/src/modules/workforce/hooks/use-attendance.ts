@@ -11,6 +11,7 @@ import {
   listDaysInRange,
   listPendingCorrections,
 } from '../api/attendance'
+import { useDataScope, useScopeParams } from '@/shared/rbac'
 
 export function useAttendanceDashboard(params?: {
   employment_id?: number
@@ -26,9 +27,11 @@ export function useAttendanceDashboard(params?: {
 }
 
 export function useTodayAttendance(params?: { search?: string; status?: string }) {
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedParams = useScopeParams('attendance', params ?? {})
   return useQuery({
-    queryKey: queryKeys.workforce.attendance.today(params),
-    queryFn: () => listTodayAttendance(params),
+    queryKey: queryKeys.workforce.attendance.today(scopedParams),
+    queryFn: () => listTodayAttendance(scopedParams),
   })
 }
 
@@ -48,18 +51,22 @@ export function useAttendanceDayDetail(employmentId: string | undefined, date: s
   })
 }
 
-/** Org-wide day rows for an arbitrary date range (drives date picker + weeks). */
+/** Day rows for an arbitrary date range (backend scope-filters; drives date picker + weeks). */
 export function useAttendanceRange(fromDate: string | undefined, toDate: string | undefined) {
+  // Cache partitioned per data boundary; backend enforces from auth token.
+  const scope = useDataScope('attendance')
   return useQuery({
-    queryKey: [...queryKeys.workforce.attendance.all, 'range', fromDate, toDate],
+    queryKey: [...queryKeys.workforce.attendance.all, 'range', fromDate, toDate, scope],
     queryFn: () => listDaysInRange(fromDate!, toDate!),
     enabled: Boolean(fromDate && toDate),
   })
 }
 
 export function usePendingCorrections() {
+  // Cache partitioned per data boundary; backend enforces from auth token.
+  const scope = useDataScope('attendance')
   return useQuery({
-    queryKey: [...queryKeys.workforce.attendance.all, 'corrections', 'pending'],
+    queryKey: [...queryKeys.workforce.attendance.all, 'corrections', 'pending', scope],
     queryFn: listPendingCorrections,
   })
 }

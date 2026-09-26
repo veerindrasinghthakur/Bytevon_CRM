@@ -220,7 +220,7 @@ export function TeamCreatePage() {
             <Button type="button" variant="outline" onClick={() => safeNavigate(navigate, { to: backTo })}>
               Cancel
             </Button>
-            <Can action={Action.CREATE} resource="project">
+            <Can action={Action.CREATE} resource="project" minScope="SELF">
               <Button type="submit" variant="primary" isLoading={isSubmitting || createMutation.isPending}>
                 {project ? 'Create & assign to project' : 'Create Team'}
               </Button>

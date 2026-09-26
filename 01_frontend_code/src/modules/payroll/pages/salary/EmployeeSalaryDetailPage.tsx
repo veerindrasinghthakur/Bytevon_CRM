@@ -108,7 +108,7 @@ export function EmployeeSalaryDetailPage() {
           >
             Salary History
           </Button>
-          <Can action={Action.UPDATE} resource="salary">
+          <Can action={Action.UPDATE} resource="salary" minScope="ORGANIZATION">
             <Button
               variant="primary"
               size="md"

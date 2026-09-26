@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { useDataScope } from '@/shared/rbac'
 import {
   listSources,
   createSource,
@@ -18,8 +19,11 @@ export function useSources(opts?: { includeArchived?: boolean }) {
   const qc = useQueryClient()
   const includeArchived = opts?.includeArchived ?? false
 
+  // Cache partitioned per data boundary; backend enforces from auth token.
+  const scope = useDataScope('lead')
+
   const query = useQuery({
-    queryKey: [...SOURCES_KEY, { includeArchived }],
+    queryKey: [...SOURCES_KEY, { includeArchived, scope }],
     queryFn: () => listSources({ includeArchived }),
     staleTime: 30_000,
     refetchOnWindowFocus: false,

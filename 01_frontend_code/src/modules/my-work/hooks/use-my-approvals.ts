@@ -4,6 +4,7 @@ import { useListSelection } from '@/shared/hooks/useListSelection'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listMyApprovals } from '../api/my-work'
 import type { ApprovalRequest } from '../types'
+import { useScopeParams } from '@/shared/rbac'
 
 const FILTER_DEFAULTS = {
   status: 'All',
@@ -22,9 +23,12 @@ export function useMyApprovals() {
     pageSize: controls.pageSize,
   }
 
+  // Scope-tagged (SELF for self-service); key stays partitioned per scope.
+  const scopedParams = useScopeParams('approval', params)
+
   const query = useQuery({
-    queryKey: queryKeys.myWork.approvals.list(params),
-    queryFn: () => listMyApprovals(params),
+    queryKey: queryKeys.myWork.approvals.list(scopedParams),
+    queryFn: () => listMyApprovals(scopedParams),
     placeholderData: (prev) => prev,
   })
 

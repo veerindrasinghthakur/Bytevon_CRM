@@ -4,11 +4,15 @@ import { lazyPage } from '@/shared/lib/lazyPage'
 import { requirePermission, requireView } from '@/shared/rbac/require-permission'
 
 /** Variable grants: any VIEW opens a page; CREATE/UPDATE gates actions. Data is scope-filtered server-side. */
+/** Finance mutators additionally floor at ORGANIZATION scope (sensitive-data tier). */
 const requirePayrollView = () => requireView('payroll')
 const requireSalaryView = () => requireView('salary')
-const requirePayrollCreate = () => requirePermission({ action: 'CREATE', resource: 'payroll' })
-const requireSalaryUpdate = () => requirePermission({ action: 'UPDATE', resource: 'salary' })
-const requireSalaryCreate = () => requirePermission({ action: 'CREATE', resource: 'salary' })
+const requirePayrollCreate = () =>
+  requirePermission({ action: 'CREATE', resource: 'payroll', minScope: 'ORGANIZATION' })
+const requireSalaryUpdate = () =>
+  requirePermission({ action: 'UPDATE', resource: 'salary', minScope: 'ORGANIZATION' })
+const requireSalaryCreate = () =>
+  requirePermission({ action: 'CREATE', resource: 'salary', minScope: 'ORGANIZATION' })
 
 const PayrollDashboardPage = lazyPage(
   () => import('./pages/dashboard/PayrollDashboardPage'),

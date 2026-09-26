@@ -4,6 +4,7 @@ import { useListSelection } from '@/shared/hooks/useListSelection'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listMyTasks } from '../api/my-work'
 import type { MyTask } from '../types'
+import { useScopeParams } from '@/shared/rbac'
 
 const FILTER_DEFAULTS = {
   status: 'All',
@@ -22,9 +23,12 @@ export function useMyTasks() {
     pageSize: controls.pageSize,
   }
 
+  // Scope-tagged (SELF for self-service); key stays partitioned per scope.
+  const scopedParams = useScopeParams('task', params)
+
   const query = useQuery({
-    queryKey: queryKeys.myWork.tasks.list(params),
-    queryFn: () => listMyTasks(params),
+    queryKey: queryKeys.myWork.tasks.list(scopedParams),
+    queryFn: () => listMyTasks(scopedParams),
     placeholderData: (prev) => prev,
   })
 

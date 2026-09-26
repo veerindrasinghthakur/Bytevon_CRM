@@ -83,7 +83,7 @@ export function CaseStudiesListPage() {
               resource="lead"
               filenameStem="case-studies"
             />
-            <Can action={Action.CREATE} resource="lead">
+            <Can action={Action.CREATE} resource="lead" minScope="SELF">
               <Button
                 variant="primary"
                 leftIcon={<span className="material-symbols-outlined text-lg">add</span>}

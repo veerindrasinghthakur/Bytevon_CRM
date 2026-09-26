@@ -5,6 +5,7 @@ import { useListSelection } from '@/shared/hooks/useListSelection'
 import { computeSentKpis, listSentNotifications } from '../../api/sent'
 import { queryKeys } from '@/shared/lib/query-keys'
 import type { SentNotificationRow } from '../../types'
+import { useScopeParams } from '@/shared/rbac'
 
 const FILTER_DEFAULTS = { type: 'All', status: 'All' }
 
@@ -25,9 +26,12 @@ export function useSentNotifications() {
     [controls.search, controls.filters.type, controls.filters.status, controls.page, controls.pageSize],
   )
 
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedParams = useScopeParams('notification', params)
+
   const query = useQuery({
-    queryKey: queryKeys.notifications.sent(params),
-    queryFn: () => listSentNotifications(params),
+    queryKey: queryKeys.notifications.sent(scopedParams),
+    queryFn: () => listSentNotifications(scopedParams),
     placeholderData: (prev) => prev,
   })
 

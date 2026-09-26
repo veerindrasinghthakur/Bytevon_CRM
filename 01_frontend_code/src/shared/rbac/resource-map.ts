@@ -22,7 +22,25 @@ export const RAIL_RESOURCE_BY_ID: Record<string, string | null> = {
   profile: null,
 }
 
-/** Secondary sidebar item id → backend resource used for the VIEW gate. */
+/**
+ * Secondary sidebar item id → action used for the gate.
+ * Defaults to VIEW; entries below mirror routes whose beforeLoad requires
+ * a stronger action (e.g. /payroll/run and /notifications/compose require CREATE).
+ */
+export const SECONDARY_ACTION_BY_ID: Record<string, string> = {
+  run: 'CREATE',
+  compose: 'CREATE',
+}
+
+/**
+ * Secondary sidebar item id → minimum scope floor.
+ * Empty by default (no floor — mirrors action-only route guards).
+ * Floors are added only where the matching route also enforces minScope
+ * (sensitive finance/notification creates); never ahead of the route.
+ */
+export const SECONDARY_MIN_SCOPE_BY_ID: Record<string, string> = {}
+
+/** Secondary sidebar item id → backend resource used for the gate. */
 export const SECONDARY_RESOURCE_BY_ID: Record<string, string | null> = {
   // sales
   dashboard: 'lead',

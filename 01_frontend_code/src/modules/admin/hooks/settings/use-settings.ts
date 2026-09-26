@@ -13,6 +13,7 @@ import {
 } from '../../api/organization'
 import type { OrganizationSettings } from '@/shared/schema'
 import { useAdminMutation } from '../use-admin-mutation'
+import { useDataScope } from '@/shared/rbac'
 
 function withErrorMessage<T extends { isError: boolean; error: unknown }>(q: T) {
   return {
@@ -66,18 +67,22 @@ export function useOrgLocationsForSelect() {
 }
 
 export function useWorkingWeeks() {
+  // Cache partitioned per data boundary; backend enforces from auth token.
+  const scope = useDataScope('working_week')
   return withErrorMessage(
     useQuery({
-      queryKey: queryKeys.organization.workingWeeks(),
+      queryKey: [...queryKeys.organization.workingWeeks(), scope],
       queryFn: getWorkingWeeks,
     }),
   )
 }
 
 export function useHolidayCalendars() {
+  // Cache partitioned per data boundary; backend enforces from auth token.
+  const scope = useDataScope('holiday_calendar')
   return withErrorMessage(
     useQuery({
-      queryKey: queryKeys.organization.holidays.list(),
+      queryKey: [...queryKeys.organization.holidays.list(), scope],
       queryFn: () => getHolidayCalendars(),
     }),
   )
@@ -105,7 +110,7 @@ export function useHolidays(calendarId?: number) {
 export function usePositions(includeArchived = true) {
   return withErrorMessage(
     useQuery({
-      queryKey: queryKeys.organization.positions(includeArchived),
+      queryKey: queryKeys.organization.positions({ includeArchived }),
       queryFn: () => getPositions({ includeArchived }),
     }),
   )

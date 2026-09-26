@@ -19,6 +19,8 @@ export async function getApprovalKpis(): Promise<ApprovalKpis> {
 export async function listMyRequests(params?: {
   search?: string
   status?: string
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }): Promise<ApprovalRow[]> {
   if (env.useMockApi) {
     await delay()

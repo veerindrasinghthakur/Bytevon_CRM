@@ -12,6 +12,8 @@ export async function listPendingApprovals(params?: {
   search?: string
   type?: string
   priority?: string
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }): Promise<ApprovalRow[]> {
   if (env.useMockApi) {
     await delay()

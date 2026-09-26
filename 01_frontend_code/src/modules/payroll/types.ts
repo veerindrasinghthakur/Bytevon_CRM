@@ -59,6 +59,8 @@ export interface PayrollEmployeeListParams {
   year?: string | number
   page?: number
   pageSize?: number
+  /** Data-boundary hint; backend enforces from auth token. */
+  scope?: string
 }
 
 /** Org-wide paid history row (history list page). */

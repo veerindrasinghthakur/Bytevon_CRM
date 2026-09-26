@@ -121,7 +121,7 @@ export function ReviseSalaryPage() {
             <Button variant="outline" size="sm" onClick={backToDetail} disabled={saveMut.isPending}>
               Cancel
             </Button>
-            <Can action={Action.UPDATE} resource="salary">
+            <Can action={Action.UPDATE} resource="salary" minScope="ORGANIZATION">
               <Button variant="primary" size="sm" onClick={() => void onSubmit()} disabled={saveMut.isPending}>
                 {saveMut.isPending ? 'Saving…' : 'Save New Version'}
               </Button>

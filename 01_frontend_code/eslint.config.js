@@ -29,6 +29,29 @@ export default typescriptEslint.config(
       'react/prop-types': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
+      // RBAC hygiene: barrel-only imports avoid the win32 can.ts/Can.tsx casing collision;
+      // canLegacy is sync-mock and scope-unaware — use useRbac().can instead.
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@/shared/rbac/Can',
+              message: "Import { Can } from '@/shared/rbac' instead (case-sensitivity).",
+            },
+            {
+              name: '@/shared/rbac/can',
+              message: "Import { canWith, hasPermission } from '@/shared/rbac' instead.",
+            },
+          ],
+          patterns: [
+            {
+              group: ['**/shared/rbac/legacy', '**/shared/rbac/legacy.*'],
+              message: 'canLegacy/useCanLegacy are deprecated — use useRbac().can instead.',
+            },
+          ],
+        },
+      ],
     },
   }
 )

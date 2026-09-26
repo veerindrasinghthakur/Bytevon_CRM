@@ -4,6 +4,7 @@ import { queryKeys } from '@/shared/lib/query-keys'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { formatMoney } from '@/shared/mock/data/payroll'
 import { listPayrollEmployees, getMonthlyPayrollSummary } from '../../api/monthly'
+import { useScopeParams } from '@/shared/rbac'
 
 export function useMonthlyPayroll() {
   const controls = useListControls({
@@ -18,9 +19,12 @@ export function useMonthlyPayroll() {
     pageSize: controls.pageSize,
   }
 
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedParams = useScopeParams('payroll', params)
+
   const employeesQuery = useQuery({
-    queryKey: queryKeys.payroll.employees.list(params),
-    queryFn: () => listPayrollEmployees(params),
+    queryKey: queryKeys.payroll.employees.list(scopedParams),
+    queryFn: () => listPayrollEmployees(scopedParams),
     placeholderData: (prev) => prev,
   })
 

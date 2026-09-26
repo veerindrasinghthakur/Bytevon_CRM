@@ -15,6 +15,7 @@ import {
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { toast } from '@/shared/hooks/use-toast'
+import { useScopeParams } from '@/shared/rbac'
 import type { AppNotification, NotificationTab, NotificationTabId } from '../../types'
 
 function isRow(value: unknown): value is AppNotification {
@@ -97,9 +98,12 @@ export function useNotificationCenter() {
     ],
   )
 
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedParams = useScopeParams('notification', listParams)
+
   const inboxQuery = useQuery({
-    queryKey: queryKeys.notifications.inbox(listParams),
-    queryFn: () => listInboxNotifications(listParams),
+    queryKey: queryKeys.notifications.inbox(scopedParams),
+    queryFn: () => listInboxNotifications(scopedParams),
     placeholderData: (prev) => prev,
   })
 

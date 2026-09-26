@@ -251,7 +251,7 @@ export function TaskCreatePage() {
             <Button type="button" variant="outline" onClick={cancel}>
               Cancel
             </Button>
-            <Can action={Action.CREATE} resource="task">
+            <Can action={Action.CREATE} resource="task" minScope="SELF">
               <Button
                 type="submit"
                 variant="primary"

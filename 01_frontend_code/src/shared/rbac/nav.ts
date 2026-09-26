@@ -7,9 +7,19 @@
 import type { RailItem, SecondaryNavGroup, SecondaryNavItem } from '@/shared/types'
 import type { EffectiveAuthorization } from './types'
 import { canWith } from './can'
-import { RAIL_RESOURCE_BY_ID, SECONDARY_RESOURCE_BY_ID } from './resource-map'
+import {
+  RAIL_RESOURCE_BY_ID,
+  SECONDARY_ACTION_BY_ID,
+  SECONDARY_MIN_SCOPE_BY_ID,
+  SECONDARY_RESOURCE_BY_ID,
+} from './resource-map'
 
-export { RAIL_RESOURCE_BY_ID, SECONDARY_RESOURCE_BY_ID }
+export {
+  RAIL_RESOURCE_BY_ID,
+  SECONDARY_ACTION_BY_ID,
+  SECONDARY_MIN_SCOPE_BY_ID,
+  SECONDARY_RESOURCE_BY_ID,
+}
 
 export function filterRailItems(
   items: RailItem[],
@@ -37,7 +47,11 @@ export function filterSecondaryNavItems(
     if (item.visible === false) return false
     const resource = resolve(item)
     if (resource == null) return true
-    return canWith(auth, { action: 'VIEW', resource })
+    return canWith(auth, {
+      action: SECONDARY_ACTION_BY_ID[item.id] ?? 'VIEW',
+      resource,
+      minScope: SECONDARY_MIN_SCOPE_BY_ID[item.id],
+    })
   })
 }
 

@@ -26,7 +26,7 @@ export function PositionDetailPage({ basePath = '/workforce/positions' }: { base
   const qc = useQueryClient()
 
   const detailQuery = useQuery({
-    queryKey: queryKeys.organization.positions(true),
+    queryKey: queryKeys.organization.positions({ includeArchived: true }),
     queryFn: () => getPosition(id),
     enabled: !isNew && Number.isFinite(id),
   })
@@ -52,7 +52,7 @@ export function PositionDetailPage({ basePath = '/workforce/positions' }: { base
       return updatePosition(id, { name: name.trim() })
     },
     onSuccess: async (row) => {
-      await qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.positions({ includeArchived: true }) })
       if (isNew) {
         safeNavigate(navigate, {
           to: `${basePath}/$positionId`,
@@ -70,7 +70,7 @@ export function PositionDetailPage({ basePath = '/workforce/positions' }: { base
   const deleteMut = useMutation({
     mutationFn: () => deletePosition(id),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.positions({ includeArchived: true }) })
       safeNavigate(navigate, { to: basePath })
     },
   })
@@ -78,7 +78,7 @@ export function PositionDetailPage({ basePath = '/workforce/positions' }: { base
   const restoreMut = useMutation({
     mutationFn: () => restorePosition(id),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.positions({ includeArchived: true }) })
       await detailQuery.refetch()
     },
   })

@@ -8,6 +8,7 @@ import {
 } from '../../api/project'
 import type { ProjectListParams, ProjectListCache } from '../../types'
 import type { CreateProjectInput, ProjectDetail } from '../../schemas/project/project'
+import { useScopeParams } from '@/shared/rbac'
 
 /** Only touch list queries — never detail / teams / tasks under ['projects']. */
 const PROJECT_LIST_KEY = queryKeys.projects.listPrefix()
@@ -20,7 +21,7 @@ function isListCache(old: unknown): old is ProjectListCache {
   )
 }
 
-/** Server-side filters + pagination; query key includes params. */
+/** Server-side filters + pagination; query key includes params + scope. */
 export function useProjects(filters?: ProjectListParams) {
   const params: ProjectListParams = {
     search: filters?.search || undefined,
@@ -31,9 +32,11 @@ export function useProjects(filters?: ProjectListParams) {
     page: filters?.page,
     pageSize: filters?.pageSize,
   }
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedParams = useScopeParams('project', params)
   return useQuery({
-    queryKey: queryKeys.projects.list(params),
-    queryFn: () => getProjects(params),
+    queryKey: queryKeys.projects.list(scopedParams),
+    queryFn: () => getProjects(scopedParams),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
     placeholderData: (prev) => prev,

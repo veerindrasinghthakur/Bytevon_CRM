@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getMyWeekHours, getMyWorkTodayInfo, listMyAttendance } from '../api/my-work'
+import { useScopeParams } from '@/shared/rbac'
 
 const FILTER_DEFAULTS = {
   status: 'All',
@@ -20,9 +21,12 @@ export function useMyAttendance() {
     pageSize: controls.pageSize,
   }
 
+  // Scope-tagged (SELF for self-service); key stays partitioned per scope.
+  const scopedParams = useScopeParams('attendance', params)
+
   const query = useQuery({
-    queryKey: queryKeys.myWork.attendance.list(params),
-    queryFn: () => listMyAttendance(params),
+    queryKey: queryKeys.myWork.attendance.list(scopedParams),
+    queryFn: () => listMyAttendance(scopedParams),
     placeholderData: (prev) => prev,
   })
 

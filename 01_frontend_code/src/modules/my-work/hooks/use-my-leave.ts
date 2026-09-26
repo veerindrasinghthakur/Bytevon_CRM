@@ -4,6 +4,7 @@ import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { toast } from '@/shared/hooks/use-toast'
 import { listMyLeaveBalances, listMyLeaveRequests, requestLeaveCancel } from '../api/my-work'
+import { useScopeParams } from '@/shared/rbac'
 
 const FILTER_DEFAULTS = {
   status: 'All',
@@ -23,12 +24,15 @@ export function useMyLeave() {
     pageSize: controls.pageSize,
   }
 
+  // Scope-tagged (SELF for self-service); key stays partitioned per scope.
+  const scopedParams = useScopeParams('leave_request', params)
+
   const requestsQuery = useQuery({
     queryKey: queryKeys.myWork.leave.list({
-      ...params,
+      ...scopedParams,
       type: controls.filters.type,
     }),
-    queryFn: () => listMyLeaveRequests(params),
+    queryFn: () => listMyLeaveRequests(scopedParams),
     placeholderData: (prev) => prev,
   })
 

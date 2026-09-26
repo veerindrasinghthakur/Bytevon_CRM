@@ -15,6 +15,7 @@ import {
   updateDepartment,
 } from '../../api/departments'
 import type { DeptListResult, DeptMetrics } from '../../types'
+import { useScopeParams } from '@/shared/rbac'
 
 const FILTER_DEFAULTS = { status: 'All' }
 
@@ -37,15 +38,19 @@ export function useDepartments() {
     pageSize: controls.pageSize,
   }
 
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedFilters = useScopeParams('department', listFilters)
+
   const listQuery = useQuery({
-    queryKey: queryKeys.workforce.departments.list(listFilters),
+    queryKey: queryKeys.workforce.departments.list(scopedFilters),
     queryFn: () =>
       listDepartments({
         includeArchived: false,
-        search: listFilters.search,
-        status: listFilters.status,
-        page: listFilters.page,
-        pageSize: listFilters.pageSize,
+        search: scopedFilters.search,
+        status: scopedFilters.status,
+        page: scopedFilters.page,
+        pageSize: scopedFilters.pageSize,
+        scope: scopedFilters.scope,
       }) as Promise<DeptListResult>,
   })
 

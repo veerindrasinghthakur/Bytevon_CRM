@@ -3,6 +3,7 @@ import { queryKeys } from '@/shared/lib/query-keys'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { getPositions, getPosition, createPosition, updatePosition, deletePosition, restorePosition } from '../../api/position'
 import type { PositionRow } from '@/shared/schema'
+import { useDataScope } from '@/shared/rbac'
 
 function withErrorMessage<T extends { isError: boolean; error: unknown }>(q: T) {
   return {
@@ -14,15 +15,17 @@ function withErrorMessage<T extends { isError: boolean; error: unknown }>(q: T) 
 /** List positions (admin settings). Uses api/position domain module. */
 export function usePositions(includeArchived = true) {
   const qc = useQueryClient()
+  // Cache partitioned per data boundary; backend enforces from auth token.
+  const scope = useDataScope('position')
   const query = withErrorMessage(
     useQuery({
-      queryKey: queryKeys.organization.positions(includeArchived),
+      queryKey: queryKeys.organization.positions({ includeArchived, scope }),
       queryFn: () => getPositions({ includeArchived }),
     }),
   )
 
   const invalidate = () => {
-    void qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
+    void qc.invalidateQueries({ queryKey: queryKeys.organization.positions({ includeArchived: true }) })
   }
 
   const createMut = useMutation({
@@ -57,7 +60,7 @@ export function usePositionDetail(id: number | undefined) {
   const qc = useQueryClient()
   const query = withErrorMessage(
     useQuery({
-      queryKey: [...queryKeys.organization.positions(true), 'detail', String(id ?? 0)],
+      queryKey: [...queryKeys.organization.positions({ includeArchived: true }), 'detail', String(id ?? 0)],
       queryFn: () => getPosition(id!),
       enabled: id != null && Number.isFinite(id),
     }),
@@ -66,14 +69,14 @@ export function usePositionDetail(id: number | undefined) {
   const deleteMut = useMutation({
     mutationFn: () => deletePosition(id!),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
+      void qc.invalidateQueries({ queryKey: queryKeys.organization.positions({ includeArchived: true }) })
     },
   })
 
   const restoreMut = useMutation({
     mutationFn: () => restorePosition(id!),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
+      void qc.invalidateQueries({ queryKey: queryKeys.organization.positions({ includeArchived: true }) })
     },
   })
 

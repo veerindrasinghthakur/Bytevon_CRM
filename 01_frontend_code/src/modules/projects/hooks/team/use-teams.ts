@@ -9,6 +9,7 @@ import {
 } from '../../api/team'
 import type { Team, TeamListCache } from '../../types'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { useScopeParams } from '@/shared/rbac'
 
 function isTeamListCache(value: unknown): value is TeamListCache {
   return (
@@ -26,9 +27,11 @@ export function useTeams(filters?: {
   page?: number
   pageSize?: number
 }) {
+  // Scope-tagged (teams live under project): backend enforces; key partitioned per scope.
+  const scopedFilters = useScopeParams('project', filters ?? {})
   return useQuery({
-    queryKey: queryKeys.teams.list(filters ?? {}),
-    queryFn: () => getTeams(filters),
+    queryKey: queryKeys.teams.list(scopedFilters),
+    queryFn: () => getTeams(scopedFilters),
   })
 }
 

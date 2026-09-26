@@ -45,7 +45,7 @@ export function PayrollDashboardPage() {
                 Salary Management
               </Button>
             </Can>
-            <Can action={Action.CREATE} resource="payroll">
+            <Can action={Action.CREATE} resource="payroll" minScope="ORGANIZATION">
               <Button
                 variant="primary"
                 size="sm"
@@ -148,7 +148,7 @@ export function PayrollDashboardPage() {
           <section className="bv-surface p-5">
             <h3 className="text-headline-md font-semibold text-on-background mb-4">Quick Actions</h3>
             <div className="flex flex-col gap-3">
-              <Can action={Action.CREATE} resource="payroll">
+              <Can action={Action.CREATE} resource="payroll" minScope="ORGANIZATION">
                 <DashboardQuickAction
                   icon="play_arrow"
                   iconTone="bg-primary-fixed text-primary group-hover:bg-primary group-hover:text-on-primary"

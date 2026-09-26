@@ -17,8 +17,9 @@ import {
   upsertLeadInLists,
   mergeLead,
 } from '../sales-cache'
+import { useScopeParams } from '@/shared/rbac'
 
-/** Server-side filters + pagination; query key includes params. */
+/** Server-side filters + pagination; query key includes params + scope. */
 export function useLeadsQuery(filters?: LeadListParams) {
   const params: LeadListParams = {
     search: filters?.search || undefined,
@@ -31,9 +32,11 @@ export function useLeadsQuery(filters?: LeadListParams) {
     page: filters?.page,
     pageSize: filters?.pageSize,
   }
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedParams = useScopeParams('lead', params)
   return useQuery({
-    queryKey: queryKeys.sales.leads.list(params),
-    queryFn: () => listLeads(params),
+    queryKey: queryKeys.sales.leads.list(scopedParams),
+    queryFn: () => listLeads(scopedParams),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
     placeholderData: (prev) => prev,

@@ -234,7 +234,7 @@ export function RunPayrollPage() {
                 </span>
               </div>
             </div>
-            <Can action={Action.CREATE} resource="payroll">
+            <Can action={Action.CREATE} resource="payroll" minScope="ORGANIZATION">
               <button
                 type="button"
                 onClick={handleGenerate}

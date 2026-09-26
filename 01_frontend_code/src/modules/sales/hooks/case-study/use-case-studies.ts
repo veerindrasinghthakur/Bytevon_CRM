@@ -4,6 +4,7 @@ import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listCaseStudies } from '../../api/case-study'
 import type { CaseStudyListParams } from '../../types'
+import { useScopeParams } from '@/shared/rbac'
 
 /** @deprecated Prefer useCaseStudiesQuery with filters */
 export function useCaseStudies() {
@@ -22,9 +23,11 @@ export function useCaseStudiesQuery(filters?: CaseStudyListParams) {
     page: filters?.page,
     pageSize: filters?.pageSize,
   }
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedParams = useScopeParams('lead', params)
   return useQuery({
-    queryKey: queryKeys.sales.caseStudies.list(params),
-    queryFn: () => listCaseStudies(params),
+    queryKey: queryKeys.sales.caseStudies.list(scopedParams),
+    queryFn: () => listCaseStudies(scopedParams),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
     placeholderData: (prev) => prev,

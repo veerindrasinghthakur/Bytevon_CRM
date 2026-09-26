@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getTasks, getTask, createTask, updateTask } from '../../api/task'
 import type { Task, TaskPriority, TaskListCache } from '../../types'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { useScopeParams } from '@/shared/rbac'
 
 function asListCache(old: TaskListCache | undefined | null, fallbackItems: Task[] = []): TaskListCache {
   if (!old) return { items: fallbackItems, total: fallbackItems.length }
@@ -17,9 +18,11 @@ export function useTasks(filters?: {
   page?: number
   pageSize?: number
 }) {
+  // Scope-tagged: backend enforces the boundary; key stays partitioned per scope.
+  const scopedFilters = useScopeParams('task', filters ?? {})
   return useQuery({
-    queryKey: queryKeys.tasks.list(filters ?? {}),
-    queryFn: () => getTasks(filters),
+    queryKey: queryKeys.tasks.list(scopedFilters),
+    queryFn: () => getTasks(scopedFilters),
     enabled: filters !== undefined,
   })
 }

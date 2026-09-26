@@ -28,11 +28,19 @@ export function LeadFormActions({
           <ArchiveButton entityLabel={entityLabel} onConfirm={onArchive} isLoading={archiveLoading} />
         </Can>
       )}
-      <Can action={isEdit ? Action.UPDATE : Action.CREATE} resource="lead">
-        <Button type="submit" variant="primary" isLoading={saving}>
-          {isEdit ? 'Save changes' : 'Create lead'}
-        </Button>
-      </Can>
+      {isEdit ? (
+        <Can action={Action.UPDATE} resource="lead">
+          <Button type="submit" variant="primary" isLoading={saving}>
+            Save changes
+          </Button>
+        </Can>
+      ) : (
+        <Can action={Action.CREATE} resource="lead" minScope="SELF">
+          <Button type="submit" variant="primary" isLoading={saving}>
+            Create lead
+          </Button>
+        </Can>
+      )}
       <Button type="button" variant="ghost" onClick={onCancel}>
         Cancel
       </Button>

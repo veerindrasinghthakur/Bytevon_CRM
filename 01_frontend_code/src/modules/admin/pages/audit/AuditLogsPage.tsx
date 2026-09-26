@@ -23,6 +23,7 @@ import { queryKeys } from '@/shared/lib/query-keys'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { apiClient } from '@/shared/lib/axios'
 import { listAuditLogs } from '../../api/audit'
+import { useScopeParams } from '@/shared/rbac'
 import type { AuditFilters, AuditLog } from '../../types'
 import { auditActionBadge, auditActionDot, resolveAuditActionKey } from '../../schemas/enums'
 import { auditActionOptions as ACTION_OPTIONS, auditModuleOptions as MODULE_OPTIONS } from '../../schemas/enums'
@@ -107,9 +108,12 @@ export function AuditLogsPage() {
     [controls.debouncedSearch, controls.filters],
   )
 
+  // Scope-tagged (ORG for admin resources); key stays partitioned per scope.
+  const scopedParams = useScopeParams('audit', listParams)
+
   const logsQuery = useQuery({
-    queryKey: queryKeys.admin.audit.list(listParams),
-    queryFn: () => listAuditLogs({ limit: 500, ...listParams }),
+    queryKey: queryKeys.admin.audit.list(scopedParams),
+    queryFn: () => listAuditLogs({ limit: 500, ...scopedParams }),
   })
 
   const auditLogs = logsQuery.data ?? []

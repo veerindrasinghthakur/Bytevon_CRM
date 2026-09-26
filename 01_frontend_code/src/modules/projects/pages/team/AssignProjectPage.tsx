@@ -153,7 +153,7 @@ export function AssignProjectPage() {
           <Button type="button" variant="outline" onClick={() => safeNavigate(navigate, { to: projectRoutes.teamDetailPath, params: { teamId: String(numericTeamId) } })}>
             Cancel
           </Button>
-          <Can action={Action.UPDATE} resource="project">
+          <Can action={Action.UPDATE} resource="project" minScope="TEAM">
             <Button type="submit" variant="primary" isLoading={assignMutation.isPending} disabled={assignable.length === 0}>
               Assign team
             </Button>

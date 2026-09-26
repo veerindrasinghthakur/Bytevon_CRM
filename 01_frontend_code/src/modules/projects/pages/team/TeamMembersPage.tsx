@@ -63,7 +63,7 @@ export function TeamMembersPage() {
               placeholder="Search members…"
             />
           </div>
-          <Can action="CREATE" resource="project">
+          <Can action="CREATE" resource="project" minScope="TEAM">
             <Button
               variant="outline"
               size="sm"
@@ -123,7 +123,7 @@ export function TeamMembersPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <Can action="DELETE" resource="project">
+                  <Can action="DELETE" resource="project" minScope="TEAM">
                     <RemoveMemberButton
                       memberName={m.name}
                       employmentId={m.employmentId}
