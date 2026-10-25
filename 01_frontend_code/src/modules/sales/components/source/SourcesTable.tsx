@@ -112,7 +112,7 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete, on
             {rows.length === 0 && !isLoading && (
               <tr>
                 <td colSpan={5} className="px-4 py-10 text-center text-body-sm text-on-surface-variant">
-                  No sources found. Click "Add source" to create one.
+                  No sources found. Click &quot;Add source&quot; to create one.
                 </td>
               </tr>
             )}

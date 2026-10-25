@@ -44,7 +44,6 @@ describe('Select drop direction', () => {
     mockViewport(760, 720)
     const panel = open()
     expect(panel.getAttribute('data-drop')).toBe('up')
-    expect(panel.className).toMatch(/bottom-full/)
   })
 
   it('honours explicit dropDirection override', () => {

@@ -221,81 +221,155 @@ Because object storage is deferred for this prototype, `STORAGE_ENABLED` is set 
 
 ---
 
-## 8. Step-by-Step Manual Deployment Walkthrough
+## 8. Frontend Deployment on Cloudflare Pages
 
-### Step 1: Provision Neon PostgreSQL
-1. Sign in to [Neon Console](https://console.neon.tech).
-2. Create a new project named `bytevon-db`.
-3. In the project dashboard, locate the **Connection Details** section.
-4. Select the connection string and change the protocol to `postgresql+asyncpg://` with `?sslmode=require`.
-5. Keep this string ready for the environment configuration.
+The frontend is a Vite + React Single-Page Application deployed directly to **Cloudflare Pages**.
 
-### Step 2: Initialize Database Schema and Seeds
-Execute either **Approach A** (local Docker command) or **Approach B** (`STARTUP_MODE=init_and_app`) as detailed in Section 5.
+### Cloudflare Pages Project Configuration
 
-### Step 3: Create the Render Web Service
-1. Log in to [Render Dashboard](https://dashboard.render.com).
-2. Click **New +** $\rightarrow$ **Web Service**.
-3. Select **Build and deploy from a Git repository**.
-4. Choose the `Bytevon_CRM` repository.
-5. In the configuration page, specify:
-   - **Name**: `bytevon-backend`
-   - **Region**: Choose a region close to your Neon database (e.g., Frankfurt or Oregon).
-   - **Root Directory**: `02_backend_code`
-   - **Environment**: `Docker`
-   - **Dockerfile Path**: `Dockerfile`
-6. Click **Advanced** $\rightarrow$ Add Environment Variables as listed in Section 3.
-7. Set `STARTUP_MODE=app` (if initialized via Approach A) or `STARTUP_MODE=init_and_app` (if initializing via Approach B).
-8. Click **Create Web Service**.
+In the [Cloudflare Dashboard](https://dash.cloudflare.com) $\rightarrow$ **Workers & Pages** $\rightarrow$ **Create Application** $\rightarrow$ **Pages** $\rightarrow$ **Connect to Git**:
 
-### Step 4: Verify Deployment
-1. Wait for Render to build the Docker image and deploy.
-2. In the Render service dashboard, click the assigned URL (e.g., `https://bytevon-backend.onrender.com/health`).
-3. Confirm the JSON response:
-   ```json
-   {
-     "status": "ok",
-     "app": "ByteVon CRM API"
-   }
-   ```
-4. Test an API login request from terminal:
-   ```bash
-   curl -X POST https://<your-render-url>/api/v1/auth/login \
-     -H "Content-Type: application/json" \
-     -d '{"email":"admin@example.com","password":"ChangeMeAdmin!123"}'
-   ```
-   Confirm that a valid JWT bearer token is returned.
+| Setting | Value | Notes |
+|---|---|---|
+| **Project Name** | `bytevon-crm` *(or your choice)* | Determines your `*.pages.dev` URL |
+| **Production Branch** | `main` | Continuous deployment branch |
+| **Framework Preset** | `Vite` | Or `None` |
+| **Root Directory** | `01_frontend_code` | **Required**: Points Cloudflare to frontend folder |
+| **Build Command** | `npm run build` | Runs `tsc -b && vite build` |
+| **Build Output Directory** | `dist` | Generated static bundle directory |
 
-### Step 5: Configure Frontend (Cloudflare Pages)
-1. In your Cloudflare Pages dashboard for the frontend project:
-2. Update the environment variable:
-   - `VITE_API_BASE_URL`: `https://<your-render-url>/api/v1`
-   - `VITE_USE_MOCK_API`: `false`
-3. Trigger a redeploy of Cloudflare Pages.
-4. Ensure the Render backend's `CORS_ORIGINS` environment variable includes your Cloudflare Pages URL (e.g., `https://bytevon.pages.dev`).
+### Required Environment Variables (Cloudflare Pages)
+
+Set these under **Settings** $\rightarrow$ **Environment Variables** (Production):
+
+| Variable Name | Required | Value | Description |
+|---|---|---|---|
+| `VITE_USE_MOCK_API` | **Yes** | `false` | Disables mock DB; routes all calls through `apiClient`. |
+| `VITE_API_BASE_URL` | **Yes** | `https://<your-render-url>/api/v1` | Points to your deployed Render Web Service. |
+
+> [!IMPORTANT]
+> All `VITE_*` variables are embedded into client-side JS bundles at build time. Never place secrets, database credentials, or private JWT keys in Cloudflare Pages environment variables.
+
+### Client-Side SPA Routing (`_redirects`)
+To support direct URL navigation and browser refreshes on routes like `/dashboard`, `/employees`, and `/settings`, a `_redirects` file is located at `01_frontend_code/public/_redirects`:
+```text
+/*    /index.html   200
+```
+Vite automatically places this file in `dist/` upon build, instructing Cloudflare Pages to serve `index.html` for all client-side routes with HTTP 200.
 
 ---
 
-## 9. Troubleshooting & Common Issues
+## 9. Step-by-Step Manual Deployment Walkthrough
 
-### Issue 1: Backend service fails health check on initial deploy
-- **Cause**: Neon serverless database is in sleep/idle state or network DNS took longer than timeout.
-- **Resolution**: Render's health check is pointed at `/health`, which does not connect to the database. If `/health` fails, check container logs in Render. Confirm that `uvicorn` bound to `0.0.0.0:${PORT}` and not `localhost`.
+### Step 1: Provision Neon PostgreSQL & Test Connectivity
+1. Sign in to [Neon Console](https://console.neon.tech).
+2. Create a new project (e.g. `bytevon-db`).
+3. Under **Connection Details**, copy your connection string. Convert prefix to `postgresql+asyncpg://` and ensure `?sslmode=require` is present:
+   ```text
+   postgresql+asyncpg://<user>:<password>@<ep-xyz>.neon.tech/<dbname>?sslmode=require
+   ```
+4. (Optional) Run the non-destructive connectivity diagnostic locally:
+   ```bash
+   cd 02_backend_code
+   export DATABASE_URL="postgresql+asyncpg://<user>:<password>@<ep-xyz>.neon.tech/<dbname>?sslmode=require"
+   python -m scripts.test_db_connection
+   ```
+   This confirms DNS, TLS handshake, credentials, and asyncpg/SQLAlchemy compatibility without printing passwords.
 
-### Issue 2: `asyncpg.exceptions.InvalidPasswordError` or SSL Connection Error
-- **Cause**: Missing `?sslmode=require` or URL encoding issue in password.
-- **Resolution**: Neon passwords may contain special characters. Ensure the URL is properly escaped and ends with `?sslmode=require`. Dialect must be `postgresql+asyncpg://`.
+### Step 2: Initialize Database Schema and Seeds
+Choose **Approach A** (local one-shot image or Python runner) or **Approach B** (`STARTUP_MODE=init_and_app` on Render) as described in Section 5.
 
-### Issue 3: CORS Errors in Browser Console
-- **Cause**: Browser blocked requests because Cloudflare Pages domain is not in `CORS_ORIGINS`.
-- **Resolution**: Go to Render Dashboard $\rightarrow$ Environment $\rightarrow$ update `CORS_ORIGINS` to include your exact frontend URL (including `https://` and without trailing slash), e.g. `https://my-app.pages.dev`.
+- If using local Docker:
+  ```bash
+  cd 02_backend_code
+  docker build -t bytevon-backend .
+  docker run --rm \
+    -e DATABASE_URL="postgresql+asyncpg://<user>:<password>@<ep-xyz>.neon.tech/<dbname>?sslmode=require" \
+    -e STARTUP_MODE=init \
+    -e ADMIN_EMAIL="admin@yourdomain.com" \
+    -e ADMIN_PASSWORD="<YourSecurePassword123!>" \
+    bytevon-backend
+  ```
 
-### Issue 4: Alembic Migration Drift or Conflicts
-- **Cause**: Running migrations out of order.
-- **Resolution**: Always run `alembic upgrade head`. Do not modify migration scripts that have already been applied to Neon.
+### Step 3: Deploy Backend on Render
+1. Log in to [Render Dashboard](https://dashboard.render.com) $\rightarrow$ **New +** $\rightarrow$ **Web Service**.
+2. Connect `https://github.com/veerindrasinghthakur/Bytevon_CRM`.
+3. Configure:
+   - **Root Directory**: `02_backend_code`
+   - **Runtime**: `Docker`
+   - **Dockerfile Path**: `Dockerfile`
+4. Set Environment Variables as listed in Section 3 (including `STARTUP_MODE=app`, `DATABASE_URL`, `JWT_SECRET_KEY`, and temporary placeholder for `CORS_ORIGINS`).
+5. Click **Create Web Service**.
+6. Note the assigned URL: `https://<render-service-name>.onrender.com`.
 
-### Issue 5: Local Docker Compose Development
-To run locally alongside the Render configuration:
-- Use root `docker compose up --build`.
-- `docker-compose.yml` defaults to `STARTUP_MODE=compose` and `STORAGE_ENABLED=true`.
-- Local Postgres and MinIO containers run alongside the backend without interfering with the remote Neon deployment.
+### Step 4: Verify Backend Health
+1. In your browser or terminal:
+   ```bash
+   curl -i https://<render-service-name>.onrender.com/health
+   ```
+   Expected response: `HTTP/1.1 200 OK` with `{"status":"ok","app":"ByteVon CRM API"}`.
+2. Verify authentication endpoint:
+   ```bash
+   curl -X POST https://<render-service-name>.onrender.com/api/v1/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email":"admin@example.com","password":"ChangeMeAdmin!123"}'
+   ```
+   Expected response: JWT tokens object with `access_token` and `refresh_token`.
+
+### Step 5: Deploy Frontend on Cloudflare Pages
+1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com) $\rightarrow$ **Workers & Pages** $\rightarrow$ **Create Application** $\rightarrow$ **Pages** $\rightarrow$ **Connect to Git**.
+2. Select `Bytevon_CRM` repository.
+3. Configure:
+   - **Root Directory**: `01_frontend_code`
+   - **Build Command**: `npm run build`
+   - **Build Output Directory**: `dist`
+4. Add Environment Variables:
+   - `VITE_USE_MOCK_API`: `false`
+   - `VITE_API_BASE_URL`: `https://<render-service-name>.onrender.com/api/v1`
+5. Click **Save and Deploy**.
+6. Copy your deployed Pages domain, e.g. `https://bytevon-crm.pages.dev`.
+
+### Step 6: Connect CORS & Final Integration
+1. Return to the Render Web Service dashboard $\rightarrow$ **Environment**.
+2. Update `CORS_ORIGINS` to include your exact Cloudflare Pages origin:
+   ```text
+   https://bytevon-crm.pages.dev
+   ```
+3. Save changes. Render redeploys the service with updated CORS rules in under a minute.
+4. Open `https://bytevon-crm.pages.dev` in a browser, log in with demo or admin credentials, and explore the CRM dashboard, workforce, sales, and project modules.
+
+---
+
+## 10. Troubleshooting & Operational Guide
+
+### Inspecting Logs
+- **Render Backend Logs**: In Render Dashboard $\rightarrow$ Web Service $\rightarrow$ **Logs**. Shows Uvicorn startup, entrypoint output, and request logs.
+- **Cloudflare Pages Logs**: In Cloudflare Dashboard $\rightarrow$ Workers & Pages $\rightarrow$ Project $\rightarrow$ **Deployments** $\rightarrow$ Click latest deployment to view build output.
+
+### Free-Tier Cold-Starts
+- Render Free Web Services sleep after 15 minutes of inactivity. Neon Free compute also scales to zero when idle.
+- First request after idle will experience a 30–50 second cold-start latency while the container wakes up and PostgreSQL resumes.
+- Subsequent requests respond in milliseconds.
+- `pool_pre_ping=True` in `app/core/database.py` prevents broken connection errors during wake-up.
+
+### Common Errors & Remedies
+1. **`asyncpg.exceptions.InvalidPasswordError` or SSL Connection Error**:
+   - Neon requires `?sslmode=require`. Ensure the password is URL-encoded if it contains symbols like `@`, `!`, or `#`.
+2. **CORS Error in Browser Developer Tools**:
+   - Verify `CORS_ORIGINS` on Render matches your exact Cloudflare Pages URL including `https://` and without a trailing slash (e.g. `https://bytevon-crm.pages.dev`).
+3. **Frontend Shows 404 on Browser Refresh**:
+   - Verify `public/_redirects` was included in the build output (`dist/_redirects`).
+4. **Seed Failure on Pre-Populated Database**:
+   - Seed scripts are idempotent and use `get_or_create`. If a conflict occurs on non-standard custom records, inspect `docker logs` for the offending table constraint.
+
+---
+
+## 11. Local Docker Compose Development
+
+To run locally alongside the production configuration without interfering with Neon:
+```bash
+docker compose up --build
+```
+- `docker-compose.yml` runs local PostgreSQL, MinIO, Backend (`STARTUP_MODE=compose`, `STORAGE_ENABLED=true`), and Frontend (Nginx).
+- Local storage, avatars, and file attachments are fully enabled in Docker Compose.
+

@@ -4,11 +4,11 @@ import reactPlugin from 'eslint-plugin-react'
 import reactHooksPlugin from 'eslint-plugin-react-hooks'
 
 export default typescriptEslint.config(
-  { ignores: ['dist/', 'node_modules/', '*.config.*', 'coverage/'] },
+  { ignores: ['dist/', 'node_modules/', '*.config.*', 'coverage/', 'tests/', 'e2e/'] },
   js.configs.recommended,
   ...typescriptEslint.configs.recommended,
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: 'module',

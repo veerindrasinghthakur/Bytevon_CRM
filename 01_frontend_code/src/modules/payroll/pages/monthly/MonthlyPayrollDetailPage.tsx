@@ -262,7 +262,7 @@ export function MonthlyPayrollDetailPage() {
         <Modal title="Reject payroll" onClose={() => !d.rejectMut.isPending && setRejectOpen(false)}>
           <div className="space-y-4">
             <p className="text-body-sm text-on-surface-variant">
-              {emp.name}'s {review.periodLabel} payroll will go back to Calculated. A reason is required.
+              {emp.name}&apos;s {review.periodLabel} payroll will go back to Calculated. A reason is required.
             </p>
             <textarea
               value={rejectReason}
