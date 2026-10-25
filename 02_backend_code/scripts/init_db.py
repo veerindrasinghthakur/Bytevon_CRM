@@ -32,6 +32,8 @@ def run_migrations() -> None:
 
 
 async def run_seeds() -> None:
+    logging.getLogger().setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
     logger.info("[2/3] Running bootstrap seed...")
     await seed_bootstrap()
     logger.info("[2/3] Bootstrap seed completed.")
@@ -44,6 +46,8 @@ async def run_seeds() -> None:
 def main() -> None:
     try:
         run_migrations()
+        logging.getLogger().setLevel(logging.INFO)
+        logger.setLevel(logging.INFO)
         asyncio.run(run_seeds())
         logger.info("Complete database initialization finished successfully.")
     except Exception:

@@ -86,7 +86,8 @@ async def get_or_create(session, model, defaults: dict, **lookup):
     result = await session.execute(select(model).filter_by(**lookup))
     obj = result.scalar_one_or_none()
     if obj is None:
-        obj = model(**lookup, **defaults)
+        params = {**defaults, **lookup}
+        obj = model(**params)
         session.add(obj)
         await session.flush()
     return obj
@@ -514,37 +515,41 @@ async def seed_employees(
     employments = {}
 
     for emp_data in DEMO_EMPLOYEES:
-        # Person
-        person = await get_or_create(
-            session,
-            Person,
-            defaults={},
-            first_name=emp_data["first"],
-            last_name=emp_data["last"],
-        )
-        # Login
-        await get_or_create(
-            session,
-            Login,
-            defaults={
-                "password_hash": pwd.hash(DEMO_PASSWORD),
-                "is_active": True,
-                "failed_attempt_count": 0,
-            },
-            person_id=person.id,
-            email=emp_data["email"],
-        )
-        # Employment
+        # 1. Lookup or create login & person by unique email
+        login = (await session.execute(select(Login).where(Login.email == emp_data["email"]))).scalar_one_or_none()
+        if login is not None:
+            person = (await session.execute(select(Person).where(Person.id == login.person_id))).scalar_one_or_none()
+        else:
+            person = await get_or_create(
+                session,
+                Person,
+                defaults={},
+                first_name=emp_data["first"],
+                last_name=emp_data["last"],
+            )
+            login = await get_or_create(
+                session,
+                Login,
+                defaults={
+                    "person_id": person.id,
+                    "password_hash": pwd.hash(DEMO_PASSWORD),
+                    "is_active": True,
+                    "failed_attempt_count": 0,
+                },
+                email=emp_data["email"],
+            )
+
+        # 2. Lookup or create Employment by unique employee_code
         employment = await get_or_create(
             session,
             Employment,
             defaults={
+                "person_id": person.id if person else login.person_id,
                 "employment_type": EmploymentType.FULL_TIME,
                 "current_state": EmploymentState.CONFIRMED,
                 "joining_date": emp_data["joining"],
                 "changed_by": SYSTEM_EMP_ID,
             },
-            person_id=person.id,
             employee_code=emp_data["code"],
         )
         employments[emp_data["code"]] = employment

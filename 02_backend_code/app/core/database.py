@@ -22,6 +22,7 @@ engine = create_async_engine(
     # Defaults are conservative for Neon free tier (max 25 connections total).
     pool_size=settings.DB_POOL_SIZE,
     max_overflow=settings.DB_MAX_OVERFLOW,
+    connect_args={"statement_cache_size": 0},
 )
 
 AsyncSessionLocal = async_sessionmaker(

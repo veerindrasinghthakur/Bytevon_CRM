@@ -39,9 +39,11 @@ def mask_url(raw_url: str) -> str:
         return "<invalid url>"
 
 
-async def run_diagnostics() -> bool:
-    from app.core.config import settings
-    raw_url = settings.DATABASE_URL
+async def run_diagnostics(target_url: str | None = None) -> bool:
+    from app.core.config import Settings, settings
+    raw_url = target_url or os.environ.get("DATABASE_URL") or settings.DATABASE_URL
+    # Normalize scheme, ssl params, and unsupported query args
+    raw_url = Settings.normalize_database_url(raw_url)
 
     print("=" * 60)
     print(" ByteVon CRM — Database Connectivity Diagnostics")
@@ -91,7 +93,7 @@ async def run_diagnostics() -> bool:
         print(f"       Connected user: {current_user}")
     except Exception as exc:
         print(f"[FAIL] asyncpg connection failed: {exc}")
-        print("       Check: DNS resolution, credentials, and '?sslmode=require' for Neon.")
+        print("       Check: DNS resolution, credentials, and '?ssl=require' for Neon.")
         return False
 
     # 3. SQLAlchemy AsyncEngine connectivity
@@ -99,7 +101,12 @@ async def run_diagnostics() -> bool:
     print("[2/2] Testing SQLAlchemy async engine connection...")
     t0 = time.perf_counter()
     try:
-        from app.core.database import engine
+        from sqlalchemy.ext.asyncio import create_async_engine
+        engine = create_async_engine(
+            raw_url,
+            pool_pre_ping=True,
+            connect_args={"statement_cache_size": 0},
+        )
         async with engine.connect() as conn:
             result = await conn.execute(text("SELECT 1 AS alive, NOW() AS server_now;"))
             row = result.mappings().one()
@@ -119,7 +126,8 @@ async def run_diagnostics() -> bool:
 
 def main() -> None:
     try:
-        ok = asyncio.run(run_diagnostics())
+        target = sys.argv[1] if len(sys.argv) > 1 else None
+        ok = asyncio.run(run_diagnostics(target))
         sys.exit(0 if ok else 1)
     except KeyboardInterrupt:
         print("\nAborted by user.")

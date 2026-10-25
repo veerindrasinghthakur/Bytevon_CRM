@@ -7,6 +7,7 @@ Loaded from environment variables / .env file.
 from __future__ import annotations
 
 from functools import lru_cache
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -42,9 +43,33 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = Field(
         ...,
-        description="Async PostgreSQL URL, e.g. postgresql+asyncpg://user:pass@host:5432/db?sslmode=require",
+        description="Async PostgreSQL URL, e.g. postgresql+asyncpg://user:pass@host:5432/db?ssl=require",
     )
     DATABASE_ECHO: bool = False
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def normalize_database_url(cls, v: object) -> str:
+        if not isinstance(v, str):
+            return str(v)
+        v = v.strip()
+        parts = urlsplit(v)
+        scheme = parts.scheme
+        # Ensure asyncpg dialect prefix for PostgreSQL
+        if scheme in ("postgres", "postgresql"):
+            scheme = "postgresql+asyncpg"
+        # Parse query params, map sslmode -> ssl for asyncpg, drop unsupported params
+        query_params = parse_qsl(parts.query, keep_blank_values=True)
+        new_params: list[tuple[str, str]] = []
+        for k, val in query_params:
+            if k == "sslmode":
+                new_params.append(("ssl", val))
+            elif k in ("channel_binding",):
+                continue
+            else:
+                new_params.append((k, val))
+        new_query = urlencode(new_params)
+        return urlunsplit((scheme, parts.netloc, parts.path, new_query, parts.fragment))
 
     # Connection pool — keep small for Neon free tier (max 25 pooled connections).
     # Direct (non-pooled) Neon connections are used for Alembic migrations only.

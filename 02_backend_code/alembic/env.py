@@ -21,12 +21,22 @@ from app.core.models_registry import Base  # noqa: F401 — registers all models
 
 config = context.config
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 
-# Override URL from app settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+from urllib.parse import urlsplit, urlunsplit
+
+# Override URL from app settings.
+# For migrations, always connect directly (strip '-pooler.' if present)
+# because PgBouncer transaction pooling closes connections during DDL.
+migration_url = settings.DATABASE_URL
+parts = urlsplit(migration_url)
+if "-pooler." in parts.netloc:
+    parts = parts._replace(netloc=parts.netloc.replace("-pooler.", "."))
+    migration_url = urlunsplit(parts)
+
+config.set_main_option("sqlalchemy.url", migration_url)
 
 
 def run_migrations_offline() -> None:
@@ -59,6 +69,7 @@ async def run_async_migrations() -> None:
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args={"statement_cache_size": 0},
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
