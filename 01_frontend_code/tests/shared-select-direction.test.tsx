@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { Select } from '@/shared/components/ui/Select'
+import { Select } from '../src/shared/components/ui/Select'
 
 const options = [
   { value: '1', label: 'One' },
