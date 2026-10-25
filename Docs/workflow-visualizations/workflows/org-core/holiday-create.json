@@ -1,0 +1,85 @@
+{
+  "module": "Organization Core",
+  "workflow": "Holiday creation",
+  "entry_route": "POST /api/v1/admin/holiday-calendars/{calendar_id}/holidays",
+  "entry_file": "02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/admin/holiday-calendars/{calendar_id}/holidays",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Add holiday to a calendar",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+      "function": "create_holiday",
+      "line": 61
+    },
+    {
+      "id": "n3",
+      "business_step": "Validate date, insert holiday",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/admin/holiday_calendar/service.py",
+      "function": "add_holiday",
+      "line": 144
+    },
+    {
+      "id": "n4",
+      "business_step": "Persist holiday row",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/admin/holiday_calendar/repository.py",
+      "function": "add_holiday",
+      "line": 69
+    },
+    {
+      "id": "n5",
+      "business_step": "Write holidays",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/admin/holiday_calendar/models.py",
+      "function": "",
+      "line": 21,
+      "table": "holidays"
+    },
+    {
+      "id": "n6",
+      "business_step": "201 holiday to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+      "function": "create_holiday",
+      "line": 61
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

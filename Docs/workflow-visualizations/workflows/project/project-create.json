@@ -1,0 +1,72 @@
+{
+  "module": "Project",
+  "workflow": "Project creation",
+  "entry_route": "POST /api/v1/projects/",
+  "entry_file": "02_backend_code/app/modules/project/project/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/projects/",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Create project (optionally from lead via create_from_lead, line 118)",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/project/project/routes.py",
+      "function": "create_project",
+      "line": 23
+    },
+    {
+      "id": "n3",
+      "business_step": "Validate payload, insert project",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/project/project/service.py",
+      "function": "create_project",
+      "line": 157
+    },
+    {
+      "id": "n4",
+      "business_step": "Write projects",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/project/project/models.py",
+      "function": "",
+      "line": 24,
+      "table": "projects"
+    },
+    {
+      "id": "n5",
+      "business_step": "201 project to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/project/project/routes.py",
+      "function": "create_project",
+      "line": 23
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

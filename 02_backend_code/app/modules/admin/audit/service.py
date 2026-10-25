@@ -138,11 +138,19 @@ class AuditService(BasePublicService):
 
         try:
             lines = "\n".join(json.dumps(item, default=str) for item in payload)
-            await upload_file(
+            uploaded = await upload_file(
                 bucket_name="audit-archives",
                 object_name=storage_path,
                 data=lines,
             )
+            if not uploaded:
+                logger.warning("Audit archive upload returned None (storage disabled or error); PG rows NOT deleted")
+                return ArchiveResult(
+                    exported_count=0,
+                    deleted_count=0,
+                    storage_path=None,
+                    message="Object storage is disabled or unavailable; no records deleted",
+                )
             logger.info(
                 "AUDIT ARCHIVE uploaded to MinIO path=%s rows=%s bytes≈%s",
                 storage_path,

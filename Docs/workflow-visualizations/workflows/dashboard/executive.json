@@ -1,0 +1,76 @@
+{
+  "module": "Manager (Dashboard)",
+  "workflow": "Executive dashboard",
+  "entry_route": "GET /api/v1/dashboard/executive",
+  "entry_file": "02_backend_code/app/modules/dashboard/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends GET /api/v1/dashboard/executive",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Org-wide executive aggregate",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/dashboard/routes.py",
+      "function": "executive_dashboard",
+      "line": 27
+    },
+    {
+      "id": "n3",
+      "business_step": "Compose KPIs across domains (scope-filtered)",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/dashboard/service.py",
+      "function": "get_executive",
+      "line": 134,
+      "unresolved": true,
+      "note": "Aggregation body not read in full"
+    },
+    {
+      "id": "n4",
+      "business_step": "Read leads + clients + payroll summaries (aggregate)",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/sales/models/sales_models.py",
+      "function": "",
+      "line": 82,
+      "table": "leads, clients, monthly_payroll",
+      "unresolved": true,
+      "note": "Exact composition not traced"
+    },
+    {
+      "id": "n5",
+      "business_step": "200 dashboard to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/dashboard/routes.py",
+      "function": "executive_dashboard",
+      "line": 27
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "module": "RBAC",
+  "workflow": "Assign role",
+  "entry_route": "POST /api/v1/rbac/employments/{employment_id}/roles",
+  "entry_file": "02_backend_code/app/modules/rbac/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/rbac/employments/{employment_id}/roles",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Grant a role to an employment",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/rbac/routes.py",
+      "function": "assign_role",
+      "line": 152
+    },
+    {
+      "id": "n3",
+      "business_step": "Validate role/employment, insert grant",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/rbac/service.py",
+      "function": "assign_role",
+      "line": 381
+    },
+    {
+      "id": "n4",
+      "business_step": "Check existing grant (exact call not traced)",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/rbac/repository.py",
+      "function": "get_employee_role",
+      "line": 193,
+      "unresolved": true,
+      "note": "Repo function verified to exist; exact call site not read"
+    },
+    {
+      "id": "n5",
+      "business_step": "Write employee_roles",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/rbac/models/rbac_models.py",
+      "function": "",
+      "line": 149,
+      "table": "employee_roles"
+    },
+    {
+      "id": "n6",
+      "business_step": "201 grant to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/rbac/routes.py",
+      "function": "assign_role",
+      "line": 152
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

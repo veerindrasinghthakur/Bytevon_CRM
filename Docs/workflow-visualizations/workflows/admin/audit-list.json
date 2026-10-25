@@ -1,0 +1,85 @@
+{
+  "module": "Admin Governance",
+  "workflow": "Audit log list",
+  "entry_route": "GET /api/v1/admin/audit/logs",
+  "entry_file": "02_backend_code/app/modules/admin/audit/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends GET /api/v1/admin/audit/logs",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Query audit trail with filters",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/admin/audit/routes.py",
+      "function": "list_logs",
+      "line": 31
+    },
+    {
+      "id": "n3",
+      "business_step": "Apply filters, paginate",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/admin/audit/service.py",
+      "function": "list_logs",
+      "line": 92
+    },
+    {
+      "id": "n4",
+      "business_step": "Query audit rows",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/admin/audit/repository.py",
+      "function": "list_logs",
+      "line": 24
+    },
+    {
+      "id": "n5",
+      "business_step": "Read audit_logs",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/admin/audit/models.py",
+      "function": "",
+      "line": 14,
+      "table": "audit_logs"
+    },
+    {
+      "id": "n6",
+      "business_step": "200 log list to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/admin/audit/routes.py",
+      "function": "list_logs",
+      "line": 31
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

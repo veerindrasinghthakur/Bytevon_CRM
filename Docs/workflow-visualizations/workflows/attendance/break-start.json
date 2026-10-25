@@ -1,0 +1,85 @@
+{
+  "module": "Attendance",
+  "workflow": "Break start",
+  "entry_route": "POST /api/v1/my-work/attendance/breaks/start",
+  "entry_file": "02_backend_code/app/modules/my_work/attendance/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/my-work/attendance/breaks/start",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Self-service break start: delegate with caller employment_id (service.py:54)",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/my_work/attendance/routes.py",
+      "function": "my_start_break",
+      "line": 77
+    },
+    {
+      "id": "n3",
+      "business_step": "Reject if an open break exists, insert AttendanceBreak",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/workforce/attendance/service.py",
+      "function": "start_break",
+      "line": 551
+    },
+    {
+      "id": "n4",
+      "business_step": "Check for open break on this day; then add break row",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/workforce/attendance/repository.py",
+      "function": "get_open_break",
+      "line": 222
+    },
+    {
+      "id": "n5",
+      "business_step": "Write attendance_breaks",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/workforce/attendance/models.py",
+      "function": "",
+      "line": 193,
+      "table": "attendance_breaks"
+    },
+    {
+      "id": "n6",
+      "business_step": "201 BreakResponse to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/my_work/attendance/routes.py",
+      "function": "my_start_break",
+      "line": 77
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

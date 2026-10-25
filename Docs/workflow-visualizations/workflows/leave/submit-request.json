@@ -1,0 +1,100 @@
+{
+  "module": "Leave Management",
+  "workflow": "Submit leave request",
+  "entry_route": "POST /api/v1/leave/requests",
+  "entry_file": "02_backend_code/app/modules/leave/request/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/leave/requests",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Submit leave (CREATE/ANY) via scoped submit",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/leave/request/routes.py",
+      "function": "submit_request",
+      "line": 18
+    },
+    {
+      "id": "n3",
+      "business_step": "Scope gate: enforce SELF/ANY visibility before service call",
+      "layer": "util",
+      "file": "02_backend_code/app/modules/leave/request/scoped_ops.py",
+      "function": "submit_request_scoped",
+      "line": 0,
+      "unresolved": true,
+      "note": "File referenced by route import; body not read"
+    },
+    {
+      "id": "n4",
+      "business_step": "Validate overlap/policy, insert leave_request, raise approval request",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/leave/request/service.py",
+      "function": "submit_request",
+      "line": 73
+    },
+    {
+      "id": "n5",
+      "business_step": "Overlap check; then persist via session",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/leave/request/repository.py",
+      "function": "has_overlapping_request",
+      "line": 67
+    },
+    {
+      "id": "n6",
+      "business_step": "Write leave_requests (+ approval_requests)",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/leave/models/leave_models.py",
+      "function": "",
+      "line": 112,
+      "table": "leave_requests, approval_requests"
+    },
+    {
+      "id": "n7",
+      "business_step": "201 LeaveRequestResponse to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/leave/request/routes.py",
+      "function": "submit_request",
+      "line": 18
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "type": "calls"
+    },
+    {
+      "from": "n6",
+      "to": "n7",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

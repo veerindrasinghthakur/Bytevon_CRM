@@ -1,0 +1,85 @@
+{
+  "module": "Notifications",
+  "workflow": "Inbox list",
+  "entry_route": "GET /api/v1/notifications/inbox",
+  "entry_file": "02_backend_code/app/modules/notifications/center/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends GET /api/v1/notifications/inbox",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "List caller inbox page",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/notifications/center/routes.py",
+      "function": "list_inbox",
+      "line": 16
+    },
+    {
+      "id": "n3",
+      "business_step": "Scope to recipient, paginate",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/notifications/center/service.py",
+      "function": "list_inbox",
+      "line": 20
+    },
+    {
+      "id": "n4",
+      "business_step": "Query recipient notifications",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/notifications/center/repository.py",
+      "function": "list_for_recipient",
+      "line": 24
+    },
+    {
+      "id": "n5",
+      "business_step": "Read notifications",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/notifications/models/notification_models.py",
+      "function": "",
+      "line": 57,
+      "table": "notifications"
+    },
+    {
+      "id": "n6",
+      "business_step": "200 inbox page to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/notifications/center/routes.py",
+      "function": "list_inbox",
+      "line": 16
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

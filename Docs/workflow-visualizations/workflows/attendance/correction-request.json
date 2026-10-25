@@ -1,0 +1,112 @@
+{
+  "module": "Attendance",
+  "workflow": "Correction request",
+  "entry_route": "POST /api/v1/workforce/attendance/corrections",
+  "entry_file": "02_backend_code/app/modules/workforce/attendance/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/workforce/attendance/corrections",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "File correction against own day (SELF-gated); delegate with actor employment_id",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/workforce/attendance/routes.py",
+      "function": "submit_correction",
+      "line": 101
+    },
+    {
+      "id": "n3",
+      "business_step": "Validate window/policy, insert AttendanceCorrection, create linked approval request",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/workforce/attendance/service.py",
+      "function": "submit_correction",
+      "line": 125
+    },
+    {
+      "id": "n4",
+      "business_step": "Resolve the owning day (or auto-create for self-service date path)",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/workforce/attendance/repository.py",
+      "function": "get_day_by_employment_date",
+      "line": 35
+    },
+    {
+      "id": "n5",
+      "business_step": "Write attendance_corrections",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/workforce/attendance/models.py",
+      "function": "",
+      "line": 105,
+      "table": "attendance_corrections"
+    },
+    {
+      "id": "n6",
+      "business_step": "Create approval_requests row (ATTENDANCE_CORRECTION) for department head",
+      "layer": "side-effect",
+      "file": "02_backend_code/app/modules/approvals/models/approval_models.py",
+      "function": "",
+      "line": 27,
+      "table": "approval_requests"
+    },
+    {
+      "id": "n7",
+      "business_step": "Notify resolved approver (new-approval-needed)",
+      "layer": "side-effect",
+      "file": "02_backend_code/app/modules/workforce/attendance/service.py",
+      "function": "_notify",
+      "line": 193
+    },
+    {
+      "id": "n8",
+      "business_step": "201 CorrectionResponse to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/workforce/attendance/routes.py",
+      "function": "submit_correction",
+      "line": 101
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n6",
+      "type": "triggers"
+    },
+    {
+      "from": "n3",
+      "to": "n7",
+      "type": "triggers"
+    },
+    {
+      "from": "n5",
+      "to": "n8",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

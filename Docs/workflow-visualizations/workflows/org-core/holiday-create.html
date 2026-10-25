@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>[Organization Core] Holiday creation — Bytevon Workflow</title>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+:root{--route:#3b82f6;--service:#22c55e;--repository:#f59e0b;--model:#a855f7;--db:#7c3aed;--side:#ef4444;--client:#64748b;--response:#14b8c7}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#0f172a;color:#e2e8f0}
+header{padding:16px 24px;background:#1e293b;border-bottom:1px solid #334155}
+header h1{margin:0;font-size:20px}header p{margin:4px 0 0;color:#94a3b8;font-size:13px}
+header a{color:#7dd3fc}
+#wrap{display:flex;height:calc(100vh - 130px)}
+#graph{flex:1;min-width:0}
+#panel{width:340px;background:#1e293b;border-left:1px solid #334155;padding:16px;overflow:auto}
+#panel h2{font-size:15px;margin:0 0 8px}#panel dl{font-size:13px}#panel dt{color:#94a3b8}#panel dd{margin:0 0 8px;word-break:break-all}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;color:#fff}
+.legend{display:flex;gap:10px;flex-wrap:wrap;padding:8px 24px;font-size:12px;background:#0f172a}
+.legend span i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+table.nodes{width:100%;border-collapse:collapse;font-size:12px;margin:0}
+table.nodes td,table.nodes th{border:1px solid #334155;padding:6px 8px;text-align:left}
+.unres{color:#fbbf24;font-weight:700}
+footer{padding:8px 24px;font-size:12px;color:#94a3b8}
+footer a{color:#7dd3fc}
+</style></head>
+<body><header><h1>[Organization Core] Holiday creation</h1><p>POST /api/v1/admin/holiday-calendars/{calendar_id}/holidays — 02_backend_code/app/modules/admin/holiday_calendar/routes.py &middot; <a href="../../index.html">index</a></p></header>
+<div class="legend"><span><i style="background:#64748b"></i>client</span><span><i style="background:#3b82f6"></i>route</span><span><i style="background:#22c55e"></i>service</span><span><i style="background:#f59e0b"></i>repository</span><span><i style="background:#a855f7"></i>model/db</span><span><i style="background:#ef4444"></i>side-effect</span><span><i style="background:#0ea5e9"></i>util</span><span><i style="background:#14b8c7"></i>response</span></div>
+<div id="wrap"><div id="graph"></div><div id="panel"><h2>Node detail</h2><div id="detail"><p style="color:#94a3b8">Click a node.</p></div></div></div>
+<div style="padding:0 24px"><table class="nodes" id="nodetable"></table></div>
+<footer>Bytevon CRM workflow visualization &middot; static file, data inlined &middot; engine: vis-network (CDN)</footer>
+<script>const graphData = {"module": "Organization Core", "workflow": "Holiday creation", "entry_route": "POST /api/v1/admin/holiday-calendars/{calendar_id}/holidays", "entry_file": "02_backend_code/app/modules/admin/holiday_calendar/routes.py", "nodes": [{"id": "n1", "business_step": "Client sends POST /api/v1/admin/holiday-calendars/{calendar_id}/holidays", "layer": "client", "file": "", "function": "", "line": 0}, {"id": "n2", "business_step": "Add holiday to a calendar", "layer": "route", "file": "02_backend_code/app/modules/admin/holiday_calendar/routes.py", "function": "create_holiday", "line": 61}, {"id": "n3", "business_step": "Validate date, insert holiday", "layer": "service", "file": "02_backend_code/app/modules/admin/holiday_calendar/service.py", "function": "add_holiday", "line": 144}, {"id": "n4", "business_step": "Persist holiday row", "layer": "repository", "file": "02_backend_code/app/modules/admin/holiday_calendar/repository.py", "function": "add_holiday", "line": 69}, {"id": "n5", "business_step": "Write holidays", "layer": "db", "file": "02_backend_code/app/modules/admin/holiday_calendar/models.py", "function": "", "line": 21, "table": "holidays"}, {"id": "n6", "business_step": "201 holiday to client", "layer": "response", "file": "02_backend_code/app/modules/admin/holiday_calendar/routes.py", "function": "create_holiday", "line": 61}], "edges": [{"from": "n1", "to": "n2", "type": "calls"}, {"from": "n2", "to": "n3", "type": "calls"}, {"from": "n3", "to": "n4", "type": "calls"}, {"from": "n4", "to": "n5", "type": "calls"}, {"from": "n5", "to": "n6", "type": "calls", "label": "respond"}]};</script>
+<script>
+(function(){
+var COLORS={client:"#64748b",route:"#3b82f6",service:"#22c55e",repository:"#f59e0b",model:"#a855f7",db:"#7c3aed","side-effect":"#ef4444",response:"#14b8c7",util:"#0ea5e9"};
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function shortStep(s){return s.length>64?s.slice(0,61)+"...":s;}
+function render(){
+  var nodes=new vis.DataSet(graphData.nodes.map(function(n){
+    return {id:n.id,label:(n.unresolved?"[?] ":"")+shortStep(n.business_step),
+      color:{background:COLORS[n.layer]||"#475569",border:"#0f172a"},
+      font:{color:"#fff",size:13},shape:"box",margin:8,
+      title:esc(n.business_step)};
+  }));
+  var edges=new vis.DataSet(graphData.edges.map(function(e,i){
+    var c=e.type==="triggers"?"#ef4444":e.type==="writes"?"#a855f7":e.type==="reads"?"#38bdf8":"#94a3b8";
+    return {id:"e"+i,from:e.from,to:e.to,arrows:"to",color:{color:c},label:e.label||e.type||"",font:{color:c,size:11}};
+  }));
+  var net=new vis.Network(document.getElementById("graph"),{nodes:nodes,edges:edges},
+    {layout:{hierarchical:{direction:"UD",sortMethod:"directed",nodeSpacing:140,levelSeparation:110}},
+     physics:false,interaction:{hover:true,navigationButtons:true}});
+  net.on("click",function(p){if(p.nodes.length)show(p.nodes[0]);});
+  var tb=document.getElementById("nodetable");
+  if(tb){tb.innerHTML="<tr><th>ID</th><th>Step</th><th>Layer</th><th>Ref</th></tr>"+graphData.nodes.map(function(n){
+    return "<tr><td>"+n.id+"</td><td>"+esc(n.business_step)+(n.unresolved?' <span class="unres">[unresolved]</span>':"")+"</td><td>"+n.layer+"</td><td>"+esc(n.file||"")+(n.function?" :: "+esc(n.function):"")+(n.line?" :"+n.line:"")+"</td></tr>";}).join("");}
+  window._net=net;
+}
+function show(id){
+  var n=null;graphData.nodes.forEach(function(x){if(x.id===id)n=x;});
+  if(!n)return;
+  var h="<h2>"+n.id+" &middot; "+n.layer+"</h2><dl>";
+  h+="<dt>Business step</dt><dd>"+esc(n.business_step)+"</dd>";
+  h+="<dt>File</dt><dd>"+esc(n.file||"—")+"</dd>";
+  h+="<dt>Function</dt><dd>"+esc(n.function||"—")+"</dd>";
+  h+="<dt>Line</dt><dd>"+(n.line||"—")+"</dd>";
+  if(n.table)h+="<dt>Table</dt><dd>"+esc(n.table)+"</dd>";
+  if(n.unresolved)h+='<dt>Status</dt><dd class="unres">UNRESOLVED — '+esc(n.note||"")+"</dd>";
+  h+="</dl>";
+  document.getElementById("detail").innerHTML=h;
+}
+document.addEventListener("DOMContentLoaded",function(){
+  if(window.vis){render();}
+  else{document.getElementById("graph").innerHTML="<p style='padding:24px'>vis-network CDN failed to load (offline?). Node table below still shows the full trace.</p>";var tb=document.getElementById("nodetable");
+    if(tb&&window.graphData){tb.innerHTML="<tr><th>ID</th><th>Step</th><th>Layer</th><th>Ref</th></tr>"+graphData.nodes.map(function(n){return "<tr><td>"+n.id+"</td><td>"+n.business_step+"</td><td>"+n.layer+"</td><td>"+(n.file||"")+"</td></tr>";}).join("");}}
+});
+})();
+</script>
+</body></html>

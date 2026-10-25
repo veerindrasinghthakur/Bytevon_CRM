@@ -26,12 +26,36 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     API_V1_PREFIX: str = "/api/v1"
 
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def parse_debug(cls, v: object) -> bool:
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, str):
+            v_lower = v.strip().lower()
+            if v_lower in ("1", "true", "t", "yes", "y", "debug"):
+                return True
+            if v_lower in ("0", "false", "f", "no", "n", "release", ""):
+                return False
+        return bool(v)
+
     # Database
     DATABASE_URL: str = Field(
         ...,
-        description="Async PostgreSQL URL, e.g. postgresql+asyncpg://user:pass@host:5432/db",
+        description="Async PostgreSQL URL, e.g. postgresql+asyncpg://user:pass@host:5432/db?sslmode=require",
     )
     DATABASE_ECHO: bool = False
+
+    # Connection pool — keep small for Neon free tier (max 25 pooled connections).
+    # Direct (non-pooled) Neon connections are used for Alembic migrations only.
+    DB_POOL_SIZE: int = Field(
+        default=3,
+        description="SQLAlchemy pool_size; keep ≤5 for Neon free tier.",
+    )
+    DB_MAX_OVERFLOW: int = Field(
+        default=5,
+        description="SQLAlchemy max_overflow on top of pool_size.",
+    )
 
     # JWT / Auth V1 — names match .env / .env.example contract.
     JWT_SECRET_KEY: str = Field(..., min_length=32)
@@ -71,7 +95,14 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         return self.APP_ENV.lower() == "production"
 
-    # MinIO storage
+    # Object storage (MinIO / S3-compatible)
+    # Set STORAGE_ENABLED=false (the default) on Render — no MinIO is available.
+    # Set STORAGE_ENABLED=true in local Docker Compose (.env already does this
+    # via MINIO_ENDPOINT / MINIO_ACCESS_KEY / MINIO_SECRET_KEY).
+    STORAGE_ENABLED: bool = Field(
+        default=False,
+        description="Master switch for MinIO/S3 object storage. False = deferred (prototype).",
+    )
     MINIO_ENDPOINT: str = Field(
         default="minio:9000",
         description="MinIO endpoint host:port",

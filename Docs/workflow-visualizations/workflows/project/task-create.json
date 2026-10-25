@@ -1,0 +1,72 @@
+{
+  "module": "Project",
+  "workflow": "Task creation",
+  "entry_route": "POST /api/v1/projects/tasks",
+  "entry_file": "02_backend_code/app/modules/project/task/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/projects/tasks",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Create task under a project",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/project/task/routes.py",
+      "function": "create_task",
+      "line": 22
+    },
+    {
+      "id": "n3",
+      "business_step": "Validate project/assignee, insert task",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/project/task/service.py",
+      "function": "create_task",
+      "line": 74
+    },
+    {
+      "id": "n4",
+      "business_step": "Write tasks",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/project/task/models.py",
+      "function": "",
+      "line": 29,
+      "table": "tasks"
+    },
+    {
+      "id": "n5",
+      "business_step": "201 task to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/project/task/routes.py",
+      "function": "create_task",
+      "line": 22
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

@@ -254,6 +254,7 @@ npx playwright test  # e2e (needs browsers: npx playwright install)
 
 ## Documentation index
 
+- Render backend deployment guide: [Render Deployment Guide (Docs/RENDER_BACKEND.md)](Docs/RENDER_BACKEND.md)
 - System architecture diagram: `Docs/architecture/bytevon-architecture.html`
 - Workflow call-graphs: `Docs/workflow-visualizations/workflow-explorer.html`
 - Database docs: `Docs/db_docs/`

@@ -207,9 +207,11 @@ class ProfileService(BasePublicService):
 
     def _presigned_avatar_url(self, obj: str) -> str | None:
         try:
-            from app.core.storage.minio import get_minio_client
+            from app.core.storage.minio import StorageUnavailableError, get_minio_client
 
             return get_minio_client().presigned_get_object(AVATAR_BUCKET, obj)
+        except StorageUnavailableError:
+            return None
         except Exception:
             logger.exception("Avatar presign failed")
             return None
@@ -228,7 +230,7 @@ class ProfileService(BasePublicService):
         try:
             from minio.error import MinioException
 
-            from app.core.storage.minio import get_minio_client
+            from app.core.storage.minio import StorageUnavailableError, get_minio_client
 
             client = get_minio_client()
             try:
@@ -245,6 +247,9 @@ class ProfileService(BasePublicService):
                 length=len(blob),
                 content_type=content_type,
             )
+        except StorageUnavailableError as exc:
+            logger.warning("Avatar upload skipped: %s", exc)
+            raise DomainError("Object storage is disabled on this server. Avatar uploads are unavailable.") from exc
         except Exception as exc:
             logger.exception("Avatar upload failed")
             raise DomainError("Avatar upload failed") from exc

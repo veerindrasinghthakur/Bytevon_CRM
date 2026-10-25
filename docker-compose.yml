@@ -89,10 +89,19 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS}
       FRONTEND_URL: ${FRONTEND_URL}
 
+      # Storage: enabled locally (MinIO is available via Compose network)
+      STORAGE_ENABLED: "true"
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MINIO_SECURE: ${MINIO_SECURE}
+
+      # Run full init sequence on compose startup (migrate + seed + MinIO buckets)
+      STARTUP_MODE: "compose"
+
+      # Pool size for local dev (can be larger than Render)
+      DB_POOL_SIZE: "5"
+      DB_MAX_OVERFLOW: "10"
 
     ports:
       - "${BACKEND_PORT:-8000}:8000"
@@ -101,7 +110,9 @@ services:
       postgres:
         condition: service_healthy
       minio:
-        condition: service_healthy
+        # service_started (not service_healthy) so a MinIO hiccup doesn't block
+        # the backend. Bucket init inside docker-entrypoint.sh is non-fatal.
+        condition: service_started
 
     healthcheck:
       test:

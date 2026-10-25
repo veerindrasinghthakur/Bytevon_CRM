@@ -1,0 +1,87 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Bytevon Workflows — Index</title><style>
+
+:root{--route:#3b82f6;--service:#22c55e;--repository:#f59e0b;--model:#a855f7;--db:#7c3aed;--side:#ef4444;--client:#64748b;--response:#14b8c7}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#0f172a;color:#e2e8f0}
+header{padding:16px 24px;background:#1e293b;border-bottom:1px solid #334155}
+header h1{margin:0;font-size:20px}header p{margin:4px 0 0;color:#94a3b8;font-size:13px}
+header a{color:#7dd3fc}
+#wrap{display:flex;height:calc(100vh - 130px)}
+#graph{flex:1;min-width:0}
+#panel{width:340px;background:#1e293b;border-left:1px solid #334155;padding:16px;overflow:auto}
+#panel h2{font-size:15px;margin:0 0 8px}#panel dl{font-size:13px}#panel dt{color:#94a3b8}#panel dd{margin:0 0 8px;word-break:break-all}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;color:#fff}
+.legend{display:flex;gap:10px;flex-wrap:wrap;padding:8px 24px;font-size:12px;background:#0f172a}
+.legend span i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+table.nodes{width:100%;border-collapse:collapse;font-size:12px;margin:0}
+table.nodes td,table.nodes th{border:1px solid #334155;padding:6px 8px;text-align:left}
+.unres{color:#fbbf24;font-weight:700}
+footer{padding:8px 24px;font-size:12px;color:#94a3b8}
+footer a{color:#7dd3fc}
+
+</style></head><body><header><h1>Bytevon CRM — Workflow Visualizations</h1><p>
+38 workflows across 13 modules</p></header><div style='padding:16px 24px'>
+<h2>Admin Governance (2)</h2><ul>
+<li><a href="workflows/admin/audit-list.html">Audit log list</a> — GET /api/v1/admin/audit/logs <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/admin/user-create.html">Admin user creation</a> — POST /api/v1/admin/users <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+</ul>
+<h2>Approval Engine (3)</h2><ul>
+<li><a href="workflows/approvals/approve.html">Approve request</a> — POST /api/v1/approvals/requests/{request_id}/approve <span style="color:#94a3b8">(7 nodes, 6 edges)</span></li>
+<li><a href="workflows/approvals/create-request.html">Create approval request</a> — POST /api/v1/approvals/requests <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+<li><a href="workflows/approvals/reject.html">Reject request</a> — POST /api/v1/approvals/requests/{request_id}/reject <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+</ul>
+<h2>Attendance (8)</h2><ul>
+<li><a href="workflows/attendance/break-end.html">Break end</a> — POST /api/v1/my-work/attendance/breaks/{break_id}/end <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/attendance/break-start.html">Break start</a> — POST /api/v1/my-work/attendance/breaks/start <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/attendance/check-in.html">Check-in</a> — POST /api/v1/my-work/attendance/punch <span style="color:#94a3b8">(7 nodes, 6 edges)</span></li>
+<li><a href="workflows/attendance/check-out.html">Check-out</a> — POST /api/v1/my-work/attendance/punch <span style="color:#94a3b8">(7 nodes, 6 edges)</span></li>
+<li><a href="workflows/attendance/correction-approval.html">Correction approval</a> — POST /api/v1/approvals/requests/{request_id}/approve <span style="color:#94a3b8">(7 nodes, 6 edges)</span></li>
+<li><a href="workflows/attendance/correction-request.html">Correction request</a> — POST /api/v1/workforce/attendance/corrections <span style="color:#94a3b8">(8 nodes, 7 edges)</span></li>
+<li><a href="workflows/attendance/monthly-rebuild.html">Monthly summary rebuild</a> — POST /api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/rebuild <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/attendance/today-list.html">Today list</a> — GET /api/v1/workforce/attendance/today <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+</ul>
+<h2>Developer (My Work) (2)</h2><ul>
+<li><a href="workflows/my-work/my-tasks.html">My tasks list</a> — GET /api/v1/my-work/tasks <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/my-work/overview.html">My-work overview</a> — GET /api/v1/my-work/overview <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+</ul>
+<h2>Employees (3)</h2><ul>
+<li><a href="workflows/employees/change-state.html">Employment state change</a> — POST /api/v1/workforce/employments/{employment_id}/state <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+<li><a href="workflows/employees/create-employment.html">Create employment</a> — POST /api/v1/workforce/employments <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+<li><a href="workflows/employees/department-assign.html">Department assign</a> — POST /api/v1/workforce/departments/{department_id}/assign <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+</ul>
+<h2>Leave Management (3)</h2><ul>
+<li><a href="workflows/leave/calculate-days.html">Calculate leave days</a> — POST /api/v1/my-work/leave/calculate <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/leave/cancel-request.html">Cancel leave request</a> — POST /api/v1/leave/requests/{request_id}/cancel <span style="color:#94a3b8">(7 nodes, 6 edges)</span></li>
+<li><a href="workflows/leave/submit-request.html">Submit leave request</a> — POST /api/v1/leave/requests <span style="color:#94a3b8">(7 nodes, 6 edges)</span></li>
+</ul>
+<h2>Manager (Dashboard) (2)</h2><ul>
+<li><a href="workflows/dashboard/attendance.html">Attendance dashboard</a> — GET /api/v1/dashboard/attendance <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+<li><a href="workflows/dashboard/executive.html">Executive dashboard</a> — GET /api/v1/dashboard/executive <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+</ul>
+<h2>Notifications (2)</h2><ul>
+<li><a href="workflows/notifications/compose.html">Compose broadcast</a> — POST /api/v1/notifications/compose <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/notifications/inbox.html">Inbox list</a> — GET /api/v1/notifications/inbox <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+</ul>
+<h2>Organization Core (3)</h2><ul>
+<li><a href="workflows/org-core/holiday-create.html">Holiday creation</a> — POST /api/v1/admin/holiday-calendars/{calendar_id}/holidays <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/org-core/location-create.html">Location creation</a> — POST /api/v1/admin/locations <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+<li><a href="workflows/org-core/login.html">Login</a> — POST /api/v1/auth/login <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+</ul>
+<h2>Payroll (3)</h2><ul>
+<li><a href="workflows/payroll/approve.html">Payroll approve</a> — POST /api/v1/payroll/{payroll_id}/approve <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+<li><a href="workflows/payroll/mark-paid.html">Payroll mark paid</a> — POST /api/v1/payroll/{payroll_id}/pay <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+<li><a href="workflows/payroll/run.html">Payroll run</a> — POST /api/v1/payroll/run <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+</ul>
+<h2>Project (2)</h2><ul>
+<li><a href="workflows/project/project-create.html">Project creation</a> — POST /api/v1/projects/ <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+<li><a href="workflows/project/task-create.html">Task creation</a> — POST /api/v1/projects/tasks <span style="color:#94a3b8">(5 nodes, 4 edges)</span></li>
+</ul>
+<h2>RBAC (2)</h2><ul>
+<li><a href="workflows/rbac/assign-role.html">Assign role</a> — POST /api/v1/rbac/employments/{employment_id}/roles <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/rbac/effective-permissions.html">Effective permissions</a> — GET /api/v1/rbac/employments/{employment_id}/effective-permissions <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+</ul>
+<h2>Sales/CRM (3)</h2><ul>
+<li><a href="workflows/sales/client-create.html">Client creation</a> — POST /api/v1/sales/clients <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/sales/lead-create.html">Lead creation</a> — POST /api/v1/sales/leads <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+<li><a href="workflows/sales/lead-status-change.html">Lead status change</a> — POST /api/v1/sales/leads/{lead_id}/status <span style="color:#94a3b8">(6 nodes, 5 edges)</span></li>
+</ul>
+<h2>Overview</h2><ul><li><a href="module-map.html">Module dependency map</a></li></ul></div></body></html>

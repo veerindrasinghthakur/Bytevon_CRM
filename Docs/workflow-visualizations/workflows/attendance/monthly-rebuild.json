@@ -1,0 +1,85 @@
+{
+  "module": "Attendance",
+  "workflow": "Monthly summary rebuild",
+  "entry_route": "POST /api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/rebuild",
+  "entry_file": "02_backend_code/app/modules/workforce/attendance/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/rebuild",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Rebuild one employment month (CREATE/ORGANIZATION-gated)",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/workforce/attendance/routes.py",
+      "function": "rebuild_monthly_summary",
+      "line": 156
+    },
+    {
+      "id": "n3",
+      "business_step": "Aggregate day statuses/hours/breaks; refuse when locked",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/workforce/attendance/service.py",
+      "function": "rebuild_monthly_summary",
+      "line": 453
+    },
+    {
+      "id": "n4",
+      "business_step": "Read month days; plus get_monthly_summary (line 208)",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/workforce/attendance/repository.py",
+      "function": "list_days_for_month",
+      "line": 96
+    },
+    {
+      "id": "n5",
+      "business_step": "Write monthly_attendance_summaries",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/workforce/attendance/models.py",
+      "function": "",
+      "line": 130,
+      "table": "monthly_attendance_summaries"
+    },
+    {
+      "id": "n6",
+      "business_step": "200 MonthlySummaryResponse to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/workforce/attendance/routes.py",
+      "function": "rebuild_monthly_summary",
+      "line": 156
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

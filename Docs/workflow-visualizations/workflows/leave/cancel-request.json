@@ -1,0 +1,100 @@
+{
+  "module": "Leave Management",
+  "workflow": "Cancel leave request",
+  "entry_route": "POST /api/v1/leave/requests/{request_id}/cancel",
+  "entry_file": "02_backend_code/app/modules/leave/request/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/leave/requests/{request_id}/cancel",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Cancel own/visible request (UPDATE/SELF union)",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/leave/request/routes.py",
+      "function": "cancel_request",
+      "line": 70
+    },
+    {
+      "id": "n3",
+      "business_step": "Scope gate before service call",
+      "layer": "util",
+      "file": "02_backend_code/app/modules/leave/request/scoped_ops.py",
+      "function": "cancel_request_scoped",
+      "line": 0,
+      "unresolved": true,
+      "note": "File referenced by route import; body not read"
+    },
+    {
+      "id": "n4",
+      "business_step": "Validate state, mark cancelled, release HOLD",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/leave/request/service.py",
+      "function": "cancel_request",
+      "line": 280
+    },
+    {
+      "id": "n5",
+      "business_step": "Load the request row",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/leave/request/repository.py",
+      "function": "get_request_by_id",
+      "line": 23
+    },
+    {
+      "id": "n6",
+      "business_step": "Update leave_requests",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/leave/models/leave_models.py",
+      "function": "",
+      "line": 112,
+      "table": "leave_requests"
+    },
+    {
+      "id": "n7",
+      "business_step": "200 LeaveRequestResponse to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/leave/request/routes.py",
+      "function": "cancel_request",
+      "line": 70
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "type": "calls"
+    },
+    {
+      "from": "n6",
+      "to": "n7",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

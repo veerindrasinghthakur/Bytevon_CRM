@@ -1,0 +1,72 @@
+{
+  "module": "Payroll",
+  "workflow": "Payroll mark paid",
+  "entry_route": "POST /api/v1/payroll/{payroll_id}/pay",
+  "entry_file": "02_backend_code/app/modules/payroll/payslip/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/payroll/{payroll_id}/pay",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Mark payroll PAID (immutable afterwards)",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/payroll/payslip/routes.py",
+      "function": "mark_paid",
+      "line": 18
+    },
+    {
+      "id": "n3",
+      "business_step": "Validate approved state, mark paid",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/payroll/payslip/service.py",
+      "function": "mark_paid",
+      "line": 20
+    },
+    {
+      "id": "n4",
+      "business_step": "Update monthly_payroll",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/payroll/models/payroll_models.py",
+      "function": "",
+      "line": 72,
+      "table": "monthly_payroll"
+    },
+    {
+      "id": "n5",
+      "business_step": "200 payroll to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/payroll/payslip/routes.py",
+      "function": "mark_paid",
+      "line": 18
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

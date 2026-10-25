@@ -1,0 +1,230 @@
+[
+  {
+    "module": "Attendance",
+    "workflow": "Check-in",
+    "entry_route": "POST /api/v1/my-work/attendance/punch",
+    "entry_file": "02_backend_code/app/modules/my_work/attendance/routes.py"
+  },
+  {
+    "module": "Attendance",
+    "workflow": "Check-out",
+    "entry_route": "POST /api/v1/my-work/attendance/punch",
+    "entry_file": "02_backend_code/app/modules/my_work/attendance/routes.py"
+  },
+  {
+    "module": "Attendance",
+    "workflow": "Break start",
+    "entry_route": "POST /api/v1/my-work/attendance/breaks/start",
+    "entry_file": "02_backend_code/app/modules/my_work/attendance/routes.py"
+  },
+  {
+    "module": "Attendance",
+    "workflow": "Break end",
+    "entry_route": "POST /api/v1/my-work/attendance/breaks/{break_id}/end",
+    "entry_file": "02_backend_code/app/modules/my_work/attendance/routes.py"
+  },
+  {
+    "module": "Attendance",
+    "workflow": "Correction request",
+    "entry_route": "POST /api/v1/workforce/attendance/corrections",
+    "entry_file": "02_backend_code/app/modules/workforce/attendance/routes.py"
+  },
+  {
+    "module": "Attendance",
+    "workflow": "Correction approval",
+    "entry_route": "POST /api/v1/approvals/requests/{request_id}/approve",
+    "entry_file": "02_backend_code/app/modules/approvals/approval_action/routes.py"
+  },
+  {
+    "module": "Attendance",
+    "workflow": "Today list",
+    "entry_route": "GET /api/v1/workforce/attendance/today",
+    "entry_file": "02_backend_code/app/modules/workforce/attendance/routes.py"
+  },
+  {
+    "module": "Attendance",
+    "workflow": "Monthly summary rebuild",
+    "entry_route": "POST /api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/rebuild",
+    "entry_file": "02_backend_code/app/modules/workforce/attendance/routes.py"
+  },
+  {
+    "module": "Leave Management",
+    "workflow": "Submit leave request",
+    "entry_route": "POST /api/v1/leave/requests",
+    "entry_file": "02_backend_code/app/modules/leave/request/routes.py"
+  },
+  {
+    "module": "Leave Management",
+    "workflow": "Cancel leave request",
+    "entry_route": "POST /api/v1/leave/requests/{request_id}/cancel",
+    "entry_file": "02_backend_code/app/modules/leave/request/routes.py"
+  },
+  {
+    "module": "Leave Management",
+    "workflow": "Calculate leave days",
+    "entry_route": "POST /api/v1/my-work/leave/calculate",
+    "entry_file": "02_backend_code/app/modules/my_work/leave/routes.py"
+  },
+  {
+    "module": "Approval Engine",
+    "workflow": "Create approval request",
+    "entry_route": "POST /api/v1/approvals/requests",
+    "entry_file": "02_backend_code/app/modules/approvals/request/routes.py"
+  },
+  {
+    "module": "Approval Engine",
+    "workflow": "Approve request",
+    "entry_route": "POST /api/v1/approvals/requests/{request_id}/approve",
+    "entry_file": "02_backend_code/app/modules/approvals/approval_action/routes.py"
+  },
+  {
+    "module": "Approval Engine",
+    "workflow": "Reject request",
+    "entry_route": "POST /api/v1/approvals/requests/{request_id}/reject",
+    "entry_file": "02_backend_code/app/modules/approvals/approval_action/routes.py"
+  },
+  {
+    "module": "Sales/CRM",
+    "workflow": "Lead creation",
+    "entry_route": "POST /api/v1/sales/leads",
+    "entry_file": "02_backend_code/app/modules/sales/lead/routes.py"
+  },
+  {
+    "module": "Sales/CRM",
+    "workflow": "Lead status change",
+    "entry_route": "POST /api/v1/sales/leads/{lead_id}/status",
+    "entry_file": "02_backend_code/app/modules/sales/lead/routes.py"
+  },
+  {
+    "module": "Sales/CRM",
+    "workflow": "Client creation",
+    "entry_route": "POST /api/v1/sales/clients",
+    "entry_file": "02_backend_code/app/modules/sales/client/routes.py"
+  },
+  {
+    "module": "Employees",
+    "workflow": "Create employment",
+    "entry_route": "POST /api/v1/workforce/employments",
+    "entry_file": "02_backend_code/app/modules/workforce/employee/routes.py"
+  },
+  {
+    "module": "Employees",
+    "workflow": "Department assign",
+    "entry_route": "POST /api/v1/workforce/departments/{department_id}/assign",
+    "entry_file": "02_backend_code/app/modules/workforce/department/routes.py"
+  },
+  {
+    "module": "Employees",
+    "workflow": "Employment state change",
+    "entry_route": "POST /api/v1/workforce/employments/{employment_id}/state",
+    "entry_file": "02_backend_code/app/modules/workforce/assignment/routes.py"
+  },
+  {
+    "module": "RBAC",
+    "workflow": "Assign role",
+    "entry_route": "POST /api/v1/rbac/employments/{employment_id}/roles",
+    "entry_file": "02_backend_code/app/modules/rbac/routes.py"
+  },
+  {
+    "module": "RBAC",
+    "workflow": "Effective permissions",
+    "entry_route": "GET /api/v1/rbac/employments/{employment_id}/effective-permissions",
+    "entry_file": "02_backend_code/app/modules/rbac/routes.py"
+  },
+  {
+    "module": "Organization Core",
+    "workflow": "Location creation",
+    "entry_route": "POST /api/v1/admin/locations",
+    "entry_file": "02_backend_code/app/modules/admin/location/routes.py"
+  },
+  {
+    "module": "Organization Core",
+    "workflow": "Holiday creation",
+    "entry_route": "POST /api/v1/admin/holiday-calendars/{calendar_id}/holidays",
+    "entry_file": "02_backend_code/app/modules/admin/holiday_calendar/routes.py"
+  },
+  {
+    "module": "Developer (My Work)",
+    "workflow": "My-work overview",
+    "entry_route": "GET /api/v1/my-work/overview",
+    "entry_file": "02_backend_code/app/modules/my_work/overview/routes.py"
+  },
+  {
+    "module": "Developer (My Work)",
+    "workflow": "My tasks list",
+    "entry_route": "GET /api/v1/my-work/tasks",
+    "entry_file": "02_backend_code/app/modules/my_work/tasks/routes.py"
+  },
+  {
+    "module": "Manager (Dashboard)",
+    "workflow": "Executive dashboard",
+    "entry_route": "GET /api/v1/dashboard/executive",
+    "entry_file": "02_backend_code/app/modules/dashboard/routes.py"
+  },
+  {
+    "module": "Manager (Dashboard)",
+    "workflow": "Attendance dashboard",
+    "entry_route": "GET /api/v1/dashboard/attendance",
+    "entry_file": "02_backend_code/app/modules/dashboard/attendance/routes.py"
+  },
+  {
+    "module": "Admin Governance",
+    "workflow": "Admin user creation",
+    "entry_route": "POST /api/v1/admin/users",
+    "entry_file": "02_backend_code/app/modules/admin/user/routes.py"
+  },
+  {
+    "module": "Admin Governance",
+    "workflow": "Audit log list",
+    "entry_route": "GET /api/v1/admin/audit/logs",
+    "entry_file": "02_backend_code/app/modules/admin/audit/routes.py"
+  },
+  {
+    "module": "Payroll",
+    "workflow": "Payroll run",
+    "entry_route": "POST /api/v1/payroll/run",
+    "entry_file": "02_backend_code/app/modules/payroll/payroll_run/routes.py"
+  },
+  {
+    "module": "Payroll",
+    "workflow": "Payroll approve",
+    "entry_route": "POST /api/v1/payroll/{payroll_id}/approve",
+    "entry_file": "02_backend_code/app/modules/payroll/review/routes.py"
+  },
+  {
+    "module": "Payroll",
+    "workflow": "Payroll mark paid",
+    "entry_route": "POST /api/v1/payroll/{payroll_id}/pay",
+    "entry_file": "02_backend_code/app/modules/payroll/payslip/routes.py"
+  },
+  {
+    "module": "Notifications",
+    "workflow": "Compose broadcast",
+    "entry_route": "POST /api/v1/notifications/compose",
+    "entry_file": "02_backend_code/app/modules/notifications/compose/routes.py"
+  },
+  {
+    "module": "Notifications",
+    "workflow": "Inbox list",
+    "entry_route": "GET /api/v1/notifications/inbox",
+    "entry_file": "02_backend_code/app/modules/notifications/center/routes.py"
+  },
+  {
+    "module": "Project",
+    "workflow": "Project creation",
+    "entry_route": "POST /api/v1/projects/",
+    "entry_file": "02_backend_code/app/modules/project/project/routes.py"
+  },
+  {
+    "module": "Project",
+    "workflow": "Task creation",
+    "entry_route": "POST /api/v1/projects/tasks",
+    "entry_file": "02_backend_code/app/modules/project/task/routes.py"
+  },
+  {
+    "module": "Organization Core",
+    "workflow": "Login",
+    "entry_route": "POST /api/v1/auth/login",
+    "entry_file": "02_backend_code/app/modules/auth/routes.py"
+  }
+]

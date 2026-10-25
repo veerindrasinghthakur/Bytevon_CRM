@@ -1,0 +1,18 @@
+
+:root{--route:#3b82f6;--service:#22c55e;--repository:#f59e0b;--model:#a855f7;--db:#7c3aed;--side:#ef4444;--client:#64748b;--response:#14b8c7}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#0f172a;color:#e2e8f0}
+header{padding:16px 24px;background:#1e293b;border-bottom:1px solid #334155}
+header h1{margin:0;font-size:20px}header p{margin:4px 0 0;color:#94a3b8;font-size:13px}
+header a{color:#7dd3fc}
+#wrap{display:flex;height:calc(100vh - 130px)}
+#graph{flex:1;min-width:0}
+#panel{width:340px;background:#1e293b;border-left:1px solid #334155;padding:16px;overflow:auto}
+#panel h2{font-size:15px;margin:0 0 8px}#panel dl{font-size:13px}#panel dt{color:#94a3b8}#panel dd{margin:0 0 8px;word-break:break-all}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;color:#fff}
+.legend{display:flex;gap:10px;flex-wrap:wrap;padding:8px 24px;font-size:12px;background:#0f172a}
+.legend span i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+table.nodes{width:100%;border-collapse:collapse;font-size:12px;margin:0}
+table.nodes td,table.nodes th{border:1px solid #334155;padding:6px 8px;text-align:left}
+.unres{color:#fbbf24;font-weight:700}
+footer{padding:8px 24px;font-size:12px;color:#94a3b8}
+footer a{color:#7dd3fc}

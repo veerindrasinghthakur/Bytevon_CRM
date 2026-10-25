@@ -1,0 +1,72 @@
+{
+  "module": "Employees",
+  "workflow": "Create employment",
+  "entry_route": "POST /api/v1/workforce/employments",
+  "entry_file": "02_backend_code/app/modules/workforce/employee/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/workforce/employments",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Create employment for a person",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/workforce/employee/routes.py",
+      "function": "create_employment",
+      "line": 165
+    },
+    {
+      "id": "n3",
+      "business_step": "Validate person/position, insert employment (+ initial assignment)",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/workforce/employee/service.py",
+      "function": "create_employment",
+      "line": 609
+    },
+    {
+      "id": "n4",
+      "business_step": "Write employments (+ employment_assignments)",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/workforce/models/employment_models.py",
+      "function": "",
+      "line": 60,
+      "table": "employments, employment_assignments"
+    },
+    {
+      "id": "n5",
+      "business_step": "201 employment to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/workforce/employee/routes.py",
+      "function": "create_employment",
+      "line": 165
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

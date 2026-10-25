@@ -1,0 +1,98 @@
+{
+  "module": "Attendance",
+  "workflow": "Correction approval",
+  "entry_route": "POST /api/v1/approvals/requests/{request_id}/approve",
+  "entry_file": "02_backend_code/app/modules/approvals/approval_action/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/approvals/requests/{request_id}/approve",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Approve action (APPROVE/DEPARTMENT-gated) via ApprovalActionService.approve",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/approvals/approval_action/routes.py",
+      "function": "approve",
+      "line": 94
+    },
+    {
+      "id": "n3",
+      "business_step": "Decide the approval request, dispatch domain handler",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/approvals/approval_action/service.py",
+      "function": "approve",
+      "line": 52
+    },
+    {
+      "id": "n4",
+      "business_step": "On APPROVED: append CHECK_IN/CHECK_OUT punches to the day, recompute hours, rebuild monthly summary",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/workforce/attendance/service.py",
+      "function": "handle_approval_decision",
+      "line": 375
+    },
+    {
+      "id": "n5",
+      "business_step": "Load the correction, then add punch rows for the approved times",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/workforce/attendance/repository.py",
+      "function": "get_correction_by_id",
+      "line": 127
+    },
+    {
+      "id": "n6",
+      "business_step": "Write attendance_punches (+ approval_actions)",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/workforce/attendance/models.py",
+      "function": "",
+      "line": 83,
+      "table": "attendance_punches, approval_actions"
+    },
+    {
+      "id": "n7",
+      "business_step": "200 ApprovalRequestDetailResponse to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/approvals/approval_action/routes.py",
+      "function": "approve",
+      "line": 94
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "type": "calls"
+    },
+    {
+      "from": "n6",
+      "to": "n7",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

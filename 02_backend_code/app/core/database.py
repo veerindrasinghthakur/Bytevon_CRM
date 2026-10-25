@@ -18,8 +18,10 @@ engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DATABASE_ECHO,
     pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
+    # Configurable via DB_POOL_SIZE / DB_MAX_OVERFLOW env vars.
+    # Defaults are conservative for Neon free tier (max 25 connections total).
+    pool_size=settings.DB_POOL_SIZE,
+    max_overflow=settings.DB_MAX_OVERFLOW,
 )
 
 AsyncSessionLocal = async_sessionmaker(

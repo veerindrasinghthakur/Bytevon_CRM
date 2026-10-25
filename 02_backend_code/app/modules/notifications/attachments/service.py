@@ -53,7 +53,7 @@ class AttachmentService(BasePublicService):
         try:
             from minio.error import MinioException
 
-            from app.core.storage.minio import get_minio_client
+            from app.core.storage.minio import StorageUnavailableError, get_minio_client
 
             client = get_minio_client()
             try:
@@ -68,6 +68,9 @@ class AttachmentService(BasePublicService):
                 length=len(blob),
                 content_type=content_type,
             )
+        except StorageUnavailableError as exc:
+            logger.warning("Attachment upload skipped: %s", exc)
+            raise DomainError("Object storage is disabled on this server. File attachments are unavailable.") from exc
         except Exception as exc:
             logger.exception("Attachment upload failed")
             raise DomainError("Attachment upload failed") from exc

@@ -1,0 +1,74 @@
+{
+  "module": "Manager (Dashboard)",
+  "workflow": "Attendance dashboard",
+  "entry_route": "GET /api/v1/dashboard/attendance",
+  "entry_file": "02_backend_code/app/modules/dashboard/attendance/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends GET /api/v1/dashboard/attendance",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Attendance aggregate for dashboard",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/dashboard/attendance/routes.py",
+      "function": "dashboard_attendance",
+      "line": 27
+    },
+    {
+      "id": "n3",
+      "business_step": "Aggregate presence/hours for period",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/dashboard/attendance/service.py",
+      "function": "get_attendance",
+      "line": 32,
+      "unresolved": true,
+      "note": "Aggregation body not read in full"
+    },
+    {
+      "id": "n4",
+      "business_step": "Read attendance_days (+ punches)",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/workforce/attendance/models.py",
+      "function": "",
+      "line": 44,
+      "table": "attendance_days, attendance_punches"
+    },
+    {
+      "id": "n5",
+      "business_step": "200 attendance aggregate to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/dashboard/attendance/routes.py",
+      "function": "dashboard_attendance",
+      "line": 27
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

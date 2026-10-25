@@ -1,0 +1,85 @@
+{
+  "module": "Approval Engine",
+  "workflow": "Reject request",
+  "entry_route": "POST /api/v1/approvals/requests/{request_id}/reject",
+  "entry_file": "02_backend_code/app/modules/approvals/approval_action/routes.py",
+  "nodes": [
+    {
+      "id": "n1",
+      "business_step": "Client sends POST /api/v1/approvals/requests/{request_id}/reject",
+      "layer": "client",
+      "file": "",
+      "function": "",
+      "line": 0
+    },
+    {
+      "id": "n2",
+      "business_step": "Reject (APPROVE/DEPARTMENT-gated)",
+      "layer": "route",
+      "file": "02_backend_code/app/modules/approvals/approval_action/routes.py",
+      "function": "reject",
+      "line": 112
+    },
+    {
+      "id": "n3",
+      "business_step": "Record rejection, append action row, dispatch domain handler",
+      "layer": "service",
+      "file": "02_backend_code/app/modules/approvals/approval_action/service.py",
+      "function": "reject",
+      "line": 69
+    },
+    {
+      "id": "n4",
+      "business_step": "Load the request row",
+      "layer": "repository",
+      "file": "02_backend_code/app/modules/approvals/approval_action/repository.py",
+      "function": "get_request_by_id",
+      "line": 18
+    },
+    {
+      "id": "n5",
+      "business_step": "Write approval_actions; update approval_requests",
+      "layer": "db",
+      "file": "02_backend_code/app/modules/approvals/models/approval_models.py",
+      "function": "",
+      "line": 63,
+      "table": "approval_actions, approval_requests"
+    },
+    {
+      "id": "n6",
+      "business_step": "200 ApprovalRequestDetailResponse to client",
+      "layer": "response",
+      "file": "02_backend_code/app/modules/approvals/approval_action/routes.py",
+      "function": "reject",
+      "line": 112
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "type": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "type": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "type": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "type": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "type": "calls",
+      "label": "respond"
+    }
+  ]
+}

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import sys
 from datetime import date, time
 from decimal import Decimal
@@ -40,8 +41,8 @@ from app.modules.workforce.models import Employment, Position
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("seed")
 
-ADMIN_EMAIL = "admin@example.com"
-ADMIN_PASSWORD = "ChangeMeAdmin!123"
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@example.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "ChangeMeAdmin!123")
 SYSTEM_EMP_ID = settings.SYSTEM_EMPLOYMENT_ID
 
 SAMPLE_STAFF = [
@@ -239,10 +240,12 @@ async def seed_sample_staff(
             session.add(login)
             await session.flush()
         else:
-            login.password_hash = pwd.hash(STAFF_PASSWORD)
-            login.is_active = True
-            login.failed_attempt_count = 0
-            login.locked_until = None
+            # Do NOT reset passwords on subsequent runs.
+            logger.info(
+                "Sample staff login id=%s already exists; credentials not changed.",
+                login.id,
+            )
+
 
         emp = (
             await session.execute(
@@ -374,12 +377,14 @@ async def seed() -> None:
             await session.flush()
             logger.info("Created login id=%s email=%s", login.id, ADMIN_EMAIL)
         else:
-            login.email = ADMIN_EMAIL
-            login.password_hash = pwd.hash(ADMIN_PASSWORD)
-            login.is_active = True
-            login.failed_attempt_count = 0
-            login.locked_until = None
-            logger.info("Reset login id=%s for %s", login.id, ADMIN_EMAIL)
+            # Do NOT reset the admin password on subsequent runs.
+            # An operator who changed it would lose their credentials.
+            logger.info(
+                "Admin login id=%s already exists (email=%s); credentials not changed.",
+                login.id,
+                login.email,
+            )
+
 
         emp = (
             await session.execute(
@@ -455,7 +460,10 @@ async def seed() -> None:
 
         await session.commit()
         logger.info("Seed complete.")
-        logger.info("Admin login: %s / %s", ADMIN_EMAIL, ADMIN_PASSWORD)
+        if os.environ.get("ADMIN_PASSWORD"):
+            logger.info("Admin login: %s / [SET FROM ENVIRONMENT]", ADMIN_EMAIL)
+        else:
+            logger.info("Admin login: %s / %s (default demo credentials)", ADMIN_EMAIL, ADMIN_PASSWORD)
         logger.info("Sample staff password (all): %s", STAFF_PASSWORD)
         logger.info("SYSTEM_EMPLOYMENT_ID=%s", SYSTEM_EMP_ID)
 

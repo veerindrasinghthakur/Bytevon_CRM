@@ -1,18 +1,39 @@
-"""MinIO client for audit archive and document file storage."""
+"""MinIO client for audit archive and document file storage.
 
+When settings.STORAGE_ENABLED is False (the default for the Render prototype),
+every storage operation returns None / raises StorageUnavailableError instead of
+silently pretending to succeed.
+
+Call sites should handle None / catch StorageUnavailableError and surface a
+clear failure to the caller — do NOT substitute a fake success path.
+"""
+
+from __future__ import annotations
 
 import logging
 from io import BytesIO
 
-import aiofiles
-from minio import Minio
-from minio.error import MinioException
-
 from app.core.config import settings
 
+logger = logging.getLogger(__name__)
 
-def get_minio_client() -> Minio:
-    """Return a configured MinIO client instance."""
+
+class StorageUnavailableError(RuntimeError):
+    """Raised when storage is requested but STORAGE_ENABLED=false."""
+
+
+def get_minio_client():
+    """Return a configured MinIO Minio client instance.
+
+    Raises StorageUnavailableError if storage is disabled.
+    """
+    if not settings.STORAGE_ENABLED:
+        raise StorageUnavailableError(
+            "Object storage is disabled (STORAGE_ENABLED=false). "
+            "Set STORAGE_ENABLED=true and configure MINIO_* variables to enable."
+        )
+    from minio import Minio  # lazy import — minio package still installed
+
     return Minio(
         endpoint=settings.MINIO_ENDPOINT,
         access_key=settings.MINIO_ACCESS_KEY,
@@ -30,28 +51,28 @@ async def upload_file(
 ) -> str | None:
     """Upload a string payload to MinIO bucket.
 
-    Returns the object path on success, None on failure.
-    """
-    try:
-        # Ensure bucket exists
+    Returns the object path (str) on success.
+    Returns None and logs a warning when STORAGE_ENABLED=false.
+    Returns None and logs an error on MinIO failure.
 
-        # Minio client is created per-request; bucket creation is handled
-        # at application startup via lifespan or migration scripts.
-        pass
-    except MinioException as e:
-        logger = logging.getLogger(__name__)
-        logger.error("MinIO upload error: %s", e)
+    Callers MUST treat None as a failure and NOT proceed with
+    operations that depend on the object being stored.
+    """
+    if not settings.STORAGE_ENABLED:
+        logger.warning(
+            "upload_file skipped — STORAGE_ENABLED=false "
+            "(bucket=%s object=%s). "
+            "Configure object storage to persist this data.",
+            bucket_name,
+            object_name,
+        )
         return None
 
-    async with aiofiles.open("/dev/null", "w") as _f:
-        pass  # placeholder - actual upload handled by Minio SDK sync call
+    from minio.error import MinioException  # lazy import
 
-    # Sync upload via Minio SDK
     client = get_minio_client()
     try:
-        # Minio SDK put_object expects a binary stream
         data_bytes = data.encode("utf-8") if isinstance(data, str) else bytes(data)
-
         client.put_object(
             bucket_name=bucket_name,
             object_name=object_name,
@@ -61,6 +82,8 @@ async def upload_file(
         )
         return object_name
     except MinioException as e:
-        logger = logging.getLogger(__name__)
-        logger.error("MinIO put_object error: %s", e)
+        logger.error("MinIO put_object error (bucket=%s object=%s): %s", bucket_name, object_name, e)
+        return None
+    except Exception as e:
+        logger.exception("Unexpected error during MinIO upload (bucket=%s object=%s): %s", bucket_name, object_name, e)
         return None
